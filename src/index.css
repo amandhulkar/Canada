@@ -1,0 +1,127 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  overflow-x: hidden;
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+  color: #111827;
+  background-color: #fbfbff;
+  background-image:
+    radial-gradient(circle at top left, rgba(124, 58, 237, 0.08), transparent 24%),
+    radial-gradient(circle at top right, rgba(37, 99, 235, 0.08), transparent 26%),
+    linear-gradient(180deg, #ffffff 0%, #fbfbff 44%, #f8faff 100%);
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 10% 12%, rgba(124, 58, 237, 0.05), transparent 20%),
+    radial-gradient(circle at 86% 8%, rgba(37, 99, 235, 0.05), transparent 18%),
+    radial-gradient(circle at 52% 26%, rgba(219, 231, 255, 0.36), transparent 28%);
+  opacity: 1;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+*::selection {
+  background: rgba(37, 99, 235, 0.14);
+  color: #111827;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f3f4f6;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, rgba(37, 99, 235, 0.65), rgba(124, 58, 237, 0.55));
+  border-radius: 999px;
+}
+
+@layer base {
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply text-ink;
+  }
+
+  p {
+    @apply text-muted;
+  }
+
+  a {
+    @apply text-inherit no-underline;
+  }
+
+  input,
+  textarea {
+    font: inherit;
+  }
+}
+
+@layer components {
+  .section-shell {
+    @apply relative py-16 sm:py-20 lg:py-24;
+  }
+
+  .glass-panel {
+    @apply border border-line bg-white shadow-soft backdrop-blur-sm;
+  }
+
+  .card-hover {
+    @apply transition duration-300 hover:-translate-y-1 hover:shadow-float;
+  }
+
+  .section-kicker {
+    @apply inline-flex w-fit items-center gap-2 rounded-full border border-accent-blue/10 bg-accent-soft px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-accent-blue;
+  }
+
+  .text-gradient {
+    @apply bg-gradient-to-r from-ink via-accent-purple to-accent-blue bg-clip-text text-transparent;
+  }
+
+  .border-gradient {
+    position: relative;
+  }
+
+  .border-gradient::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(135deg, rgba(37, 99, 235, 0.16), rgba(124, 58, 237, 0.16), rgba(56, 189, 248, 0.16));
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+
+  .hero-orb {
+    @apply absolute rounded-full blur-3xl;
+  }
+}
