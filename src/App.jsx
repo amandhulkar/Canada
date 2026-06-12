@@ -31,6 +31,7 @@ import PrivacyPolicy from './pages/PrivacyPolicy'
 import SignupPage from './pages/SignupPage'
 import Navbar from './sections/Navbar'
 // import Footer from './sections/Footer'
+import TemplateGallery from './pages/TemplatesPage'
 
 function Layout() {
   const location = useLocation()
@@ -44,6 +45,7 @@ function Layout() {
         <Route path="/help-center" element={<HelpCenter />} />
         <Route path="/privacy-policy" element={<PrivacyPolicy />} />
         <Route path="/signup" element={<SignupPage />} />
+        <Route path="/templates" element={<TemplateGallery />} />
       </Routes>
       {/* <Footer /> */}
     </>
