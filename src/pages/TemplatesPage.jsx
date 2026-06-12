@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import Container from '../components/Container'
-
+import Footer from '../sections/Footer'
 const templates = [
   {
     id: 1,
@@ -205,6 +205,7 @@ function TemplatesPage() {
           ))}
         </div>
       </Container>
+      <Footer />
     </div>
   )
 }

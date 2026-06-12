@@ -59,7 +59,6 @@ function Navbar() {
   return (
     <header className="sticky top-0 z-50 border-b border-line/80 bg-white/90 backdrop-blur-xl">
       <Container className="flex h-20 items-center justify-between gap-6">
-
         {/* Logo */}
         <a href="/" className="flex items-center gap-2.5 text-ink">
           <motion.span
@@ -74,7 +73,6 @@ function Navbar() {
 
         {/* Center nav */}
         <nav className="hidden items-center gap-8 text-sm font-semibold text-ink lg:flex">
-
           {/* Templates dropdown */}
           <div
             className="relative"
@@ -107,7 +105,11 @@ function Navbar() {
                 >
                   <div className="grid grid-cols-3 gap-6">
                     {templates.map((t) => (
-                      <a key={t.name} href="/templates" className="group block text-left">
+                      <a
+                        key={t.name}
+                        href="/templates"
+                        className="group block text-left"
+                      >
                         <div className="mb-3 aspect-[1/0.78] w-full overflow-hidden rounded-xl border border-line transition-transform group-hover:-translate-y-1 group-hover:shadow-soft">
                           {t.preview}
                         </div>
@@ -143,30 +145,30 @@ function Navbar() {
         </nav>
 
         {/* Right side */}
+       
         <div className="hidden items-center gap-6 lg:flex">
-          <a
-            href="#contact"
-            className="text-sm font-medium text-muted transition hover:text-ink"
+          <button
+            onClick={() => navigate("/signup?tab=signin")}
+            className="text-sm font-medium text-muted transition hover:text-ink cursor-pointer"
           >
             Log In
-          </a>
-          <PrimaryButton onClick={() => navigate('/signup')}>
+          </button>
+
+          <PrimaryButton onClick={() => navigate("/signup")}>
             Get Started
           </PrimaryButton>
         </div>
 
         {/* Mobile */}
         <button
-          onClick={() => navigate('/signup')}
+          onClick={() => navigate("/signup")}
           className="inline-flex rounded-full border border-line bg-white px-4 py-2 text-sm font-medium text-ink shadow-soft lg:hidden"
         >
           Start
         </button>
-
       </Container>
     </header>
   );
 }
 
 export default Navbar;
-
