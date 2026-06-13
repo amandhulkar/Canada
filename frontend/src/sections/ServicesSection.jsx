@@ -6,7 +6,7 @@ import { services } from '../assets/siteData'
 
 function ServicesSection() {
   return (
-    <section id="services" className="section-shell">
+    <section id="features" className="section-shell">
       <Container>
         <SectionHeading
           kicker="Features"

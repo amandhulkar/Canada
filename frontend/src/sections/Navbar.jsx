@@ -6,7 +6,7 @@ import PrimaryButton from "../components/PrimaryButton";
 
 const navLinks = [
   { label: "Pricing", href: "/#pricing" },
-  { label: "Features", href: "/#services" },
+  { label: "Features", href: "/#features" },
   { label: "Help Center", href: "/help-center" },
 ];
 
@@ -134,13 +134,13 @@ function Navbar() {
 
           {/* Other nav links */}
           {navLinks.map((link) => (
-            <Link
+            <a
               key={link.label}
-              to={link.href}
+              href={link.href}
               className="transition hover:text-[#5b4bf5]"
             >
               {link.label}
-            </Link>
+            </a>
           ))}
         </nav>
 
