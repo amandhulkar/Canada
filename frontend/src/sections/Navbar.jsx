@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import Container from "../components/Container";
 import PrimaryButton from "../components/PrimaryButton";
@@ -105,9 +105,9 @@ function Navbar() {
                 >
                   <div className="grid grid-cols-3 gap-6">
                     {templates.map((t) => (
-                      <a
+                      <Link
                         key={t.name}
-                        href="/templates"
+                        to="/templates"
                         className="group block text-left"
                       >
                         <div className="mb-3 aspect-[1/0.78] w-full overflow-hidden rounded-xl border border-line transition-transform group-hover:-translate-y-1 group-hover:shadow-soft">
@@ -116,16 +116,16 @@ function Navbar() {
                         <div className="text-sm font-semibold text-ink">
                           {t.name}
                         </div>
-                      </a>
+                      </Link>
                     ))}
                   </div>
                   <div className="mt-6 border-t border-line pt-4 text-center">
-                    <a
-                      href="/templates"
+                    <Link
+                      to="/templates"
                       className="text-sm font-semibold text-[#5b4bf5] transition hover:opacity-70"
                     >
                       View All Templates →
-                    </a>
+                    </Link>
                   </div>
                 </motion.div>
               )}
@@ -134,18 +134,18 @@ function Navbar() {
 
           {/* Other nav links */}
           {navLinks.map((link) => (
-            <a
+            <Link
               key={link.label}
-              href={link.href}
+              to={link.href}
               className="transition hover:text-[#5b4bf5]"
             >
               {link.label}
-            </a>
+            </Link>
           ))}
         </nav>
 
         {/* Right side */}
-       
+
         <div className="hidden items-center gap-6 lg:flex">
           <button
             onClick={() => navigate("/signup?tab=signin")}
