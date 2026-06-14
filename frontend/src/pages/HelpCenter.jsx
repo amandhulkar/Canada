@@ -1,6 +1,7 @@
 import { useState } from "react";
 // import Navbar from "../sections/Navbar";
-import footer from "../sections/Footer";
+// import footer from "../sections/Footer";
+import Footer from "../sections/Footer";
 
 const categories = [
   { icon: "🚀", label: "Getting started", desc: "Set up your account, domain, and first project", count: 42, bg: "#eeedfe", color: "#5346d4" },
@@ -204,7 +205,8 @@ export default function HelpCenter() {
           ))}
         </div>
       </div>
-      {footer()}
+      {/* {footer()} */}
+      <Footer />
     </div>
   );
 }

@@ -1,15 +1,34 @@
 /** @type {import('tailwindcss').Config} */
 export default {
+  darkMode: "class",
   content: ['./index.html', './src/**/*.{js,jsx}'],
   theme: {
     extend: {
       colors: {
-        canvas: '#fbfbff',
-        'canvas-soft': '#f6f7fb',
-        'canvas-muted': '#f1f3f9',
-        ink: '#111827',
-        muted: '#667085',
-        line: '#e5e7eb',
+        canvas: {
+          DEFAULT: '#fbfbff',
+          dark: '#0f1117',
+        },
+        'canvas-soft': {
+          DEFAULT: '#f6f7fb',
+          dark: '#161b27',
+        },
+        'canvas-muted': {
+          DEFAULT: '#f1f3f9',
+          dark: '#1e2435',
+        },
+        ink: {
+          DEFAULT: '#111827',
+          dark: '#f1f5f9',
+        },
+        muted: {
+          DEFAULT: '#667085',
+          dark: '#94a3b8',
+        },
+        line: {
+          DEFAULT: '#e5e7eb',
+          dark: '#1e2d3d',
+        },
         accent: {
           blue: '#2563eb',
           purple: '#7c3aed',
@@ -29,6 +48,8 @@ export default {
       backgroundImage: {
         'hero-grid':
           'linear-gradient(rgba(148, 163, 184, 0.11) 1px, transparent 1px), linear-gradient(90deg, rgba(148, 163, 184, 0.11) 1px, transparent 1px)',
+        'hero-grid-dark':
+          'linear-gradient(rgba(148, 163, 184, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(148, 163, 184, 0.05) 1px, transparent 1px)',
       },
       keyframes: {
         float: {

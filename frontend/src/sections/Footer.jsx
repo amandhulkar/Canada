@@ -108,7 +108,8 @@ function Footer() {
         <div className="grid gap-10 lg:grid-cols-[1.15fr_0.85fr_0.85fr_1fr]">
           <div className="max-w-sm">
             <div className="text-2xl font-semibold tracking-[-0.04em] text-white">
-              17219296 Canada Inc.
+              {/* 17219296 Canada Inc. */}
+              FindTemplates
             </div>
             <p className="mt-4 text-sm leading-7" style={{ color: "#8aa0b8" }}>
               A modern operating layer for fast-moving growth teams building

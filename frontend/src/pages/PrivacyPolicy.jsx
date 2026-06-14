@@ -3,7 +3,7 @@ import Footer from "../sections/Footer";
 const sections = [
   {
     title: "1. Introduction",
-    content: `This Privacy Policy explains how NEXLANCE DIGITAL LTD. trading as Nexlance ("Nexlance", "we", "our", or "us") collects, uses, stores, and protects personal information when you use our website and CRM services available at Nexlance.com.
+    content: `This Privacy Policy explains how NEXLANCE DIGITAL LTD. trading as Nexlance ("Nexlance", "we", "our", or "us") collects, uses, stores, and protects personal information when you use our website and CRM services available at FindTemplates.com.
 
 By accessing or using our services, you agree to the collection and use of information in accordance with this Privacy Policy.`,
   },
@@ -169,7 +169,7 @@ export default function PrivacyPolicy() {
             {/* Contact section */}
             {sec.contact && (
               <div style={{ background: "#fff", border: "0.5px solid #e0e0e0", borderRadius: 12, padding: "1.25rem 1.5rem", fontSize: 14, color: "#444", lineHeight: 1.8 }}>
-                <p style={{ marginBottom: 4 }}><strong style={{ color: "#111" }}>Email:</strong> <a href="mailto:vijaypratap@nexlancedigital.com" style={{ color: "#5346d4", textDecoration: "none" }}>vijaypratap@nexlancedigital.com</a></p>
+                <p style={{ marginBottom: 4 }}><strong style={{ color: "#111" }}>Email:</strong> <a href="mailto:canada@FindTemplates.com" style={{ color: "#5346d4", textDecoration: "none" }}>canada@ .com</a></p>
                 <p style={{ marginTop: "0.75rem", color: "#666" }}>
                   NEXLANCE DIGITAL LTD.<br />
                   trading as Nexlance<br />

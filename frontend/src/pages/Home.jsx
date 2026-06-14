@@ -1,3 +1,5 @@
+import { useEffect } from 'react'
+import { useLocation } from 'react-router-dom'
 import AboutSection from '../sections/AboutSection'
 import ContactSection from '../sections/ContactSection'
 import FAQSection from '../sections/FAQSection'
@@ -13,6 +15,19 @@ import TrustedBySection from '../sections/TrustedBySection'
 import WhyChooseUsSection from '../sections/WhyChooseUsSection'
 
 function Home() {
+  const location = useLocation()
+
+  useEffect(() => {
+    if (location.hash === '#pricing') {
+      const el = document.getElementById('pricing')
+      if (el) {
+        setTimeout(() => {
+          el.scrollIntoView({ behavior: 'smooth' })
+        }, 100)
+      }
+    }
+  }, [location])
+
   return (
     <div className="relative overflow-x-hidden">
       {/* <Navbar /> */}

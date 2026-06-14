@@ -5,8 +5,8 @@ import Container from "../components/Container";
 import PrimaryButton from "../components/PrimaryButton";
 
 const navLinks = [
-  { label: "Pricing", href: "/#pricing" },
   { label: "Features", href: "/#features" },
+  { label: "Pricing", href: "/#pricing" },
   { label: "Help Center", href: "/help-center" },
 ];
 
@@ -67,7 +67,8 @@ function Navbar() {
             className="inline-flex h-3.5 w-3.5 rotate-45 rounded-sm bg-[#5b4bf5]"
           ></motion.span>
           <div className="text-lg font-extrabold tracking-[-0.03em] text-ink">
-            17219296 Canada Inc.
+            {/* 17219296 Canada Inc. */}
+            FindTemplates
           </div>
         </a>
 
