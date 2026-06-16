@@ -18,7 +18,8 @@ import Settings from "./pages/dashboard/Settings";
 import AccessRoles from "./pages/dashboard/AccessRoles";
 import Support from "./pages/dashboard/Support";
 
-import ClientDetail from "./pages/dashboard/ClientDetail";
+// import ClientDetail from "./pages/dashboard/ClientDetail";
+import ClientDetail from "./pages/dashboard/Clientdetail";
 
 
 
