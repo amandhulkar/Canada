@@ -15,6 +15,11 @@ import Projects from "./pages/dashboard/Projects";
 import Services from "./pages/dashboard/Services";
 import Invoices from "./pages/dashboard/Invoices";
 import Settings from "./pages/dashboard/Settings";
+import AccessRoles from "./pages/dashboard/AccessRoles";
+import Support from "./pages/dashboard/Support";
+
+import ClientDetail from "./pages/dashboard/ClientDetail";
+
 
 
 function Layout() {
@@ -39,8 +44,12 @@ function Layout() {
         <Route path="/dashboard/projects" element={<Projects />} />
         <Route path="/dashboard/services" element={<Services />} />
         <Route path="/dashboard/invoices" element={<Invoices />} />
-        <Route path="/dashboard/invoices/new" element={<Invoices />} /> 
+        <Route path="/dashboard/invoices/new" element={<Invoices />} />
+        <Route path="/dashboard/access-roles" element={<AccessRoles />} /> 
         <Route path="/dashboard/settings" element={<Settings />} />
+        <Route path="/dashboard/support" element={<Support />} />
+        <Route path="/dashboard/clients/:id" element={<ClientDetail />} /> 
+
       </Routes>
       {/* <Footer /> */}
     </>

@@ -7,7 +7,10 @@ const links = [
   { to: "/dashboard/projects", label: "Projects" },
   { to: "/dashboard/invoices", label: "Invoices" },
   { to: "/dashboard/services", label: "Services" },
+  { to: "/dashboard/access-roles", label: "Access / Roles" },
   { to: "/dashboard/settings", label: "Settings" },
+  { to: "/dashboard/support", label: "Support Info" },
+
 ];
 
 function Sidebar() {
@@ -15,6 +18,7 @@ function Sidebar() {
   const location = useLocation();
 
   const logout = () => {
+    localStorage.removeItem("token");
     localStorage.removeItem("currentUser");
     navigate("/signup");
   };
@@ -24,14 +28,6 @@ function Sidebar() {
       <h1 className="text-3xl font-bold text-indigo-600 dark:text-indigo-400 mb-6">
         FindTemplates
       </h1>
-
-      {/* ✅ + Invoice button added */}
-      <button
-        onClick={() => navigate("/dashboard/invoices?modal=open")}
-        className="mb-6 w-full bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium px-4 py-2.5 rounded-lg transition-colors"
-      >
-        + Invoice
-      </button>
 
       <nav className="space-y-4 flex-1">
         {links.map((link) => {

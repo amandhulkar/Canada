@@ -256,7 +256,8 @@ function Dashboard() {
           <QuickLink to="/dashboard/invoices" title="Invoices" sub="Invoices" />
           <QuickLink to="/dashboard/teams" title="Team" sub="Team" />
           <QuickLink to="/dashboard/services" title="Services" sub="Services" />
-          <QuickLink to="/dashboard/roles" title="Roles" sub="Access" />
+          {/* <QuickLink to="/dashboard/roles" title="Roles" sub="Access" /> */}
+          <QuickLink to="/dashboard/access-roles" title="Roles" sub="Access" />
           <QuickLink to="/dashboard/settings" title="Settings" sub="Manage Account" />
           {/* ✅ FIXED: New Invoice quick link */}
           <QuickLink to="/dashboard/invoices?modal=open" title="New" sub="New Invoice" highlight />

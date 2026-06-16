@@ -56,54 +56,144 @@ function SignupPage() {
   const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+  //   const handleSubmit = (e) => {
+  //   e.preventDefault();
 
-    if (tab === "create") {
-      if (form.password !== form.confirm) {
-        alert("Passwords do not match");
-        return;
-      }
+  //   if (tab === "create") {
+  //     if (form.password !== form.confirm) {
+  //       alert("Passwords do not match");
+  //       return;
+  //     }
 
-      const users = JSON.parse(localStorage.getItem("users")) || [];
-      const existingUser = users.find((user) => user.email === form.email);
+  //     const users = JSON.parse(localStorage.getItem("users")) || [];
+  //     const existingUser = users.find((user) => user.email === form.email);
 
-      if (existingUser) {
-        alert("Email already registered");
-        return;
-      }
+  //     if (existingUser) {
+  //       alert("Email already registered");
+  //       return;
+  //     }
 
-      const newUser = {
-        name: form.name,
-        email: form.email,
-        password: form.password,
-        accountType,
-      };
+  //     const newUser = {
+  //       name: form.name,
+  //       email: form.email,
+  //       password: form.password,
+  //       accountType,
+  //     };
 
-      users.push(newUser);
-      localStorage.setItem("users", JSON.stringify(users));
-      localStorage.setItem("currentUser", JSON.stringify(newUser));
+  //     users.push(newUser);
+  //     localStorage.setItem("users", JSON.stringify(users));
+  //     localStorage.setItem("currentUser", JSON.stringify(newUser));
 
-      alert("Account Created Successfully");
-      navigate("/dashboard");
+  //     alert("Account Created Successfully");
+  //     navigate("/dashboard");
+  //   }
+
+  //   if (tab === "signin") {
+  //     const users = JSON.parse(localStorage.getItem("users")) || [];
+  //     const user = users.find(
+  //       (u) => u.email === form.email && u.password === form.password,
+  //     );
+
+  //     if (!user) {
+  //       alert("Invalid Email or Password");
+  //       return;
+  //     }
+
+  //     localStorage.setItem("currentUser", JSON.stringify(user));
+  //     alert("Login Successful");
+  //     navigate("/dashboard");
+  //   }
+  // };
+
+  const handleSubmit = async (e) => {
+  e.preventDefault();
+
+  // SIGNUP
+  if (tab === "create") {
+    if (form.password !== form.confirm) {
+      alert("Passwords do not match");
+      return;
     }
 
-    if (tab === "signin") {
-      const users = JSON.parse(localStorage.getItem("users")) || [];
-      const user = users.find(
-        (u) => u.email === form.email && u.password === form.password,
+    try {
+      const res = await fetch(
+        "http://localhost:5000/api/auth/signup",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            fullName: form.name,
+            email: form.email,
+            password: form.password,
+          }),
+        }
       );
 
-      if (!user) {
-        alert("Invalid Email or Password");
+      const data = await res.json();
+
+      if (!res.ok) {
+        alert(data.message);
         return;
       }
 
-      localStorage.setItem("currentUser", JSON.stringify(user));
-      alert("Login Successful");
-      navigate("/dashboard");
+      alert("Account Created Successfully");
+
+      setForm({
+        name: "",
+        email: "",
+        password: "",
+        confirm: "",
+      });
+
+      setTab("signin");
+    } catch (error) {
+      console.log(error);
+      alert("Server Error");
     }
-  };
+  }
+
+  // SIGNIN
+  if (tab === "signin") {
+    try {
+      const res = await fetch(
+        "http://localhost:5000/api/auth/signin",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            email: form.email,
+            password: form.password,
+          }),
+        }
+      );
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        alert(data.message);
+        return;
+      }
+
+      localStorage.setItem("token", data.token);
+
+      localStorage.setItem(
+        "currentUser",
+        JSON.stringify(data.user)
+      );
+
+      alert("Login Successful");
+
+      navigate("/dashboard");
+    } catch (error) {
+      console.log(error);
+      alert("Server Error");
+    }
+  }
+};
 
   const handleLogout = () => {
     localStorage.removeItem("currentUser");
