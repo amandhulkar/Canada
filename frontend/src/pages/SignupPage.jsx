@@ -2,6 +2,8 @@ import { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 
+const API = import.meta.env.VITE_API_URL 
+
 const sidebarItems = [
   "Dashboard",
   "Clients",
@@ -117,7 +119,8 @@ function SignupPage() {
 
     try {
       const res = await fetch(
-        "http://localhost:5000/api/auth/signup",
+        // "http://localhost:5000/api/auth/signup",
+        `${API}/api/auth/signup`,
         {
           method: "POST",
           headers: {
@@ -158,7 +161,8 @@ function SignupPage() {
   if (tab === "signin") {
     try {
       const res = await fetch(
-        "http://localhost:5000/api/auth/signin",
+        // "http://localhost:5000/api/auth/signin",
+        `${API}/api/auth/signin`
         {
           method: "POST",
           headers: {

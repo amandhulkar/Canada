@@ -110,7 +110,9 @@ function ClientDetail() {
 
   useEffect(() => {
     const token = localStorage.getItem("token");
-    fetch(`http://localhost:5000/api/clients/${id}`, {
+    // fetch(`http://localhost:5000/api/clients/${id}`
+    fetch(`${API}/api/clients/${id}`
+    , {
       headers: { Authorization: token },
     })
       .then((res) => res.json())
@@ -121,7 +123,10 @@ function ClientDetail() {
   const handleEditSave = async (updatedData) => {
     const token = localStorage.getItem("token");
     try {
-      const res = await fetch(`http://localhost:5000/api/clients/${id}`, {
+      const res = await 
+      // fetch(`http://localhost:5000/api/clients/${id}`
+      fetch(`${API}/api/clients/${id}`
+        , {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

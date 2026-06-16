@@ -142,7 +142,10 @@ function Clients() {
 
   useEffect(() => {
     const token = localStorage.getItem("token");
-    fetch("http://localhost:5000/api/clients", {
+    // fetch("http://localhost:5000/api/clients"
+    fetch(`${API}/api/clients`
+
+      , {
       headers: { Authorization: token },
     })
       .then((res) => res.json())
@@ -152,7 +155,10 @@ function Clients() {
 
   const handleAddClient = async (client) => {
     const token = localStorage.getItem("token");
-    const res = await fetch("http://localhost:5000/api/clients", {
+    const res = await 
+    // fetch("http://localhost:5000/api/clients"
+    fetch(`${API}/api/clients`
+      , {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -175,7 +181,9 @@ function Clients() {
 
   const handleDelete = async (id) => {
     const token = localStorage.getItem("token");
-    await fetch(`http://localhost:5000/api/clients/${id}`, {
+    // await fetch(`http://localhost:5000/api/clients/${id}`, 
+    await fetch(`${API}/api/clients/${id}`,
+      {
       method: "DELETE",
       headers: { Authorization: token },
     });
