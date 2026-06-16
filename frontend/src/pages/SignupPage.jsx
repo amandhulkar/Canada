@@ -162,7 +162,7 @@ function SignupPage() {
     try {
       const res = await fetch(
         // "http://localhost:5000/api/auth/signin",
-        `${API}/api/auth/signin`
+        `${API}/api/auth/signin`,
         {
           method: "POST",
           headers: {
