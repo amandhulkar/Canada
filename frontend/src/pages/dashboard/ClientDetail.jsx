@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Sidebar from "../../components/Sidebar";
 
+const API = import.meta.env.VITE_API_URL || "http://localhost:5000";
+
 const TABS = ["Overview", "Projects", "Invoice History"];
 
 const WEBSITE_TYPES = [
