@@ -77,7 +77,7 @@ function AddMemberModal({ open, onClose, onSave }) {
               type="email"
               value={form.email}
               onChange={handleChange}
-              placeholder="e.g. riya@nexlance.com"
+              placeholder="e.g. riya@FindTemplates.com"
               className="w-full rounded-lg border border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-900 text-gray-800 dark:text-slate-100 placeholder:text-gray-400 dark:placeholder:text-slate-500 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
             />
           </div>

@@ -249,7 +249,7 @@ function TemplatePreviewPage() {
 
       {/* ── Footer ── */}
       <footer className="max-w-7xl mx-auto px-6 py-8 border-t border-gray-200 mt-4">
-        <p className="text-gray-400 text-sm">Demo website preview for Nexlance templates.</p>
+        <p className="text-gray-400 text-sm">Demo website preview for FindTemplates templates.</p>
       </footer>
 
     </div>
