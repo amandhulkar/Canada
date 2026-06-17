@@ -169,7 +169,7 @@ export default function PrivacyPolicy() {
             {/* Contact section */}
             {sec.contact && (
               <div style={{ background: "#fff", border: "0.5px solid #e0e0e0", borderRadius: 12, padding: "1.25rem 1.5rem", fontSize: 14, color: "#444", lineHeight: 1.8 }}>
-                <p style={{ marginBottom: 4 }}><strong style={{ color: "#111" }}>Email:</strong> <a href="mailto:canada@FindTemplates.com" style={{ color: "#5346d4", textDecoration: "none" }}>canada@ .com</a></p>
+                <p style={{ marginBottom: 4 }}><strong style={{ color: "#111" }}>Email:</strong> <a href="mailto:admin@findtemplates.com" style={{ color: "#5346d4", textDecoration: "none" }}>admin@findtemplates.com</a></p>
                 <p style={{ marginTop: "0.75rem", color: "#666" }}>
                   FindTemplates DIGITAL LTD.<br />
                   trading as FindTemplates<br />
