@@ -4,6 +4,7 @@ const dotenv = require("dotenv");
 const authRoutes = require("./routes/authRoutes");
 const clientRoutes = require("./routes/clientRoutes");
 // const leadRoutes = require("./routes/leadRoutes");
+const projectRoutes = require("./routes/projectRoutes");
 
 const connectDB = require("./config/db");
 
@@ -24,6 +25,8 @@ app.use("/api/auth", authRoutes)
 app.use("/api/clients", clientRoutes);
 
 // app.use("/api/leads", leadRoutes);
+
+app.use("/api/projects", projectRoutes);
 
 app.get("/", (req, res) => {
   res.send("FindTemplates API Running...");
