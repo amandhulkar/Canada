@@ -371,7 +371,7 @@ function HeroSection() {
                     style={{ color: "#14132a" }}
                   >
                     {/* 17219296 Canada Inc. */}
-                    FindTemplats
+                    FindTemplates
                   </p>
                   {sidebarItems.map((item) => (
                     <div
