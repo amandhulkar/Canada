@@ -535,8 +535,8 @@ function PricingModal({ open, onClose, onChoosePlan }) {
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-xl w-full max-w-3xl p-8 relative">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 overflow-y-auto">
+      <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-xl w-full max-w-5xl p-8 relative max-h-[90vh] overflow-y-auto">
         <button
           onClick={onClose}
           className="absolute top-5 right-5 text-gray-400 dark:text-slate-500 hover:text-gray-600 dark:hover:text-slate-300 transition text-xl leading-none"

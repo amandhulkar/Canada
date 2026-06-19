@@ -9,7 +9,7 @@ function PortfolioSection() {
       <Container>
         <SectionHeading
           kicker="Customers"
-          title="How fast-moving teams use Velora to bring clarity and polish to growth execution."
+          title="How fast-moving teams use to bring clarity and polish to growth execution."
           description="Each customer story reflects the same outcome: less friction, better visibility, and a cleaner system for launching and learning."
         />
 

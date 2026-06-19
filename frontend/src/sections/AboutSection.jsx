@@ -11,7 +11,7 @@ function AboutSection() {
           <SectionHeading
             kicker="About"
             title="A product-led operating layer for teams that want premium execution without extra complexity."
-            description="Velora helps modern teams keep strategy, creative, pages, and performance aligned inside a workflow that feels calm, structured, and fast to use."
+            description=" helps modern teams keep strategy, creative, pages, and performance aligned inside a workflow that feels calm, structured, and fast to use."
           />
           <div className="rounded-[2rem] border border-line bg-white p-7 leading-8 text-muted shadow-soft">
             <p>

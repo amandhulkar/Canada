@@ -475,28 +475,77 @@ export const testimonials = [
   },
 ]
 
+// export const pricingPlans = [
+//   {
+//     name: 'Starter',
+//     price: '₹75K',
+//     cadence: '/month',
+//     summary: 'For lean teams that want a polished growth system, clear reporting, and faster page launches.',
+//     features: ['Core campaign workspace', 'Landing page system', 'Weekly reporting', '2 active experiments'],
+//   },
+//   {
+//     name: 'Growth',
+//     price: '₹1.5L',
+//     cadence: '/month',
+//     featured: true,
+//     summary: 'For scaling companies that need deeper experimentation, multi-channel coordination, and stronger workflow visibility.',
+//     features: ['Everything in Starter', 'Advanced attribution', 'Team collaboration', 'Priority optimization support'],
+//   },
+//   {
+//     name: 'Scale+',
+//     price: 'Custom',
+//     cadence: '',
+//     summary: 'For companies that need a tailored operating layer across performance, product marketing, and lifecycle execution.',
+//     features: ['Custom implementation', 'Executive reporting', 'Workflow automation', 'Dedicated strategic support'],
+//   },
+// ]
+
 export const pricingPlans = [
   {
-    name: 'Starter',
-    price: '₹75K',
+    name: 'Plus',
+    price: '$263',
     cadence: '/month',
-    summary: 'For lean teams that want a polished growth system, clear reporting, and faster page launches.',
-    features: ['Core campaign workspace', 'Landing page system', 'Weekly reporting', '2 active experiments'],
+    featured: false,
+    summary:
+      'Access dashboard pages including Projects, Settings, Support Info, Access/Role, and Services, billed every 30 days.',
+    features: [
+      'Projects page access',
+      'Settings page access',
+      'Support Info page access',
+      'Access/Role page access',
+      'Services page access',
+    ],
   },
   {
-    name: 'Growth',
-    price: '₹1.5L',
+    name: 'Pro',
+    price: '$395',
+    cadence: '/month',
+    featured: false,
+    summary:
+      'Access dashboard pages including Projects, Settings, Support Info, Access/Role, Services, Invoices, and Team, plus any 4 templates, billed every 30 days.',
+    features: [
+      'Projects and Settings access',
+      'Support Info and Access/Role access',
+      'Services and Invoices access',
+      'Team page access',
+      'Access to any 4 templates',
+    ],
+  },
+  {
+    name: 'Business',
+    price: '$527',
     cadence: '/month',
     featured: true,
-    summary: 'For scaling companies that need deeper experimentation, multi-channel coordination, and stronger workflow visibility.',
-    features: ['Everything in Starter', 'Advanced attribution', 'Team collaboration', 'Priority optimization support'],
-  },
-  {
-    name: 'Scale+',
-    price: 'Custom',
-    cadence: '',
-    summary: 'For companies that need a tailored operating layer across performance, product marketing, and lifecycle execution.',
-    features: ['Custom implementation', 'Executive reporting', 'Workflow automation', 'Dedicated strategic support'],
+    summary:
+      'Complete dashboard access including Projects, Settings, Support Info, Access/Role, Services, Invoices, Team, Clients, and Reports, plus all 8 templates, billed every 30 days.',
+    features: [
+      'Complete dashboard access',
+      'Projects, Settings, and Support Info',
+      'Access/Role, Services, and Invoices',
+      'Team, Clients, and Reports access',
+      'Access to all 8 templates',
+      'Priority support',
+    ],
   },
 ]
 
