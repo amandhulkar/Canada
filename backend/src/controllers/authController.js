@@ -3,13 +3,19 @@ const jwt = require("jsonwebtoken");
 
 const signup = async (req, res) => {
   try {
-    const { fullName, email, password } = req.body;
+    const { fullName, email, password, role } = req.body;
+
+    console.log("REQUEST BODY:", req.body);
+    console.log("ROLE RECEIVED:", role);
 
     const user = await User.create({
       fullName,
       email,
       password,
+      role: role || "user"
     });
+
+    console.log("USER CREATED:", user);
 
     res.status(201).json(user);
   } catch (error) {
@@ -38,7 +44,7 @@ const signin = async (req, res) => {
     }
 
     const token = jwt.sign(
-       { userId: user._id },
+      { userId: user._id, role: user.role },
        process.env.JWT_SECRET,
        { expiresIn: "7d" }
     );
@@ -47,7 +53,12 @@ const signin = async (req, res) => {
     success: true,
      message: "Login successful",
      token,
-     user,
+       user: {
+    _id: user._id,
+    fullName: user.fullName,
+    email: user.email,
+    role: user.role, 
+  },
     });
     
   } catch (error) {

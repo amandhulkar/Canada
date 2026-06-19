@@ -152,37 +152,464 @@
 
 // export default HeroSection
 
+// import { motion } from "framer-motion";
+// import { FiPlay, FiTrendingUp, FiShoppingCart } from "react-icons/fi";
+// import Container from "../components/Container";
+// import PrimaryButton from "../components/PrimaryButton";
+// import Reveal from "../components/Reveal";
+
+// function HeroSection() {
+//   const sidebarItems = [
+//     "Dashboard",
+//     "Clients",
+//     "Team",
+//     "Projects",
+//     "Invoices",
+//     "Services",
+//     "Access / Roles",
+//   ];
+
+//   const stats = [
+//     { label: "Monthly Revenue", value: "£0", sub: "Up 1.1% vs last month" },
+//     { label: "Active Projects", value: "1", sub: "Across all clients" },
+//     { label: "Complete project", value: "0", sub: "Need attention" },
+//     { label: "Pending Payments", value: "£0", sub: "Outstanding balance" },
+//   ];
+
+//   const quickLinks = [
+//     "Clients",
+//     "Projects",
+//     "Invoices",
+//     "Team",
+//     "Services",
+//     "Roles",
+//   ];
+
+//   return (
+//     <section
+//       id="home"
+//       className="relative overflow-visible pt-14 sm:pt-16 lg:pt-20"
+//       style={{
+//         background:
+//           "linear-gradient(135deg, #eceeff 0%, #ede8ff 40%, #e4edff 100%)",
+//         minHeight: "100vh",
+//       }}
+//     >
+//       <div className="pointer-events-none absolute inset-0 overflow-hidden">
+//         <div
+//           className="absolute rounded-full"
+//           style={{
+//             width: 340,
+//             height: 340,
+//             top: 40,
+//             left: "6%",
+//             background: "rgba(139,120,255,0.10)",
+//             filter: "blur(60px)",
+//           }}
+//         />
+//         <div
+//           className="absolute rounded-full"
+//           style={{
+//             width: 400,
+//             height: 400,
+//             top: 60,
+//             right: "4%",
+//             background: "rgba(100,160,255,0.10)",
+//             filter: "blur(80px)",
+//           }}
+//         />
+//       </div>
+
+//       <Container
+//         className="relative flex items-center"
+//         style={{ minHeight: "100vh", paddingTop: 40, paddingBottom: 80 }}
+//       >
+//         <div className="grid w-full items-center gap-14 lg:grid-cols-[1fr_1.08fr]">
+//           <Reveal className="flex flex-col gap-7">
+//             <div
+//               className="inline-flex w-fit items-center gap-2 rounded-full border px-4 py-1.5 text-sm font-medium"
+//               style={{
+//                 background: "rgba(255,255,255,0.75)",
+//                 borderColor: "#d6d3f0",
+//                 color: "#555",
+//                 backdropFilter: "blur(8px)",
+//               }}
+//             >
+//               <span
+//                 className="inline-flex h-2 w-2 rounded-full"
+//                 style={{ background: "#22c97c" }}
+//               />
+//               New: AI-Powered Design Assistant
+//             </div>
+
+//             <div className="space-y-1">
+//               <h1
+//                 className="text-5xl font-extrabold leading-[1.08] tracking-[-0.04em] sm:text-6xl lg:text-[4rem]"
+//                 style={{ color: "#14132a" }}
+//               >
+//                 Build your brand.
+//               </h1>
+//               <h1
+//                 className="text-5xl font-extrabold leading-[1.08] tracking-[-0.04em] sm:text-6xl lg:text-[4rem]"
+//                 style={{ color: "#6c5ce7" }}
+//               >
+//                 Build your future.
+//               </h1>
+//             </div>
+
+//             <p className="max-w-lg text-lg leading-7" style={{ color: "#666" }}>
+//               Create a professional website, online store, or portfolio. No
+//               coding required. Customize, publish, and grow your brand online.
+//             </p>
+
+//             <div className="flex flex-wrap items-center gap-4">
+//               <PrimaryButton href="#pricing">Start Free Trial</PrimaryButton>
+
+//               <a
+//                 href="#demo"
+//                 className="inline-flex items-center gap-2.5 text-sm font-semibold transition"
+//                 style={{ color: "#14132a" }}
+//               >
+//                 <span
+//                   className="inline-flex h-10 w-10 items-center justify-center rounded-full border"
+//                   style={{ background: "#fff", borderColor: "#ddd" }}
+//                 >
+//                   <FiPlay size={14} style={{ marginLeft: 2 }} />
+//                 </span>
+//                 Watch Demo
+//               </a>
+//             </div>
+
+//             <p className="text-sm" style={{ color: "#999" }}>
+//               No credit card required&nbsp;
+//               <span style={{ margin: "0 6px" }}>•</span>3-day dashboard trial
+//             </p>
+//           </Reveal>
+
+//           <Reveal
+//             delay={0.08}
+//             className="relative overflow-visible"
+//             style={{ paddingTop: 24, paddingBottom: 24 }}
+//           >
+//             {/* Traffic chip */}
+//             <motion.div
+//               initial={{ opacity: 0, y: -12 }}
+//               whileInView={{ opacity: 1, y: 0 }}
+//               viewport={{ once: true }}
+//               transition={{ delay: 0.35, duration: 0.5 }}
+//               // className="absolute -top-6 -right-10 z-20"
+//               className="absolute top-20 -right-8 z-20"
+//             >
+//               <motion.div
+//                 animate={{ y: [0, -8, 0] }}
+//                 transition={{
+//                   duration: 2.5,
+//                   repeat: Infinity,
+//                   ease: "easeInOut",
+//                 }}
+//                 className="flex items-center gap-3 rounded-2xl px-4 py-3"
+//                 style={{
+//                   background: "#fff",
+//                   boxShadow: "0 8px 32px rgba(80,70,200,0.14)",
+//                   fontWeight: 700,
+//                   fontSize: 15,
+//                   color: "#14132a",
+//                 }}
+//               >
+//                 <span
+//                   className="flex h-9 w-9 items-center justify-center rounded-xl"
+//                   style={{ background: "#f0eeff" }}
+//                 >
+//                   <FiTrendingUp size={18} style={{ color: "#6c5ce7" }} />
+//                 </span>
+//                 Traffic +47%
+//               </motion.div>
+//             </motion.div>
+
+//             {/* Main dashboard card */}
+//             <motion.div
+//               initial={{ opacity: 0, scale: 0.97, y: 24 }}
+//               whileInView={{ opacity: 1, scale: 1, y: 0 }}
+//               whileHover={{ rotate: 1.5, scale: 1.02, y: -6 }}
+//               viewport={{ once: true, amount: 0.3 }}
+//               transition={{
+//                 default: { duration: 0.75, ease: "easeOut" },
+//                 rotate: { type: "spring", stiffness: 120, damping: 16 },
+//                 scale: { type: "spring", stiffness: 120, damping: 16 },
+//                 y: { type: "spring", stiffness: 120, damping: 16 },
+//               }}
+//               className="relative overflow-hidden rounded-[1.8rem]"
+//               style={{
+//                 background: "#fff",
+//                 boxShadow:
+//                   "0 24px 64px rgba(80,70,200,0.13), 0 4px 16px rgba(0,0,0,0.06)",
+//                 cursor: "pointer",
+//               }}
+//             >
+//               <div className="flex gap-1.5 px-5 pt-4">
+//                 <span
+//                   className="h-3 w-3 rounded-full"
+//                   style={{ background: "#ff5f57" }}
+//                 />
+//                 <span
+//                   className="h-3 w-3 rounded-full"
+//                   style={{ background: "#febc2e" }}
+//                 />
+//                 <span
+//                   className="h-3 w-3 rounded-full"
+//                   style={{ background: "#28c840" }}
+//                 />
+//               </div>
+
+//               <div className="flex">
+//                 <div
+//                   className="flex w-36 flex-shrink-0 flex-col border-r px-3 py-4"
+//                   style={{ borderColor: "#f0f0f0", background: "#fafafa" }}
+//                 >
+//                   <p
+//                     className="mb-4 px-2 text-xs font-bold"
+//                     style={{ color: "#14132a" }}
+//                   >
+//                     {/* 17219296 Canada Inc. */}
+//                     FindTemplates
+//                   </p>
+//                   {sidebarItems.map((item) => (
+//                     <div
+//                       key={item}
+//                       className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-xs font-medium"
+//                       style={
+//                         item === "Dashboard"
+//                           ? { background: "#ede9ff", color: "#6c5ce7" }
+//                           : { color: "#777" }
+//                       }
+//                     >
+//                       <span
+//                         className="h-1.5 w-1.5 flex-shrink-0 rounded-full"
+//                         style={{
+//                           background: item === "Dashboard" ? "#6c5ce7" : "#ccc",
+//                         }}
+//                       />
+//                       {item}
+//                     </div>
+//                   ))}
+//                   <div
+//                     className="mt-auto pt-4 px-2 text-xs"
+//                     style={{ color: "#aaa", cursor: "pointer" }}
+//                   >
+//                     Sign out
+//                   </div>
+//                 </div>
+
+//                 <div className="flex-1 p-5">
+//                   <div className="mb-4 flex items-start justify-between">
+//                     <div>
+//                       <h3
+//                         className="text-lg font-bold"
+//                         style={{ color: "#14132a" }}
+//                       >
+//                         Dashboard
+//                       </h3>
+//                       <p className="text-xs" style={{ color: "#bbb" }}>
+//                         Good afternoon · Wednesday, April 1, 2025
+//                       </p>
+//                     </div>
+//                     <div
+//                       className="flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold text-white"
+//                       style={{ background: "#6c5ce7" }}
+//                     >
+//                       HM
+//                     </div>
+//                   </div>
+
+//                   <div
+//                     className="mb-4 flex items-center justify-between rounded-2xl px-4 py-3"
+//                     style={{ background: "#22c97c" }}
+//                   >
+//                     <div>
+//                       <p className="text-xs font-bold text-white">
+//                         Business plan is active
+//                       </p>
+//                       <p
+//                         className="text-xs"
+//                         style={{ color: "rgba(255,255,255,0.8)" }}
+//                       >
+//                         You can access the complete dashboard, including Clients
+//                         and Reports, plus all 8 templates.
+//                       </p>
+//                     </div>
+//                     <span
+//                       className="flex-shrink-0 rounded-xl px-3 py-1.5 text-xs font-bold"
+//                       style={{
+//                         background: "rgba(255,255,255,0.22)",
+//                         color: "#fff",
+//                       }}
+//                     >
+//                       Business
+//                     </span>
+//                   </div>
+
+//                   <div className="mb-4 grid grid-cols-4 gap-2">
+//                     {stats.map((s) => (
+//                       <div
+//                         key={s.label}
+//                         className="rounded-xl border p-3"
+//                         style={{
+//                           borderColor: "#f0f0f0",
+//                           background: "#fafafa",
+//                         }}
+//                       >
+//                         <p className="text-[10px]" style={{ color: "#aaa" }}>
+//                           {s.label}
+//                         </p>
+//                         <p
+//                           className="mt-1 text-xl font-bold"
+//                           style={{ color: "#14132a" }}
+//                         >
+//                           {s.value}
+//                         </p>
+//                         <p className="text-[9px]" style={{ color: "#bbb" }}>
+//                           {s.sub}
+//                         </p>
+//                       </div>
+//                     ))}
+//                   </div>
+
+//                   <div className="flex flex-wrap gap-3">
+//                     {quickLinks.map((link) => (
+//                       <div
+//                         key={link}
+//                         className="flex flex-col items-center gap-1"
+//                       >
+//                         <div
+//                           className="flex h-9 w-9 items-center justify-center rounded-xl text-xs font-bold"
+//                           style={{ background: "#f5f4ff", color: "#6c5ce7" }}
+//                         >
+//                           {link[0]}
+//                         </div>
+//                         <span className="text-[9px]" style={{ color: "#888" }}>
+//                           {link}
+//                         </span>
+//                       </div>
+//                     ))}
+//                     <div className="flex flex-col items-center gap-1">
+//                       <div
+//                         className="flex h-9 w-14 items-center justify-center rounded-xl text-[9px] font-bold"
+//                         style={{ background: "#6c5ce7", color: "#fff" }}
+//                       >
+//                         New
+//                       </div>
+//                       <span className="text-[9px]" style={{ color: "#888" }}>
+//                         New Invoice
+//                       </span>
+//                     </div>
+//                   </div>
+//                 </div>
+//               </div>
+//             </motion.div>
+
+//             {/* New Order chip */}
+//             <motion.div
+//               initial={{ opacity: 0, x: -16 }}
+//               whileInView={{ opacity: 1, x: 0 }}
+//               viewport={{ once: true }}
+//               transition={{ delay: 0.5, duration: 0.5 }}
+//               // className="absolute -bottom-6 -left-10 z-20"
+//               // className="absolute bottom-20 left-1 z-20"
+//               className="absolute bottom-24 -left-6 z-20"
+//             >
+//               <motion.div
+//                 animate={{ y: [0, -8, 0] }}
+//                 transition={{
+//                   duration: 2.5,
+//                   repeat: Infinity,
+//                   ease: "easeInOut",
+//                   delay: 0.8,
+//                 }}
+//                 className="flex items-center gap-2 rounded-2xl px-4 py-3"
+//                 style={{
+//                   background: "#fff",
+//                   boxShadow: "0 8px 28px rgba(0,0,0,0.10)",
+//                   fontWeight: 700,
+//                   fontSize: 14,
+//                   color: "#14132a",
+//                 }}
+//               >
+//                 <span
+//                   className="flex h-9 w-9 items-center justify-center rounded-xl"
+//                   style={{ background: "#f0f0f0" }}
+//                 >
+//                   <FiShoppingCart size={18} style={{ color: "#555" }} />
+//                 </span>
+//                 New Order!
+//               </motion.div>
+//             </motion.div>
+//           </Reveal>
+//         </div>
+//       </Container>
+
+//       {/* Scroll indicator */}
+//       <div
+//         className="absolute left-1/2 -translate-x-1/2"
+//         style={{ zIndex: 10, bottom: "15%" }}
+//       >
+//         <div
+//           className="flex justify-center rounded-full border-2 pt-1.5"
+//           style={{ width: 24, height: 40, borderColor: "#aaa" }}
+//         >
+//           <motion.div
+//             animate={{ y: [0, 8, 0], opacity: [1, 0, 1] }}
+//             transition={{ duration: 1.4, repeat: Infinity, ease: "easeInOut" }}
+//             className="rounded-full"
+//             style={{ width: 4, height: 8, background: "#aaa" }}
+//           />
+//         </div>
+//       </div>
+//     </section>
+//   );
+// }
+
+// export default HeroSection;
+
+
+
 import { motion } from "framer-motion";
-import { FiPlay, FiTrendingUp, FiShoppingCart } from "react-icons/fi";
+import { FiPlay, FiTrendingUp, FiShoppingCart, FiGrid, FiUsers, FiFileText, FiSettings, FiBarChart2, FiHelpCircle } from "react-icons/fi";
 import Container from "../components/Container";
 import PrimaryButton from "../components/PrimaryButton";
 import Reveal from "../components/Reveal";
+import { Link } from "react-router-dom";
 
 function HeroSection() {
-  const sidebarItems = [
-    "Dashboard",
-    "Clients",
-    "Team",
-    "Projects",
-    "Invoices",
-    "Services",
-    "Access / Roles",
-  ];
-
   const stats = [
-    { label: "Monthly Revenue", value: "£0", sub: "Up 1.1% vs last month" },
-    { label: "Active Projects", value: "1", sub: "Across all clients" },
-    { label: "Complete project", value: "0", sub: "Need attention" },
-    { label: "Pending Payments", value: "£0", sub: "Outstanding balance" },
+    { label: "Monthly Revenue", value: "£0", change: "+1.1%", sub: "vs last month" },
+    { label: "Active Projects", value: "1", change: "+2.8%", sub: "this week" },
+    { label: "Complete", value: "0", change: "3.2%", sub: "completion rate" },
+    { label: "Pending", value: "£0", change: "+0.8%", sub: "outstanding" },
   ];
 
-  const quickLinks = [
-    "Clients",
-    "Projects",
-    "Invoices",
-    "Team",
-    "Services",
-    "Roles",
+  const sidebarIcons = [
+    { icon: FiGrid, active: true },
+    { icon: FiUsers },
+    { icon: FiFileText },
+    { icon: FiBarChart2 },
+    { icon: FiHelpCircle },
+    { icon: FiSettings },
+  ];
+
+  const timelineBars = [
+    { label: "Website", width: "60%", color: "#7c6dfa", left: "5%" },
+    { label: "Store", width: "40%", color: "#a99eff", left: "25%" },
+    { label: "Portfolio", width: "50%", color: "#7c6dfa", left: "15%" },
+    { label: "Blog", width: "35%", color: "#6c5ce7", left: "40%" },
+  ];
+
+  const pills = [
+    { label: "Clients", color: "#7c6dfa" },
+    { label: "Projects", color: "#a99eff" },
+    { label: "Invoices", color: "#6c5ce7" },
+    { label: "Team", color: "#7c6dfa" },
+    { label: "Services", color: "#a99eff" },
+    { label: "New", color: "#7c6dfa", isNew: true },
   ];
 
   return (
@@ -190,90 +617,46 @@ function HeroSection() {
       id="home"
       className="relative overflow-visible pt-14 sm:pt-16 lg:pt-20"
       style={{
-        background:
-          "linear-gradient(135deg, #eceeff 0%, #ede8ff 40%, #e4edff 100%)",
+        // background: "linear-gradient(135deg, #eceeff 0%, #ede8ff 40%, #e4edff 100%)",
+        background: "white",
         minHeight: "100vh",
       }}
     >
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div
-          className="absolute rounded-full"
-          style={{
-            width: 340,
-            height: 340,
-            top: 40,
-            left: "6%",
-            background: "rgba(139,120,255,0.10)",
-            filter: "blur(60px)",
-          }}
-        />
-        <div
-          className="absolute rounded-full"
-          style={{
-            width: 400,
-            height: 400,
-            top: 60,
-            right: "4%",
-            background: "rgba(100,160,255,0.10)",
-            filter: "blur(80px)",
-          }}
-        />
+        <div className="absolute rounded-full" style={{ width: 340, height: 340, top: 40, left: "6%", background: "rgba(139,120,255,0.10)", filter: "blur(60px)" }} />
+        <div className="absolute rounded-full" style={{ width: 400, height: 400, top: 60, right: "4%", background: "rgba(100,160,255,0.10)", filter: "blur(80px)" }} />
       </div>
 
-      <Container
-        className="relative flex items-center"
-        style={{ minHeight: "100vh", paddingTop: 40, paddingBottom: 80 }}
-      >
+      <Container className="relative flex items-center" style={{ minHeight: "100vh", paddingTop: 40, paddingBottom: 80 }}>
         <div className="grid w-full items-center gap-14 lg:grid-cols-[1fr_1.08fr]">
+
+          {/* Left — same */}
           <Reveal className="flex flex-col gap-7">
-            <div
-              className="inline-flex w-fit items-center gap-2 rounded-full border px-4 py-1.5 text-sm font-medium"
-              style={{
-                background: "rgba(255,255,255,0.75)",
-                borderColor: "#d6d3f0",
-                color: "#555",
-                backdropFilter: "blur(8px)",
-              }}
-            >
-              <span
-                className="inline-flex h-2 w-2 rounded-full"
-                style={{ background: "#22c97c" }}
-              />
+            <div className="inline-flex w-fit items-center gap-2 rounded-full border px-4 py-1.5 text-sm font-medium"
+              style={{ background: "rgba(255,255,255,0.75)", borderColor: "#d6d3f0", color: "#555", backdropFilter: "blur(8px)" }}>
+              <span className="inline-flex h-2 w-2 rounded-full" style={{ background: "#22c97c" }} />
               New: AI-Powered Design Assistant
             </div>
 
             <div className="space-y-1">
-              <h1
-                className="text-5xl font-extrabold leading-[1.08] tracking-[-0.04em] sm:text-6xl lg:text-[4rem]"
-                style={{ color: "#14132a" }}
-              >
+              <h1 className="text-5xl font-extrabold leading-[1.08] tracking-[-0.04em] sm:text-6xl lg:text-[4rem]" style={{ color: "#14132a" }}>
                 Build your brand.
               </h1>
-              <h1
-                className="text-5xl font-extrabold leading-[1.08] tracking-[-0.04em] sm:text-6xl lg:text-[4rem]"
-                style={{ color: "#6c5ce7" }}
-              >
+              <h1 className="text-5xl font-extrabold leading-[1.08] tracking-[-0.04em] sm:text-6xl lg:text-[4rem]" style={{ color: "#6c5ce7" }}>
                 Build your future.
               </h1>
             </div>
 
             <p className="max-w-lg text-lg leading-7" style={{ color: "#666" }}>
-              Create a professional website, online store, or portfolio. No
-              coding required. Customize, publish, and grow your brand online.
+              Create a professional website, online store, or portfolio. No coding required. Customize, publish, and grow your brand online.
             </p>
 
             <div className="flex flex-wrap items-center gap-4">
-              <PrimaryButton href="#pricing">Start Free Trial</PrimaryButton>
-
-              <a
-                href="#demo"
-                className="inline-flex items-center gap-2.5 text-sm font-semibold transition"
-                style={{ color: "#14132a" }}
-              >
-                <span
-                  className="inline-flex h-10 w-10 items-center justify-center rounded-full border"
-                  style={{ background: "#fff", borderColor: "#ddd" }}
-                >
+              <Link to="/signup">
+                <PrimaryButton>Start Free Trial</PrimaryButton>
+              </Link>
+              <a href="#demo" className="inline-flex items-center gap-2.5 text-sm font-semibold transition" style={{ color: "#14132a" }}>
+                <span className="inline-flex h-10 w-10 items-center justify-center rounded-full border" style={{ background: "#fff", borderColor: "#ddd" }}>
                   <FiPlay size={14} style={{ marginLeft: 2 }} />
                 </span>
                 Watch Demo
@@ -281,52 +664,35 @@ function HeroSection() {
             </div>
 
             <p className="text-sm" style={{ color: "#999" }}>
-              No credit card required&nbsp;
-              <span style={{ margin: "0 6px" }}>•</span>3-day dashboard trial
+              No credit card required&nbsp;<span style={{ margin: "0 6px" }}>•</span>3-day dashboard trial
             </p>
           </Reveal>
 
-          <Reveal
-            delay={0.08}
-            className="relative overflow-visible"
-            style={{ paddingTop: 24, paddingBottom: 24 }}
-          >
+          {/* Right — NEW dashboard mockup */}
+          <Reveal delay={0.08} className="relative overflow-visible" style={{ paddingTop: 24, paddingBottom: 24 }}>
+
             {/* Traffic chip */}
             <motion.div
               initial={{ opacity: 0, y: -12 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: 0.35, duration: 0.5 }}
-              // className="absolute -top-6 -right-10 z-20"
-              className="absolute top-20 -right-8 z-20"
+              className="absolute top-16 -right-8 z-20"
             >
               <motion.div
                 animate={{ y: [0, -8, 0] }}
-                transition={{
-                  duration: 2.5,
-                  repeat: Infinity,
-                  ease: "easeInOut",
-                }}
+                transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
                 className="flex items-center gap-3 rounded-2xl px-4 py-3"
-                style={{
-                  background: "#fff",
-                  boxShadow: "0 8px 32px rgba(80,70,200,0.14)",
-                  fontWeight: 700,
-                  fontSize: 15,
-                  color: "#14132a",
-                }}
+                style={{ background: "#111118", border: "0.5px solid rgba(255,255,255,0.08)", boxShadow: "0 8px 32px rgba(0,0,0,0.3)", fontWeight: 700, fontSize: 15, color: "#fff" }}
               >
-                <span
-                  className="flex h-9 w-9 items-center justify-center rounded-xl"
-                  style={{ background: "#f0eeff" }}
-                >
-                  <FiTrendingUp size={18} style={{ color: "#6c5ce7" }} />
+                <span className="flex h-9 w-9 items-center justify-center rounded-xl" style={{ background: "rgba(124,109,250,0.15)" }}>
+                  <FiTrendingUp size={18} style={{ color: "#7c6dfa" }} />
                 </span>
                 Traffic +47%
               </motion.div>
             </motion.div>
 
-            {/* Main dashboard card */}
+            {/* Main dashboard */}
             <motion.div
               initial={{ opacity: 0, scale: 0.97, y: 24 }}
               whileInView={{ opacity: 1, scale: 1, y: 0 }}
@@ -339,168 +705,87 @@ function HeroSection() {
                 y: { type: "spring", stiffness: 120, damping: 16 },
               }}
               className="relative overflow-hidden rounded-[1.8rem]"
-              style={{
-                background: "#fff",
-                boxShadow:
-                  "0 24px 64px rgba(80,70,200,0.13), 0 4px 16px rgba(0,0,0,0.06)",
-                cursor: "pointer",
-              }}
+              style={{ background: "#111118", border: "0.5px solid rgba(255,255,255,0.08)", boxShadow: "0 24px 64px rgba(0,0,0,0.4), 0 4px 16px rgba(0,0,0,0.3)", cursor: "pointer" }}
             >
-              <div className="flex gap-1.5 px-5 pt-4">
-                <span
-                  className="h-3 w-3 rounded-full"
-                  style={{ background: "#ff5f57" }}
-                />
-                <span
-                  className="h-3 w-3 rounded-full"
-                  style={{ background: "#febc2e" }}
-                />
-                <span
-                  className="h-3 w-3 rounded-full"
-                  style={{ background: "#28c840" }}
-                />
+              {/* Top navbar */}
+              <div className="flex items-center gap-2 border-b px-4 py-3" style={{ borderColor: "rgba(255,255,255,0.06)", background: "#0d0d14" }}>
+                {/* Logo */}
+                <div className="flex h-6 w-6 items-center justify-center rounded-md mr-2" style={{ background: "#7c6dfa" }}>
+                  <span style={{ color: "#fff", fontSize: 10, fontWeight: 700 }}>F</span>
+                </div>
+                {/* Nav tabs */}
+                {["Dashboard", "Monitoring", "Support"].map((tab) => (
+                  <div key={tab} className="rounded-lg px-3 py-1 text-[10px] font-medium"
+                    style={tab === "Dashboard" ? { background: "rgba(124,109,250,0.15)", color: "#7c6dfa" } : { color: "#555" }}>
+                    {tab}
+                  </div>
+                ))}
+                {/* Search */}
+                <div className="ml-auto flex items-center gap-1.5 rounded-lg px-2 py-1" style={{ background: "rgba(255,255,255,0.04)", border: "0.5px solid rgba(255,255,255,0.07)" }}>
+                  <span style={{ color: "#444", fontSize: 9 }}>🔍</span>
+                  <span style={{ color: "#444", fontSize: 9 }}>Search...</span>
+                </div>
+                {/* Avatar */}
+                <div className="flex h-6 w-6 items-center justify-center rounded-full text-[8px] font-bold ml-2" style={{ background: "#7c6dfa", color: "#fff" }}>HM</div>
               </div>
 
               <div className="flex">
-                <div
-                  className="flex w-36 flex-shrink-0 flex-col border-r px-3 py-4"
-                  style={{ borderColor: "#f0f0f0", background: "#fafafa" }}
-                >
-                  <p
-                    className="mb-4 px-2 text-xs font-bold"
-                    style={{ color: "#14132a" }}
-                  >
-                    {/* 17219296 Canada Inc. */}
-                    FindTemplates
-                  </p>
-                  {sidebarItems.map((item) => (
-                    <div
-                      key={item}
-                      className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-xs font-medium"
-                      style={
-                        item === "Dashboard"
-                          ? { background: "#ede9ff", color: "#6c5ce7" }
-                          : { color: "#777" }
-                      }
-                    >
-                      <span
-                        className="h-1.5 w-1.5 flex-shrink-0 rounded-full"
-                        style={{
-                          background: item === "Dashboard" ? "#6c5ce7" : "#ccc",
-                        }}
-                      />
-                      {item}
+                {/* Icon sidebar */}
+                <div className="flex w-10 flex-shrink-0 flex-col items-center gap-3 border-r py-4" style={{ borderColor: "rgba(255,255,255,0.06)", background: "#0d0d14" }}>
+                  {sidebarIcons.map(({ icon: Icon, active }, i) => (
+                    <div key={i} className="flex h-7 w-7 items-center justify-center rounded-lg"
+                      style={active ? { background: "rgba(124,109,250,0.2)" } : {}}>
+                      <Icon size={13} style={{ color: active ? "#7c6dfa" : "#444" }} />
                     </div>
                   ))}
-                  <div
-                    className="mt-auto pt-4 px-2 text-xs"
-                    style={{ color: "#aaa", cursor: "pointer" }}
-                  >
-                    Sign out
-                  </div>
                 </div>
 
-                <div className="flex-1 p-5">
-                  <div className="mb-4 flex items-start justify-between">
-                    <div>
-                      <h3
-                        className="text-lg font-bold"
-                        style={{ color: "#14132a" }}
-                      >
-                        Dashboard
-                      </h3>
-                      <p className="text-xs" style={{ color: "#bbb" }}>
-                        Good afternoon · Wednesday, April 1, 2025
-                      </p>
-                    </div>
-                    <div
-                      className="flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold text-white"
-                      style={{ background: "#6c5ce7" }}
-                    >
-                      HM
-                    </div>
+                {/* Content */}
+                <div className="flex-1 p-4">
+                  {/* Title */}
+                  <div className="mb-3">
+                    <p className="text-[9px] font-bold uppercase tracking-widest" style={{ color: "#555" }}>Overview</p>
+                    <h3 className="text-sm font-bold" style={{ color: "#fff" }}>FindTemplates</h3>
                   </div>
 
-                  <div
-                    className="mb-4 flex items-center justify-between rounded-2xl px-4 py-3"
-                    style={{ background: "#22c97c" }}
-                  >
-                    <div>
-                      <p className="text-xs font-bold text-white">
-                        Business plan is active
-                      </p>
-                      <p
-                        className="text-xs"
-                        style={{ color: "rgba(255,255,255,0.8)" }}
-                      >
-                        You can access the complete dashboard, including Clients
-                        and Reports, plus all 8 templates.
-                      </p>
-                    </div>
-                    <span
-                      className="flex-shrink-0 rounded-xl px-3 py-1.5 text-xs font-bold"
-                      style={{
-                        background: "rgba(255,255,255,0.22)",
-                        color: "#fff",
-                      }}
-                    >
-                      Business
-                    </span>
-                  </div>
-
-                  <div className="mb-4 grid grid-cols-4 gap-2">
-                    {stats.map((s) => (
-                      <div
-                        key={s.label}
-                        className="rounded-xl border p-3"
-                        style={{
-                          borderColor: "#f0f0f0",
-                          background: "#fafafa",
-                        }}
-                      >
-                        <p className="text-[10px]" style={{ color: "#aaa" }}>
-                          {s.label}
-                        </p>
-                        <p
-                          className="mt-1 text-xl font-bold"
-                          style={{ color: "#14132a" }}
-                        >
-                          {s.value}
-                        </p>
-                        <p className="text-[9px]" style={{ color: "#bbb" }}>
-                          {s.sub}
-                        </p>
+                  {/* Stats row */}
+                  <div className="mb-3 grid grid-cols-4 gap-2">
+                    {stats.map((s, i) => (
+                      <div key={i} className="rounded-xl p-2.5" style={{ background: "rgba(255,255,255,0.03)", border: "0.5px solid rgba(255,255,255,0.06)" }}>
+                        <p className="text-[8px]" style={{ color: "#555" }}>{s.label}</p>
+                        <p className="mt-1 text-base font-bold" style={{ color: "#fff" }}>{s.value}</p>
+                        <p className="text-[8px] font-semibold" style={{ color: "#7c6dfa" }}>{s.change}</p>
+                        <p className="text-[7px]" style={{ color: "#333" }}>{s.sub}</p>
                       </div>
                     ))}
                   </div>
 
-                  <div className="flex flex-wrap gap-3">
-                    {quickLinks.map((link) => (
-                      <div
-                        key={link}
-                        className="flex flex-col items-center gap-1"
-                      >
-                        <div
-                          className="flex h-9 w-9 items-center justify-center rounded-xl text-xs font-bold"
-                          style={{ background: "#f5f4ff", color: "#6c5ce7" }}
-                        >
-                          {link[0]}
+                  {/* Pills row */}
+                  <div className="mb-3 rounded-xl p-3" style={{ background: "rgba(255,255,255,0.02)", border: "0.5px solid rgba(255,255,255,0.05)" }}>
+                    <p className="mb-2 text-[8px] font-semibold uppercase tracking-widest" style={{ color: "#444" }}>Quick Access</p>
+                    <div className="flex flex-wrap gap-2">
+                      {pills.map((pill, i) => (
+                        <div key={i} className="flex items-center gap-1.5 rounded-full px-3 py-1.5"
+                          style={{ background: pill.isNew ? pill.color : `${pill.color}22`, border: `0.5px solid ${pill.color}44` }}>
+                          <span className="h-2 w-2 rounded-full" style={{ background: pill.color }} />
+                          <span className="text-[9px] font-medium" style={{ color: pill.isNew ? "#fff" : pill.color }}>{pill.label}</span>
                         </div>
-                        <span className="text-[9px]" style={{ color: "#888" }}>
-                          {link}
-                        </span>
-                      </div>
-                    ))}
-                    <div className="flex flex-col items-center gap-1">
-                      <div
-                        className="flex h-9 w-14 items-center justify-center rounded-xl text-[9px] font-bold"
-                        style={{ background: "#6c5ce7", color: "#fff" }}
-                      >
-                        New
-                      </div>
-                      <span className="text-[9px]" style={{ color: "#888" }}>
-                        New Invoice
-                      </span>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Timeline / gantt */}
+                  <div className="rounded-xl p-3" style={{ background: "rgba(255,255,255,0.02)", border: "0.5px solid rgba(255,255,255,0.05)" }}>
+                    <p className="mb-2 text-[8px] font-semibold uppercase tracking-widest" style={{ color: "#444" }}>Projects Timeline</p>
+                    <div className="space-y-2">
+                      {timelineBars.map((bar, i) => (
+                        <div key={i} className="flex items-center gap-2">
+                          <span className="w-12 text-[8px]" style={{ color: "#555" }}>{bar.label}</span>
+                          <div className="relative flex-1 rounded-full" style={{ height: 8, background: "rgba(255,255,255,0.04)" }}>
+                            <div className="absolute rounded-full" style={{ height: 8, width: bar.width, left: bar.left, background: bar.color, opacity: 0.85 }} />
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 </div>
@@ -513,32 +798,16 @@ function HeroSection() {
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
               transition={{ delay: 0.5, duration: 0.5 }}
-              // className="absolute -bottom-6 -left-10 z-20"
-              // className="absolute bottom-20 left-1 z-20"
               className="absolute bottom-24 -left-6 z-20"
             >
               <motion.div
                 animate={{ y: [0, -8, 0] }}
-                transition={{
-                  duration: 2.5,
-                  repeat: Infinity,
-                  ease: "easeInOut",
-                  delay: 0.8,
-                }}
+                transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut", delay: 0.8 }}
                 className="flex items-center gap-2 rounded-2xl px-4 py-3"
-                style={{
-                  background: "#fff",
-                  boxShadow: "0 8px 28px rgba(0,0,0,0.10)",
-                  fontWeight: 700,
-                  fontSize: 14,
-                  color: "#14132a",
-                }}
+                style={{ background: "#111118", border: "0.5px solid rgba(255,255,255,0.08)", boxShadow: "0 8px 28px rgba(0,0,0,0.3)", fontWeight: 700, fontSize: 14, color: "#fff" }}
               >
-                <span
-                  className="flex h-9 w-9 items-center justify-center rounded-xl"
-                  style={{ background: "#f0f0f0" }}
-                >
-                  <FiShoppingCart size={18} style={{ color: "#555" }} />
+                <span className="flex h-9 w-9 items-center justify-center rounded-xl" style={{ background: "rgba(124,109,250,0.1)" }}>
+                  <FiShoppingCart size={18} style={{ color: "#7c6dfa" }} />
                 </span>
                 New Order!
               </motion.div>
@@ -548,14 +817,8 @@ function HeroSection() {
       </Container>
 
       {/* Scroll indicator */}
-      <div
-        className="absolute left-1/2 -translate-x-1/2"
-        style={{ zIndex: 10, bottom: "15%" }}
-      >
-        <div
-          className="flex justify-center rounded-full border-2 pt-1.5"
-          style={{ width: 24, height: 40, borderColor: "#aaa" }}
-        >
+      <div className="absolute left-1/2 -translate-x-1/2" style={{ zIndex: 10, bottom: "15%" }}>
+        <div className="flex justify-center rounded-full border-2 pt-1.5" style={{ width: 24, height: 40, borderColor: "#aaa" }}>
           <motion.div
             animate={{ y: [0, 8, 0], opacity: [1, 0, 1] }}
             transition={{ duration: 1.4, repeat: Infinity, ease: "easeInOut" }}
