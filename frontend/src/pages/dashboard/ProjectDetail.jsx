@@ -706,6 +706,65 @@ function ProjectDetail() {
   const [showEditModal, setShowEditModal] = useState(false);
   const [editForm, setEditForm] = useState({});
 
+  const COLUMNS = ["To Do", "Design", "Development", "Testing", "Client Review"];
+
+  const [tasks, setTasks] = useState(() => {
+    const savedTasks = localStorage.getItem(`tasks_project_${id}`);
+    if (savedTasks) {
+      try {
+        return JSON.parse(savedTasks);
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    return [
+      {
+        id: "task-default-1",
+        title: "Review Design Deliverables",
+        description: "Submit final UI layout templates for client feedback & approval.",
+        status: "Client Review",
+        priority: "High",
+        deadline: new Date(Date.now() + 86400000 * 3).toISOString().split('T')[0]
+      }
+    ];
+  });
+
+  const [showTaskModal, setShowTaskModal] = useState(false);
+  const [newTaskStatus, setNewTaskStatus] = useState("To Do");
+  const [newTaskTitle, setNewTaskTitle] = useState("");
+  const [newTaskDesc, setNewTaskDesc] = useState("");
+  const [newTaskPriority, setNewTaskPriority] = useState("Medium");
+  const [newTaskDeadline, setNewTaskDeadline] = useState("");
+
+  useEffect(() => {
+    localStorage.setItem(`tasks_project_${id}`, JSON.stringify(tasks));
+  }, [tasks, id]);
+
+  const handleDragStart = (e, taskId) => {
+    e.dataTransfer.setData("text/plain", taskId);
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+  };
+
+  const handleDrop = (e, targetStatus) => {
+    const taskId = e.dataTransfer.getData("text/plain");
+    const updatedTasks = tasks.map(task => {
+      if (task.id === taskId) {
+        return { ...task, status: targetStatus };
+      }
+      return task;
+    });
+    setTasks(updatedTasks);
+  };
+
+  const deleteTask = (taskId) => {
+    if (confirm("Delete this task?")) {
+      setTasks(tasks.filter(t => t.id !== taskId));
+    }
+  };
+
   const template = templates.find(
     (t) => String(t.id) === String(project?.templateId)
   );
@@ -1048,13 +1107,245 @@ function ProjectDetail() {
 
         {/* Task Board */}
         {activeTab === "taskboard" && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {["To Do", "In Progress", "Done"].map((col) => (
-              <div key={col} className="bg-white rounded-xl p-4 shadow-sm">
-                <h3 className="font-bold text-gray-700 mb-4">{col}</h3>
-                <div className="text-center py-10 text-gray-300 text-sm">No tasks yet</div>
+          <div className="space-y-4">
+            {/* Board Controls */}
+            <div className="flex justify-between items-center bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-800 rounded-2xl p-5 shadow-sm mb-4">
+              <div>
+                <h3 className="text-base font-bold text-slate-800 dark:text-slate-100">
+                  Project Board
+                </h3>
+                <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">
+                  Drag and drop cards to update task status.
+                </p>
               </div>
-            ))}
+              <button
+                onClick={() => {
+                  setNewTaskStatus("To Do");
+                  setShowTaskModal(true);
+                }}
+                className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl text-xs font-semibold transition cursor-pointer shadow-sm flex items-center gap-1.5"
+              >
+                <span>+</span> Add Task
+              </button>
+            </div>
+
+            {/* Board Columns */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 items-start">
+              {COLUMNS.map((col) => {
+                const columnTasks = tasks.filter((t) => t.status === col);
+                return (
+                  <div
+                    key={col}
+                    onDragOver={handleDragOver}
+                    onDrop={(e) => handleDrop(e, col)}
+                    className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-800 p-4 min-h-[500px] flex flex-col gap-3 transition-colors duration-200"
+                  >
+                    {/* Column Header */}
+                    <div className="flex items-center justify-between pb-2 border-b border-slate-50 dark:border-slate-700/50">
+                      <div className="flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full bg-indigo-500" />
+                        <h4 className="font-bold text-slate-700 dark:text-slate-300 text-xs tracking-wide">
+                          {col}
+                        </h4>
+                      </div>
+                      <span className="bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 px-2 py-0.5 rounded-full text-[10px] font-bold">
+                        {columnTasks.length}
+                      </span>
+                    </div>
+
+                    {/* Column Add Trigger */}
+                    <button
+                      onClick={() => {
+                        setNewTaskStatus(col);
+                        setShowTaskModal(true);
+                      }}
+                      className="w-full border border-dashed border-slate-200 dark:border-slate-700 hover:border-indigo-400 dark:hover:border-indigo-500 py-2 rounded-xl text-slate-400 dark:text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 text-xs font-medium bg-slate-50/50 dark:bg-slate-900/30 transition flex items-center justify-center gap-1.5 cursor-pointer"
+                    >
+                      <span>+</span> Add task
+                    </button>
+
+                    {/* Column Cards Container */}
+                    <div className="flex-1 flex flex-col gap-2.5">
+                      {columnTasks.map((task) => (
+                        <div
+                          key={task.id}
+                          draggable
+                          onDragStart={(e) => handleDragStart(e, task.id)}
+                          className="bg-slate-50 dark:bg-slate-900 rounded-xl p-3.5 border border-slate-100 dark:border-slate-800/80 shadow-sm hover:shadow-md cursor-grab active:cursor-grabbing hover:translate-y-[-1px] transition-all relative group"
+                        >
+                          {/* Delete Trigger */}
+                          <button
+                            onClick={() => deleteTask(task.id)}
+                            className="absolute top-2.5 right-2.5 text-slate-300 hover:text-rose-500 transition opacity-0 group-hover:opacity-100 text-[10px] cursor-pointer"
+                            title="Delete Task"
+                          >
+                            ✕
+                          </button>
+                          
+                          {/* Priority Badge */}
+                          <span className={`text-[9px] font-bold px-2 py-0.5 rounded uppercase tracking-wider ${
+                            task.priority === "High"
+                              ? "bg-rose-50 dark:bg-rose-950/30 text-rose-600 dark:text-rose-400 border border-rose-100 dark:border-rose-900/20"
+                              : task.priority === "Low"
+                              ? "bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-900/20"
+                              : "bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400 border border-blue-100 dark:border-blue-900/20"
+                          }`}>
+                            {task.priority}
+                          </span>
+
+                          <h5 className="font-semibold text-slate-800 dark:text-slate-100 text-xs mt-2.5 leading-snug">
+                            {task.title}
+                          </h5>
+
+                          {task.description && (
+                            <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-1 leading-normal line-clamp-2">
+                              {task.description}
+                            </p>
+                          )}
+
+                          <div className="flex items-center justify-between mt-3.5 pt-2 border-t border-slate-200/40 dark:border-slate-800/80">
+                            <span className="text-[9px] text-slate-400 dark:text-slate-500 flex items-center gap-1 font-medium">
+                              📅 {task.deadline}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+
+                      {columnTasks.length === 0 && (
+                        <div className="flex-1 flex items-center justify-center border-2 border-dashed border-slate-200/30 dark:border-slate-800/40 rounded-2xl min-h-[120px] p-4 text-center">
+                          <p className="text-[10px] text-slate-400 dark:text-slate-500">
+                            Drop tasks here
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Task Creation Modal */}
+            {showTaskModal && (
+              <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                <div className="bg-white dark:bg-slate-900 rounded-[2rem] border border-slate-100 dark:border-slate-800 p-8 max-w-md w-full shadow-2xl relative overflow-hidden transition-all duration-300 transform scale-100 animate-in fade-in zoom-in-95">
+                  <form onSubmit={(e) => {
+                    e.preventDefault();
+                    const newTask = {
+                      id: `task-${Date.now()}`,
+                      title: newTaskTitle,
+                      description: newTaskDesc,
+                      status: newTaskStatus,
+                      priority: newTaskPriority,
+                      deadline: newTaskDeadline || new Date().toISOString().split('T')[0]
+                    };
+                    setTasks([...tasks, newTask]);
+                    // Reset
+                    setNewTaskTitle("");
+                    setNewTaskDesc("");
+                    setNewTaskPriority("Medium");
+                    setNewTaskDeadline("");
+                    setShowTaskModal(false);
+                  }} className="flex flex-col gap-5">
+                    <div>
+                      <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100">
+                        Create New Task
+                      </h3>
+                      <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">
+                        Add a new item to your project board.
+                      </p>
+                    </div>
+
+                    <div className="flex flex-col gap-3.5">
+                      <div>
+                        <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">
+                          Task Title
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          value={newTaskTitle}
+                          onChange={(e) => setNewTaskTitle(e.target.value)}
+                          placeholder="E.g., Implement login form"
+                          className="w-full border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-indigo-400 transition"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">
+                          Description
+                        </label>
+                        <textarea
+                          rows="3"
+                          value={newTaskDesc}
+                          onChange={(e) => setNewTaskDesc(e.target.value)}
+                          placeholder="Enter task details..."
+                          className="w-full border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-indigo-400 transition resize-none"
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">
+                            Priority
+                          </label>
+                          <select
+                            value={newTaskPriority}
+                            onChange={(e) => setNewTaskPriority(e.target.value)}
+                            className="w-full border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 rounded-xl px-4 py-2.5 text-sm select-reset outline-none focus:border-indigo-400 transition"
+                          >
+                            <option value="Low">Low</option>
+                            <option value="Medium">Medium</option>
+                            <option value="High">High</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">
+                            Deadline
+                          </label>
+                          <input
+                            type="date"
+                            value={newTaskDeadline}
+                            onChange={(e) => setNewTaskDeadline(e.target.value)}
+                            className="w-full border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-indigo-400 transition"
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">
+                          Initial Column Status
+                        </label>
+                        <select
+                          value={newTaskStatus}
+                          onChange={(e) => setNewTaskStatus(e.target.value)}
+                          className="w-full border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 rounded-xl px-4 py-2.5 text-sm select-reset outline-none focus:border-indigo-400 transition"
+                        >
+                          {COLUMNS.map((col) => (
+                            <option key={col} value={col}>{col}</option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+
+                    <div className="flex gap-3 justify-end mt-2">
+                      <button
+                        type="button"
+                        onClick={() => setShowTaskModal(false)}
+                        className="text-sm font-medium px-5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition cursor-pointer"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="submit"
+                        className="text-sm font-semibold px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white shadow-md transition cursor-pointer"
+                      >
+                        Create Task
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
@@ -1152,7 +1443,7 @@ function ProjectDetail() {
 
                     {/* CTA */}
                     <div className="space-y-3">
-                      <p className="text-xs font-bold text-indigo-600 uppercase mb-1">📣 CTA Banner</p>
+                      <p className="text-xs font-bold text-indigo-600 uppercase mb-1">$ CTA Banner</p>
                       <div>
                         <label className="text-xs text-gray-500 font-semibold block mb-1">CTA Heading</label>
                         <input value={templateData.ctaHeading || ""} onChange={(e) => updateField("ctaHeading", e.target.value)}

@@ -2,6 +2,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 
 const links = [
   { to: "/dashboard", label: "Dashboard" },
+  { to: "/dashboard/analytics", label: "📊 Analytics" },
   { to: "/dashboard/clients", label: "Clients" },
   { to: "/dashboard/teams", label: "Teams" },
   { to: "/dashboard/projects", label: "Projects" },
@@ -10,7 +11,6 @@ const links = [
   { to: "/dashboard/access-roles", label: "Access / Roles" },
   { to: "/dashboard/settings", label: "Settings" },
   { to: "/dashboard/support", label: "Support Info" },
-
 ];
 
 function Sidebar() {

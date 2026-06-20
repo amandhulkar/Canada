@@ -5,11 +5,11 @@ import Sidebar from "../../components/Sidebar";
 // ✅ localStorage se dynamic user data lo
 const getUser = () => {
   const user = JSON.parse(localStorage.getItem("currentUser")) || {};
-  const name = user.name || "Guest User";
+  const name = user.fullName || user.name || "Guest User";
   const email = user.email || "";
   const accountType = user.accountType || "Personal account";
   const initials = name.split(" ").map((w) => w[0]).join("").toUpperCase().slice(0, 2);
-  return { name, email, accountType, initials, plan: "Individual - trial" };
+  return { name, email, accountType, initials, plan: user.plan || "Individual - trial" };
 };
 
 const NAV_ITEMS = [

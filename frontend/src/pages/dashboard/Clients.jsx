@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Sidebar from "../../components/Sidebar";
+import templates from "../../data/templates";
 
 const API = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
@@ -12,6 +13,8 @@ const WEBSITE_TYPES = [
   "Landing Page",
   "Web App",
 ];
+
+const WORKSPACE_OPTIONS = templates.map((template) => template.name);
 
 function StatCard({ label, value, sub, accent }) {
   return (
@@ -36,6 +39,7 @@ function AddClientModal({ open, onClose, onSave }) {
     email: "",
     company: "",
     websiteType: WEBSITE_TYPES[0],
+    workspace: WORKSPACE_OPTIONS[0] || "",
     totalValue: "",
     balanceDue: "",
     lastPayment: "",
@@ -101,13 +105,20 @@ function AddClientModal({ open, onClose, onSave }) {
             </select>
           </div>
 
+          <div>
+            <label className="block text-sm font-medium text-gray-600 dark:text-slate-300 mb-1">Workspace / Template</label>
+            <select name="workspace" value={form.workspace} onChange={handleChange} className={inputClass}>
+              {WORKSPACE_OPTIONS.map((workspace) => <option key={workspace} value={workspace}>{workspace}</option>)}
+            </select>
+          </div>
+
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-sm font-medium text-gray-600 dark:text-slate-300 mb-1">Total value (£)</label>
+              <label className="block text-sm font-medium text-gray-600 dark:text-slate-300 mb-1">Total value ($)</label>
               <input name="totalValue" type="number" min="0" value={form.totalValue} onChange={handleChange} placeholder="0" className={inputClass} />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-600 dark:text-slate-300 mb-1">Balance due (£)</label>
+              <label className="block text-sm font-medium text-gray-600 dark:text-slate-300 mb-1">Balance due ($)</label>
               <input name="balanceDue" type="number" min="0" value={form.balanceDue} onChange={handleChange} placeholder="0" className={inputClass} />
             </div>
           </div>
@@ -171,6 +182,7 @@ function Clients() {
         email: client.email,
         company: client.company,
         websiteType: client.websiteType,
+        workspace: client.workspace,
         lastPayment: client.lastPayment,
         totalValue: client.totalValue,
         balanceDue: client.balanceDue,
@@ -202,7 +214,7 @@ function Clients() {
   const pendingPayments = clients.reduce((sum, c) => sum + (c.balanceDue || 0), 0);
   const activeProjects = clients.filter((c) => c.balanceDue > 0).length;
 
-  const currency = (value = 0) => `£${Number(value).toLocaleString("en-GB")}`;
+  const currency = (value = 0) => `$${Number(value).toLocaleString("en-US")}`;
 
   return (
     <div className="flex min-h-screen bg-slate-100 dark:bg-slate-900">

@@ -7,6 +7,7 @@ const clientSchema = new mongoose.Schema(
       required: true,
     },
     websiteType: String,
+    workspace: String,
     lastPayment: Date,
     totalValue: Number,
     balanceDue: Number,

@@ -71,8 +71,8 @@ function TemplatePreviewPage() {
         body: JSON.stringify({
           name: `${template.name} Project`,
           client: "Self",
-          startDate: new Date().toLocaleDateString("en-GB"),
-          deadline: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString("en-GB"),
+          startDate: new Date().toLocaleDateString("en-US"),
+          deadline: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString("en-US"),
           status: "Planning",
           team: "You",
           progress: 10,

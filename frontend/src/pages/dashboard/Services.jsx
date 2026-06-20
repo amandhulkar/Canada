@@ -52,7 +52,7 @@ export default function Services() {
   }
 
   const fmt = (n) =>
-    "£" + Number(n).toLocaleString("en-GB", { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+    "$" + Number(n).toLocaleString("en-US", { minimumFractionDigits: 0, maximumFractionDigits: 0 });
 
   const inputClass =
     "border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-400";
@@ -198,7 +198,7 @@ export default function Services() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="flex flex-col gap-1">
-                  <label className="text-xs font-medium text-slate-500 dark:text-slate-400">Price (£) *</label>
+                  <label className="text-xs font-medium text-slate-500 dark:text-slate-400">Price ($) *</label>
                   <input
                     type="number"
                     min="0"

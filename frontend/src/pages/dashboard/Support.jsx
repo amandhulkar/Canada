@@ -1,10 +1,10 @@
 import Sidebar from "../../components/Sidebar";
 
 const STATS = [
-  { label: "Projects Delivered", value: "50+" },
-  { label: "Happy Clients", value: "30+" },
-  { label: "Years Experience", value: "3+" },
-  { label: "Client Satisfaction", value: "100%" },
+  { label: "Projects Delivered", value: "0+" },
+  { label: "Happy Clients", value: "0+" },
+  { label: "Years Experience", value: "0+" },
+  { label: "Client Satisfaction", value: "0%" },
 ];
 
 const TECH_STACK = {
@@ -44,8 +44,10 @@ function Profile() {
       <main className="flex-1 p-8 space-y-6">
         {/* Hero Banner */}
         <div className="rounded-2xl bg-gradient-to-r from-indigo-600 via-indigo-500 to-violet-500 p-8 flex items-center gap-6 shadow-md">
-          <div className="w-24 h-24 rounded-full bg-white/20 flex items-center justify-center text-5xl shrink-0 border-4 border-white/30">
-            🧑‍💻
+          <div className="w-24 h-24 rounded-3xl bg-[#7c6dfa] flex items-center justify-center shrink-0 border-4 border-white/20 shadow-inner">
+            <span className="font-extrabold text-white tracking-tighter" style={{ fontSize: 38 }}>
+              F<span className="text-indigo-200">T</span>
+            </span>
           </div>
           <div>
             <h1 className="text-3xl font-extrabold text-white tracking-tight">FindTemplates</h1>

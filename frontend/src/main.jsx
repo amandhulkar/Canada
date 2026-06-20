@@ -2,6 +2,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.jsx'
+import { ToastProvider } from './components/ToastProvider.jsx'
 
 const savedTheme = localStorage.getItem("theme");
 if (savedTheme === "dark") {
@@ -10,6 +11,8 @@ if (savedTheme === "dark") {
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <App />
+    <ToastProvider>
+      <App />
+    </ToastProvider>
   </StrictMode>,
 )

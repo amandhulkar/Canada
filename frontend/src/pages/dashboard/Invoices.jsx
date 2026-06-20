@@ -2,12 +2,12 @@
 // import Sidebar from "../../components/Sidebar";
 
 // function fmt(n) {
-//   return "£" + Number(n).toLocaleString("en-GB", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+//   return "$" + Number(n).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 // }
 
 // function formatDate(dateStr) {
 //   if (!dateStr) return "";
-//   return new Date(dateStr).toLocaleDateString("en-GB", {
+//   return new Date(dateStr).toLocaleDateString("en-US", {
 //     day: "2-digit", month: "short", year: "numeric",
 //   });
 // }
@@ -192,16 +192,16 @@
 //                 <input className="border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-400 placeholder:text-slate-400 dark:placeholder:text-slate-500" placeholder="e.g. Website Redesign" value={form.project} onChange={(e) => setForm({ ...form, project: e.target.value })} />
 //               </div>
 //               <div className="flex flex-col gap-1">
-//                 <label className="text-xs font-medium text-slate-500 dark:text-slate-400">Amount (£)</label>
+//                 <label className="text-xs font-medium text-slate-500 dark:text-slate-400">Amount ($)</label>
 //                 <input type="number" min="0" className="border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-400 placeholder:text-slate-400 dark:placeholder:text-slate-500" placeholder="0" value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} />
 //               </div>
 //               <div className="flex flex-col gap-1">
 //                 <label className="text-xs font-medium text-slate-500 dark:text-slate-400">GST 18% (auto)</label>
-//                 <input readOnly className="border border-slate-100 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50 rounded-lg px-3 py-2 text-sm text-slate-400 dark:text-slate-500" value={form.amount ? `£${gst.toFixed(2)}` : "£0.00"} />
+//                 <input readOnly className="border border-slate-100 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50 rounded-lg px-3 py-2 text-sm text-slate-400 dark:text-slate-500" value={form.amount ? `$${gst.toFixed(2)}` : "$0.00"} />
 //               </div>
 //               <div className="flex flex-col gap-1">
 //                 <label className="text-xs font-medium text-slate-500 dark:text-slate-400">Total (auto)</label>
-//                 <input readOnly className="border border-slate-100 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50 rounded-lg px-3 py-2 text-sm text-slate-400 dark:text-slate-500" value={form.amount ? `£${total.toFixed(2)}` : "£0.00"} />
+//                 <input readOnly className="border border-slate-100 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50 rounded-lg px-3 py-2 text-sm text-slate-400 dark:text-slate-500" value={form.amount ? `$${total.toFixed(2)}` : "$0.00"} />
 //               </div>
 //               <div className="flex flex-col gap-1">
 //                 <label className="text-xs font-medium text-slate-500 dark:text-slate-400">Due Date</label>
@@ -231,14 +231,16 @@
 import { useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import Sidebar from "../../components/Sidebar";
+import { useToast } from "../../components/ToastProvider";
+import jsPDF from "jspdf";
 
 function fmt(n) {
-  return "£" + Number(n).toLocaleString("en-GB", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  return "$" + Number(n).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
 function formatDate(dateStr) {
   if (!dateStr) return "";
-  return new Date(dateStr).toLocaleDateString("en-GB", {
+  return new Date(dateStr).toLocaleDateString("en-US", {
     day: "2-digit", month: "short", year: "numeric",
   });
 }
@@ -255,13 +257,108 @@ const TAB_LABELS = { all: "All Invoices", paid: "Paid", pending: "Pending" };
 const TABLE_HEADERS = ["Invoice #", "Client", "Project", "Amount", "GST (18%)", "Total", "Due Date", "Status", "Actions"];
 
 export default function Invoices() {
-  const [searchParams] = useSearchParams(); // ✅ URL params read karo
+  const [searchParams] = useSearchParams();
+  const toast = useToast();
+  const initialForm = () => ({
+    ...EMPTY_FORM,
+    client: searchParams.get("client") || "",
+    project: searchParams.get("project") || "",
+    due: defaultDue(),
+  });
   const [invoices, setInvoices] = useState([]);
   const [tab, setTab] = useState("all");
-  const [modal, setModal] = useState(searchParams.get("modal") === "open"); // ✅ auto open
-  const [form, setForm] = useState(EMPTY_FORM);
+  const [modal, setModal] = useState(searchParams.get("modal") === "open");
+  const [form, setForm] = useState(initialForm);
   const [counter, setCounter] = useState(1001);
   const [error, setError] = useState("");
+
+  function downloadPDF(inv) {
+    const doc = new jsPDF({ orientation: "portrait", unit: "pt", format: "a4" });
+    const W = doc.internal.pageSize.getWidth();
+
+    // Header background
+    doc.setFillColor(99, 102, 241);
+    doc.rect(0, 0, W, 80, "F");
+
+    // Logo text
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(22);
+    doc.setTextColor(255, 255, 255);
+    doc.text("FindTemplates", 40, 48);
+
+    doc.setFontSize(11);
+    doc.setFont("helvetica", "normal");
+    doc.text("TAX INVOICE", W - 40, 48, { align: "right" });
+
+    // Invoice number + dates
+    doc.setTextColor(30, 30, 30);
+    doc.setFontSize(20);
+    doc.setFont("helvetica", "bold");
+    doc.text(`Invoice #${inv.id}`, 40, 120);
+
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(100, 100, 120);
+    doc.text(`Due Date: ${inv.due}`, 40, 140);
+    doc.text(`Status: ${inv.status.toUpperCase()}`, 40, 158);
+
+    // Divider
+    doc.setDrawColor(220, 220, 235);
+    doc.line(40, 172, W - 40, 172);
+
+    // Bill To
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(10);
+    doc.setTextColor(99, 102, 241);
+    doc.text("BILL TO", 40, 195);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(30, 30, 30);
+    doc.setFontSize(13);
+    doc.text(inv.client, 40, 215);
+    doc.setFontSize(10);
+    doc.setTextColor(100, 100, 120);
+    doc.text(`Project: ${inv.project}`, 40, 232);
+
+    // Table header
+    doc.setFillColor(245, 247, 255);
+    doc.rect(40, 262, W - 80, 26, "F");
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(10);
+    doc.setTextColor(99, 102, 241);
+    doc.text("Description", 52, 280);
+    doc.text("Amount", W - 140, 280);
+    doc.text("GST 18%", W - 220, 280);
+    doc.text("Total", W - 60, 280, { align: "right" });
+
+    // Table row
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(30, 30, 30);
+    doc.text(inv.project, 52, 308);
+    doc.text(fmt(inv.amount), W - 140, 308);
+    doc.text(fmt(inv.gst), W - 220, 308);
+    doc.text(fmt(inv.total), W - 60, 308, { align: "right" });
+
+    doc.setDrawColor(220, 220, 235);
+    doc.line(40, 322, W - 40, 322);
+
+    // Grand Total
+    doc.setFillColor(99, 102, 241);
+    doc.rect(W - 200, 335, 160, 36, "F");
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(12);
+    doc.setTextColor(255, 255, 255);
+    doc.text("TOTAL", W - 185, 358);
+    doc.text(fmt(inv.total), W - 52, 358, { align: "right" });
+
+    // Footer
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(9);
+    doc.setTextColor(160, 160, 180);
+    doc.text("Thank you for your business · admin@findtemplates.com · FindTemplates.com", W / 2, 780, { align: "center" });
+
+    doc.save(`Invoice-${inv.id}-${inv.client.replace(/\s+/g, "_")}.pdf`);
+    toast({ type: "success", title: "PDF Downloaded", message: `Invoice #${inv.id} saved as PDF.` });
+  }
 
   const paid = invoices.filter((i) => i.status === "paid");
   const pending = invoices.filter((i) => i.status === "pending");
@@ -272,7 +369,7 @@ export default function Invoices() {
   const gst = parseFloat(((parseFloat(form.amount) || 0) * 0.18).toFixed(2));
   const total = parseFloat(((parseFloat(form.amount) || 0) + gst).toFixed(2));
 
-  function openModal() { setForm({ ...EMPTY_FORM, due: defaultDue() }); setError(""); setModal(true); }
+  function openModal() { setForm(initialForm()); setError(""); setModal(true); }
   function closeModal() { setModal(false); setError(""); }
 
   function addInvoice() {
@@ -282,16 +379,28 @@ export default function Invoices() {
     const amount = parseFloat(form.amount);
     const gstVal = parseFloat((amount * 0.18).toFixed(2));
     const totalVal = parseFloat((amount + gstVal).toFixed(2));
-    setInvoices((prev) => [{ id: counter, client: form.client.trim(), project: form.project.trim(), amount, gst: gstVal, total: totalVal, due: formatDate(form.due), status: form.status }, ...prev]);
+    const newInv = { id: counter, client: form.client.trim(), project: form.project.trim(), amount, gst: gstVal, total: totalVal, due: formatDate(form.due), status: form.status };
+    setInvoices((prev) => [newInv, ...prev]);
     setCounter((c) => c + 1);
     closeModal();
+    toast({ type: "success", title: "Invoice Created", message: `Invoice #${counter} for ${form.client.trim()} has been added.` });
   }
 
   function toggleStatus(id) {
-    setInvoices((prev) => prev.map((i) => i.id === id ? { ...i, status: i.status === "paid" ? "pending" : "paid" } : i));
+    setInvoices((prev) => prev.map((i) => {
+      if (i.id === id) {
+        const next = i.status === "paid" ? "pending" : "paid";
+        toast({ type: next === "paid" ? "success" : "warning", title: "Status Updated", message: `Invoice #${id} marked as ${next}.` });
+        return { ...i, status: next };
+      }
+      return i;
+    }));
   }
 
-  function deleteInvoice(id) { setInvoices((prev) => prev.filter((i) => i.id !== id)); }
+  function deleteInvoice(id) {
+    setInvoices((prev) => prev.filter((i) => i.id !== id));
+    toast({ type: "error", title: "Invoice Deleted", message: `Invoice #${id} has been removed.` });
+  }
 
   return (
     <div className="flex min-h-screen bg-slate-100 dark:bg-slate-900">
@@ -389,8 +498,11 @@ export default function Invoices() {
                       </span>
                     </td>
                     <td className="px-4 py-3">
-                      <button onClick={() => toggleStatus(inv.id)} title="Toggle status" className="text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 p-1 rounded hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors mr-1">⟳</button>
-                      <button onClick={() => deleteInvoice(inv.id)} title="Delete" className="text-slate-400 hover:text-red-500 p-1 rounded hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors">🗑</button>
+                      <div className="flex items-center gap-1">
+                        <button onClick={() => toggleStatus(inv.id)} title="Toggle status" className="text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 p-1 rounded hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">⟳</button>
+                        <button onClick={() => downloadPDF(inv)} title="Download PDF" className="text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 p-1 rounded hover:bg-emerald-50 dark:hover:bg-emerald-900/30 transition-colors text-sm">⬇ PDF</button>
+                        <button onClick={() => deleteInvoice(inv.id)} title="Delete" className="text-slate-400 hover:text-red-500 p-1 rounded hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors">🗑</button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -424,16 +536,16 @@ export default function Invoices() {
                 <input className="border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-400 placeholder:text-slate-400 dark:placeholder:text-slate-500" placeholder="e.g. Website Redesign" value={form.project} onChange={(e) => setForm({ ...form, project: e.target.value })} />
               </div>
               <div className="flex flex-col gap-1">
-                <label className="text-xs font-medium text-slate-500 dark:text-slate-400">Amount (£)</label>
+                <label className="text-xs font-medium text-slate-500 dark:text-slate-400">Amount ($)</label>
                 <input type="number" min="0" className="border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-400 placeholder:text-slate-400 dark:placeholder:text-slate-500" placeholder="0" value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} />
               </div>
               <div className="flex flex-col gap-1">
                 <label className="text-xs font-medium text-slate-500 dark:text-slate-400">GST 18% (auto)</label>
-                <input readOnly className="border border-slate-100 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50 rounded-lg px-3 py-2 text-sm text-slate-400 dark:text-slate-500" value={form.amount ? `£${gst.toFixed(2)}` : "£0.00"} />
+                <input readOnly className="border border-slate-100 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50 rounded-lg px-3 py-2 text-sm text-slate-400 dark:text-slate-500" value={form.amount ? `$${gst.toFixed(2)}` : "$0.00"} />
               </div>
               <div className="flex flex-col gap-1">
                 <label className="text-xs font-medium text-slate-500 dark:text-slate-400">Total (auto)</label>
-                <input readOnly className="border border-slate-100 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50 rounded-lg px-3 py-2 text-sm text-slate-400 dark:text-slate-500" value={form.amount ? `£${total.toFixed(2)}` : "£0.00"} />
+                <input readOnly className="border border-slate-100 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50 rounded-lg px-3 py-2 text-sm text-slate-400 dark:text-slate-500" value={form.amount ? `$${total.toFixed(2)}` : "$0.00"} />
               </div>
               <div className="flex flex-col gap-1">
                 <label className="text-xs font-medium text-slate-500 dark:text-slate-400">Due Date</label>

@@ -31,8 +31,8 @@
   //         body: JSON.stringify({
   //           name: `${template.name} Project`,
   //           client: "Self",
-  //           startDate: new Date().toLocaleDateString("en-GB"),
-  //           deadline: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString("en-GB"),
+  //           startDate: new Date().toLocaleDateString("en-US"),
+  //           deadline: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString("en-US"),
   //           status: "Planning",
   //           team: "You",
   //           progress: 10,
@@ -304,8 +304,8 @@
           body: JSON.stringify({
             name: `${template.name} Project`,
             client: "Self",
-            startDate: new Date().toLocaleDateString("en-GB"),
-            deadline: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString("en-GB"),
+            startDate: new Date().toLocaleDateString("en-US"),
+            deadline: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString("en-US"),
             status: "Planning",
             team: "You",
             progress: 10,
@@ -478,7 +478,7 @@
         <div className="mt-6 flex items-center justify-center gap-8 text-sm" style={{ color: "#888" }}>
           <p><strong style={{ color: "#14132a" }}>{templates.length}</strong> Templates</p>
           <p><strong style={{ color: "#14132a" }}>{categories.length - 1}</strong> Categories</p>
-          <p><strong style={{ color: "#14132a" }}>£199</strong> per download</p>
+          <p><strong style={{ color: "#14132a" }}>$199</strong> per download</p>
           <p><strong style={{ color: "#14132a" }}>Mobile</strong> Responsive</p>
         </div>
       </div>
