@@ -1,6 +1,7 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useMemo } from "react";
 
-const links = [
+const ALL_LINKS = [
   { to: "/dashboard", label: "Dashboard" },
   { to: "/dashboard/analytics", label: "📊 Analytics" },
   { to: "/dashboard/clients", label: "Clients" },
@@ -16,6 +17,28 @@ const links = [
 function Sidebar() {
   const navigate = useNavigate();
   const location = useLocation();
+
+  const isAdmin = useMemo(() => {
+    try {
+      const user = JSON.parse(localStorage.getItem("currentUser"));
+      return user?.role === "admin";
+    } catch {
+      return false;
+    }
+  }, []);
+
+  const links = useMemo(() => {
+    if (isAdmin) {
+      return ALL_LINKS;
+    }
+    return ALL_LINKS.filter(
+      (link) =>
+        link.to === "/dashboard" ||
+        link.to === "/dashboard/projects" ||
+        link.to === "/dashboard/settings" ||
+        link.to === "/dashboard/support"
+    );
+  }, [isAdmin]);
 
   const logout = () => {
     localStorage.removeItem("token");

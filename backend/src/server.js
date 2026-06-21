@@ -5,6 +5,7 @@ const authRoutes = require("./routes/authRoutes");
 const clientRoutes = require("./routes/clientRoutes");
 // const leadRoutes = require("./routes/leadRoutes");
 const projectRoutes = require("./routes/projectRoutes");
+const invoiceRoutes = require("./routes/invoiceRoutes");
 
 const adminRoutes = require("./routes/admin");
 
@@ -20,8 +21,6 @@ const app = express();
 
 app.use(cors());
 app.use(express.json());
-
-app.use(express.json());
 app.use("/api/auth", authRoutes)
 
 app.use("/api/clients", clientRoutes);
@@ -29,6 +28,7 @@ app.use("/api/clients", clientRoutes);
 // app.use("/api/leads", leadRoutes);
 
 app.use("/api/projects", projectRoutes);
+app.use("/api/invoices", invoiceRoutes);
 
 app.use("/api/admin", adminRoutes);
 

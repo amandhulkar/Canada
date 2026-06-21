@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import Sidebar from "../../components/Sidebar";
 
-const API = import.meta.env.VITE_API_URL || "http://localhost:5000";
+const API = import.meta.env.VITE_API_URL || "http://127.0.0.1:5000";
 const STATUSES = ["Planning", "Design", "Development", "Testing", "Live", "On Hold"];
 const TRIAL_DAYS = 3;
 

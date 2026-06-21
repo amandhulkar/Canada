@@ -100,13 +100,12 @@ function StatCard({ label, value, sub, color, icon }) {
 // ─── Main Component ────────────────────────────────────────────────────────
 export default function Analytics() {
   const toast = useToast();
-  const API = import.meta.env.VITE_API_URL || "http://localhost:5000";
+  const API = import.meta.env.VITE_API_URL || "http://127.0.0.1:5000";
   const token = localStorage.getItem("token");
 
   const [projects, setProjects] = useState([]);
   const [invoices, setInvoices] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [useDemoData, setUseDemoData] = useState(false);
 
   useEffect(() => {
     const headers = { Authorization: token };
@@ -118,21 +117,18 @@ export default function Analytics() {
       const is = Array.isArray(iData) ? iData : iData.invoices || [];
       setProjects(ps);
       setInvoices(is);
-      if (ps.length === 0 && is.length === 0) {
-        setUseDemoData(true);
-      }
       setLoading(false);
     });
   }, []);
 
-  const revenueData   = useDemoData ? DEMO_REVENUE  : buildMonthlyRevenue(invoices);
-  const statusData    = useDemoData ? DEMO_STATUS   : buildStatusDist(projects);
+  const revenueData   = buildMonthlyRevenue(invoices);
+  const statusData    = buildStatusDist(projects);
   const activityData  = DEMO_ACTIVITY;
 
   const totalRevenue  = revenueData.reduce((a, d) => a + d.revenue, 0);
-  const totalProjects = useDemoData ? 20 : projects.length;
-  const liveProjects  = useDemoData ? 5  : projects.filter((p) => p.status === "Live").length;
-  const totalInvoices = useDemoData ? 38 : invoices.length;
+  const totalProjects = projects.length;
+  const liveProjects  = projects.filter((p) => p.status === "Live").length;
+  const totalInvoices = invoices.length;
 
   return (
     <div className="flex min-h-screen bg-slate-50 dark:bg-slate-900">
@@ -145,9 +141,6 @@ export default function Analytics() {
             <h1 className="text-3xl font-extrabold text-slate-800 dark:text-slate-100 tracking-tight">Analytics</h1>
             <p className="text-sm text-slate-400 dark:text-slate-500 mt-1">
               Platform overview · Revenue · Project health
-              {useDemoData && (
-                <span className="ml-2 text-amber-500 font-semibold">(Demo data – no real records yet)</span>
-              )}
             </p>
           </div>
           <button
@@ -227,27 +220,35 @@ export default function Analytics() {
             <h2 className="text-base font-bold text-slate-800 dark:text-slate-100 mb-1">Project Status Distribution</h2>
             <p className="text-xs text-slate-400 dark:text-slate-500 mb-6">How your {totalProjects} projects are spread</p>
             <div className="flex flex-col sm:flex-row items-center gap-6">
-              <ResponsiveContainer width={200} height={200}>
-                <PieChart>
-                  <Pie data={statusData} cx="50%" cy="50%" innerRadius={55} outerRadius={90} paddingAngle={3} dataKey="value">
+              {statusData.length > 0 ? (
+                <>
+                  <ResponsiveContainer width={200} height={200}>
+                    <PieChart>
+                      <Pie data={statusData} cx="50%" cy="50%" innerRadius={55} outerRadius={90} paddingAngle={3} dataKey="value">
+                        {statusData.map((entry) => (
+                          <Cell key={entry.name} fill={STATUS_COLORS[entry.name] || "#94a3b8"} />
+                        ))}
+                      </Pie>
+                      <Tooltip content={<CustomTooltip />} />
+                    </PieChart>
+                  </ResponsiveContainer>
+                  <div className="flex flex-col gap-2.5 text-xs flex-1">
                     {statusData.map((entry) => (
-                      <Cell key={entry.name} fill={STATUS_COLORS[entry.name] || "#94a3b8"} />
+                      <div key={entry.name} className="flex items-center justify-between gap-3">
+                        <div className="flex items-center gap-2">
+                          <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: STATUS_COLORS[entry.name] || "#94a3b8" }} />
+                          <span className="text-slate-600 dark:text-slate-300 font-medium">{entry.name}</span>
+                        </div>
+                        <span className="font-bold text-slate-800 dark:text-slate-100">{entry.value}</span>
+                      </div>
                     ))}
-                  </Pie>
-                  <Tooltip content={<CustomTooltip />} />
-                </PieChart>
-              </ResponsiveContainer>
-              <div className="flex flex-col gap-2.5 text-xs flex-1">
-                {statusData.map((entry) => (
-                  <div key={entry.name} className="flex items-center justify-between gap-3">
-                    <div className="flex items-center gap-2">
-                      <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: STATUS_COLORS[entry.name] || "#94a3b8" }} />
-                      <span className="text-slate-600 dark:text-slate-300 font-medium">{entry.name}</span>
-                    </div>
-                    <span className="font-bold text-slate-800 dark:text-slate-100">{entry.value}</span>
                   </div>
-                ))}
-              </div>
+                </>
+              ) : (
+                <div className="h-[200px] flex items-center justify-center text-slate-400 dark:text-slate-500 text-sm w-full font-medium">
+                  No projects to analyze
+                </div>
+              )}
             </div>
           </div>
 

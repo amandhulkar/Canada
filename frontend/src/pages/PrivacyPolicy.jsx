@@ -1,4 +1,5 @@
-// import Footer from "../sections/Footer";
+import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 
 // const sections = [
 //   {
@@ -236,8 +237,6 @@
 
 import Footer from "../sections/Footer";
 
-import { useState } from "react";
-
 const CONTACT = "support@findtemplates.com";
 const UPDATED = "June 18, 2026";
 
@@ -344,6 +343,16 @@ const TABS = ["Privacy Policy", "Terms & Conditions", "Refund Policy"];
 
 export default function PrivacyPolicy() {
   const [active, setActive] = useState(0);
+  const location = useLocation();
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const tab = params.get('tab');
+    const tabIndex = parseInt(tab ?? '0', 10);
+    if (!isNaN(tabIndex) && tabIndex >= 0 && tabIndex < TABS.length) {
+      setActive(tabIndex);
+    }
+  }, [location.search]);
 
   const renderContent = () => {
     if (active === 0) return <PrivacyPolicyContent />;

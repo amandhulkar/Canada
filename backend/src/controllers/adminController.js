@@ -22,6 +22,7 @@ const deleteUser = async (req, res) => {
 const banUser = async (req, res) => {
   try {
     const user = await User.findById(req.params.id);
+    if (!user) return res.status(404).json({ message: "User not found" });
     user.banned = !user.banned;
     await user.save();
     res.json({ success: true, banned: user.banned });
@@ -32,7 +33,7 @@ const banUser = async (req, res) => {
 
 const getAllProjects = async (req, res) => {
   try {
-    const projects = await Project.find().populate("userId", "fullName email");
+    const projects = await Project.find().populate("user", "fullName email");
     res.json({ success: true, projects });
   } catch (error) {
     res.status(500).json({ message: error.message });

@@ -3,7 +3,7 @@ import { Link, useParams, useNavigate } from "react-router-dom";
 import Sidebar from "../../components/Sidebar";
 import templates from "../../data/templates";
 
-const API = import.meta.env.VITE_API_URL || "http://localhost:5000";
+const API = import.meta.env.VITE_API_URL || "http://127.0.0.1:5000";
 
 const TABS = ["Overview", "Projects", "Invoice History"];
 const STATUSES = ["Planning", "Design", "Development", "Testing", "Live", "On Hold"];

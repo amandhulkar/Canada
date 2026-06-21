@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 
-const API = import.meta.env.VITE_API_URL  || "http://localhost:5000";
+const API = import.meta.env.VITE_API_URL  || "http://127.0.0.1:5000";
 
 const sidebarItems = [
   "Dashboard",
@@ -42,6 +42,7 @@ function SignupPage() {
 
   //  NEW: role state (User / Admin select karne ke liye)
   const [role, setRole] = useState("user");
+  const [loading, setLoading] = useState(false);
 
   const [form, setForm] = useState({
     name: "",
@@ -64,6 +65,7 @@ function SignupPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (loading) return;
 
     // SIGNUP
     if (tab === "create") {
@@ -72,6 +74,7 @@ function SignupPage() {
         return;
       }
 
+      setLoading(true);
       try {
         const res = await fetch(`${API}/api/auth/signup`, {
           method: "POST",
@@ -106,11 +109,14 @@ function SignupPage() {
       } catch (error) {
         console.log(error);
         alert("Server Error");
+      } finally {
+        setLoading(false);
       }
     }
 
     // SIGNIN
     if (tab === "signin") {
+      setLoading(true);
       try {
         const res = await fetch(`${API}/api/auth/signin`, {
           method: "POST",
@@ -143,6 +149,8 @@ function SignupPage() {
       } catch (error) {
         console.log(error);
         alert("Server Error");
+      } finally {
+        setLoading(false);
       }
     }
   };
@@ -260,6 +268,7 @@ function SignupPage() {
                 value={role}
                 onChange={(e) => setRole(e.target.value)}
                 style={inputStyle}
+                disabled={loading}
               >
                 <option value="user">User</option>
                 <option value="admin">Admin</option>
@@ -277,6 +286,7 @@ function SignupPage() {
                 onChange={handleChange}
                 style={inputStyle}
                 required
+                disabled={loading}
               />
             </div>
 
@@ -291,6 +301,7 @@ function SignupPage() {
                 onChange={handleChange}
                 style={inputStyle}
                 required
+                disabled={loading}
               />
             </div>
 
@@ -306,11 +317,13 @@ function SignupPage() {
                   onChange={handleChange}
                   style={{ ...inputStyle, paddingRight: 80 }}
                   required
+                  disabled={loading}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPass(!showPass)}
                   style={showBtnStyle}
+                  disabled={loading}
                 >
                   {showPass ? "Hide" : "Show"}
                 </button>
@@ -332,11 +345,13 @@ function SignupPage() {
                   onChange={handleChange}
                   style={{ ...inputStyle, paddingRight: 80 }}
                   required
+                  disabled={loading}
                 />
                 <button
                   type="button"
                   onClick={() => setShowConfirm(!showConfirm)}
                   style={showBtnStyle}
+                  disabled={loading}
                 >
                   {showConfirm ? "Hide" : "Show"}
                 </button>
@@ -346,38 +361,55 @@ function SignupPage() {
             {/* Submit */}
             <button
               type="submit"
+              disabled={loading}
               style={{
                 marginTop: 4,
                 width: "100%",
                 padding: "15px",
-                background: "#6c5ce7",
+                background: loading ? "#a29bfe" : "#6c5ce7",
                 color: "#fff",
                 border: "none",
                 borderRadius: 12,
                 fontSize: 15,
                 fontWeight: 700,
-                cursor: "pointer",
+                cursor: loading ? "not-allowed" : "pointer",
                 transition: "background 0.2s",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "8px",
               }}
-              onMouseEnter={(e) => (e.target.style.background = "#5a4bd1")}
-              onMouseLeave={(e) => (e.target.style.background = "#6c5ce7")}
+              onMouseEnter={(e) => {
+                if (!loading) e.target.style.background = "#5a4bd1";
+              }}
+              onMouseLeave={(e) => {
+                if (!loading) e.target.style.background = "#6c5ce7";
+              }}
             >
-              Create Account
+              {loading ? (
+                <>
+                  <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                  Creating Account...
+                </>
+              ) : (
+                "Create Account"
+              )}
             </button>
 
             <p style={{ textAlign: "center", fontSize: 12.5, color: "#aaa" }}>
               Already have an account?{" "}
               <button
                 type="button"
-                onClick={() => setTab("signin")}
+                onClick={() => !loading && setTab("signin")}
                 style={{
                   background: "none",
                   border: "none",
-                  color: "#6c5ce7",
+                  color: loading ? "#aaa" : "#6c5ce7",
                   fontWeight: 600,
-                  cursor: "pointer",
+                  cursor: loading ? "not-allowed" : "pointer",
                   fontSize: 12.5,
                 }}
+                disabled={loading}
               >
                 Sign In
               </button>
@@ -398,6 +430,7 @@ function SignupPage() {
                 onChange={handleChange}
                 style={inputStyle}
                 required
+                disabled={loading}
               />
             </div>
             <div>
@@ -411,11 +444,13 @@ function SignupPage() {
                   onChange={handleChange}
                   style={{ ...inputStyle, paddingRight: 80 }}
                   required
+                  disabled={loading}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPass(!showPass)}
                   style={showBtnStyle}
+                  disabled={loading}
                 >
                   {showPass ? "Hide" : "Show"}
                 </button>
@@ -423,34 +458,54 @@ function SignupPage() {
             </div>
             <button
               type="submit"
+              disabled={loading}
               style={{
                 marginTop: 4,
                 width: "100%",
                 padding: "15px",
-                background: "#6c5ce7",
+                background: loading ? "#a29bfe" : "#6c5ce7",
                 color: "#fff",
                 border: "none",
                 borderRadius: 12,
                 fontSize: 15,
                 fontWeight: 700,
-                cursor: "pointer",
+                cursor: loading ? "not-allowed" : "pointer",
+                transition: "background 0.2s",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "8px",
+              }}
+              onMouseEnter={(e) => {
+                if (!loading) e.target.style.background = "#5a4bd1";
+              }}
+              onMouseLeave={(e) => {
+                if (!loading) e.target.style.background = "#6c5ce7";
               }}
             >
-              Sign In
+              {loading ? (
+                <>
+                  <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                  Signing In...
+                </>
+              ) : (
+                "Sign In"
+              )}
             </button>
             <p style={{ textAlign: "center", fontSize: 12.5, color: "#aaa" }}>
               Don't have an account?{" "}
               <button
                 type="button"
-                onClick={() => setTab("create")}
+                onClick={() => !loading && setTab("create")}
                 style={{
                   background: "none",
                   border: "none",
-                  color: "#6c5ce7",
+                  color: loading ? "#aaa" : "#6c5ce7",
                   fontWeight: 600,
-                  cursor: "pointer",
+                  cursor: loading ? "not-allowed" : "pointer",
                   fontSize: 12.5,
                 }}
+                disabled={loading}
               >
                 Create Account
               </button>

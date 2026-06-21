@@ -340,7 +340,7 @@ function AdminDashboard({ user }) {
   const [users, setUsers] = useState([]);
   const [projects, setProjects] = useState([]);
   const [stats, setStats] = useState(null);
-  const API = import.meta.env.VITE_API_URL || "http://localhost:5000";
+  const API = import.meta.env.VITE_API_URL || "http://127.0.0.1:5000";
   const token = localStorage.getItem("token");
   const navigate = useNavigate();
 
@@ -358,9 +358,17 @@ function AdminDashboard({ user }) {
   };
 
   const banUser = async (id) => {
-    const res = await fetch(`${API}/api/admin/users/${id}/ban`, { method: "PATCH", headers: { Authorization: token } });
-    const data = await res.json();
-    setUsers(users.map((u) => u._id === id ? { ...u, banned: data.banned } : u));
+    try {
+      const res = await fetch(`${API}/api/admin/users/${id}/ban`, { method: "PATCH", headers: { Authorization: token } });
+      const data = await res.json();
+      if (!res.ok) {
+        alert(data.message || "Failed to suspend user");
+        return;
+      }
+      setUsers(users.map((u) => u._id === id ? { ...u, banned: data.banned } : u));
+    } catch (err) {
+      alert("Network error: " + err.message);
+    }
   };
 
   const getInitials = (name) => {
@@ -838,23 +846,7 @@ function UserDashboard() {
             </p>
           </div>
 
-          <div className="flex gap-3">
-            {/* ✅ FIXED: + Invoice button */}
-            <button
-              onClick={() => navigate("/dashboard/invoices?modal=open")}
-              className="bg-green-100 dark:bg-green-900/40 text-green-600 dark:text-green-400 font-semibold px-4 py-2.5 rounded-xl hover:bg-green-200 dark:hover:bg-green-900/60 transition"
-            >
-              + Invoice
-            </button>
 
-            {/* + Add Client */}
-            <button
-              onClick={() => navigate("/dashboard/clients")}
-              className="bg-indigo-600 text-white font-semibold px-5 py-2.5 rounded-xl hover:bg-indigo-700 transition shadow-sm"
-            >
-              + Add Client
-            </button>
-          </div>
         </div>
 
         {/* Trial Banner */}
@@ -895,16 +887,8 @@ function UserDashboard() {
 
         {/* Quick links */}
         <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-4 gap-4 mb-8">
-          <QuickLink to="/dashboard/clients" title="Clients" sub="Clients" />
           <QuickLink to="/dashboard/projects" title="Projects" sub="Projects" />
-          <QuickLink to="/dashboard/invoices" title="Invoices" sub="Invoices" />
-          <QuickLink to="/dashboard/teams" title="Team" sub="Team" />
-          <QuickLink to="/dashboard/services" title="Services" sub="Services" />
-          {/* <QuickLink to="/dashboard/roles" title="Roles" sub="Access" /> */}
-          <QuickLink to="/dashboard/access-roles" title="Roles" sub="Access" />
           <QuickLink to="/dashboard/settings" title="Settings" sub="Manage Account" />
-          {/* ✅ FIXED: New Invoice quick link */}
-          <QuickLink to="/dashboard/invoices?modal=open" title="New" sub="New Invoice" highlight />
         </div>
 
         {/* Charts */}

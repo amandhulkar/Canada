@@ -135,8 +135,14 @@ function Footer() {
               className="mt-4 flex flex-col gap-3 text-sm"
               style={{ color: "#8aa0b8" }}
             >
-              <a href="/privacy-policy" className="transition hover:text-white">
-                Privacy
+              <a href="/privacy-policy?tab=0" className="transition hover:text-white">
+                Privacy Policy
+              </a>
+              <a href="/privacy-policy?tab=1" className="transition hover:text-white">
+                Terms &amp; Conditions
+              </a>
+              <a href="/privacy-policy?tab=2" className="transition hover:text-white">
+                Refund Policy
               </a>
 
               <p

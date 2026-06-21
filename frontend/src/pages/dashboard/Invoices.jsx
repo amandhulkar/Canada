@@ -228,7 +228,7 @@
 //     </div>
 //   );
 // }
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import Sidebar from "../../components/Sidebar";
 import { useToast } from "../../components/ToastProvider";
@@ -240,6 +240,7 @@ function fmt(n) {
 
 function formatDate(dateStr) {
   if (!dateStr) return "";
+  if (isNaN(Date.parse(dateStr))) return dateStr;
   return new Date(dateStr).toLocaleDateString("en-US", {
     day: "2-digit", month: "short", year: "numeric",
   });
@@ -259,6 +260,9 @@ const TABLE_HEADERS = ["Invoice #", "Client", "Project", "Amount", "GST (18%)", 
 export default function Invoices() {
   const [searchParams] = useSearchParams();
   const toast = useToast();
+  const API = import.meta.env.VITE_API_URL || "http://127.0.0.1:5000";
+  const token = localStorage.getItem("token");
+
   const initialForm = () => ({
     ...EMPTY_FORM,
     client: searchParams.get("client") || "",
@@ -269,8 +273,36 @@ export default function Invoices() {
   const [tab, setTab] = useState("all");
   const [modal, setModal] = useState(searchParams.get("modal") === "open");
   const [form, setForm] = useState(initialForm);
-  const [counter, setCounter] = useState(1001);
   const [error, setError] = useState("");
+
+  const fetchInvoices = async () => {
+    try {
+      const res = await fetch(`${API}/api/invoices`, {
+        headers: { Authorization: token }
+      });
+      const data = await res.json();
+      if (Array.isArray(data)) {
+        const formatted = data.map(inv => ({
+          _id: inv._id,
+          id: inv.invoiceNumber,
+          client: inv.client,
+          project: inv.project,
+          amount: inv.amount,
+          gst: inv.gst,
+          total: inv.total,
+          due: formatDate(inv.due),
+          status: inv.status
+        }));
+        setInvoices(formatted);
+      }
+    } catch (err) {
+      console.error("Error fetching invoices:", err);
+    }
+  };
+
+  useEffect(() => {
+    fetchInvoices();
+  }, []);
 
   function downloadPDF(inv) {
     const doc = new jsPDF({ orientation: "portrait", unit: "pt", format: "a4" });
@@ -372,34 +404,97 @@ export default function Invoices() {
   function openModal() { setForm(initialForm()); setError(""); setModal(true); }
   function closeModal() { setModal(false); setError(""); }
 
-  function addInvoice() {
+  async function addInvoice() {
     if (!form.client.trim() || !form.project.trim() || !form.amount || !form.due) {
       setError("Please fill in all fields."); return;
     }
     const amount = parseFloat(form.amount);
     const gstVal = parseFloat((amount * 0.18).toFixed(2));
     const totalVal = parseFloat((amount + gstVal).toFixed(2));
-    const newInv = { id: counter, client: form.client.trim(), project: form.project.trim(), amount, gst: gstVal, total: totalVal, due: formatDate(form.due), status: form.status };
-    setInvoices((prev) => [newInv, ...prev]);
-    setCounter((c) => c + 1);
-    closeModal();
-    toast({ type: "success", title: "Invoice Created", message: `Invoice #${counter} for ${form.client.trim()} has been added.` });
-  }
 
-  function toggleStatus(id) {
-    setInvoices((prev) => prev.map((i) => {
-      if (i.id === id) {
-        const next = i.status === "paid" ? "pending" : "paid";
-        toast({ type: next === "paid" ? "success" : "warning", title: "Status Updated", message: `Invoice #${id} marked as ${next}.` });
-        return { ...i, status: next };
+    try {
+      const res = await fetch(`${API}/api/invoices`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: token
+        },
+        body: JSON.stringify({
+          client: form.client.trim(),
+          project: form.project.trim(),
+          amount,
+          gst: gstVal,
+          total: totalVal,
+          due: form.due,
+          status: form.status
+        })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        const newInv = {
+          _id: data._id,
+          id: data.invoiceNumber,
+          client: data.client,
+          project: data.project,
+          amount: data.amount,
+          gst: data.gst,
+          total: data.total,
+          due: formatDate(data.due),
+          status: data.status
+        };
+        setInvoices((prev) => [newInv, ...prev]);
+        closeModal();
+        toast({ type: "success", title: "Invoice Created", message: `Invoice #${data.invoiceNumber} for ${data.client} has been added.` });
+      } else {
+        const errData = await res.json();
+        setError(errData.message || "Failed to create invoice");
       }
-      return i;
-    }));
+    } catch (err) {
+      setError("Network error: " + err.message);
+    }
   }
 
-  function deleteInvoice(id) {
-    setInvoices((prev) => prev.filter((i) => i.id !== id));
-    toast({ type: "error", title: "Invoice Deleted", message: `Invoice #${id} has been removed.` });
+  async function toggleStatus(id) {
+    const inv = invoices.find(i => i.id === id);
+    if (!inv) return;
+    const nextStatus = inv.status === "paid" ? "pending" : "paid";
+    try {
+      const res = await fetch(`${API}/api/invoices/${inv._id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: token
+        },
+        body: JSON.stringify({ status: nextStatus })
+      });
+      if (res.ok) {
+        setInvoices((prev) => prev.map((i) => i.id === id ? { ...i, status: nextStatus } : i));
+        toast({ type: nextStatus === "paid" ? "success" : "warning", title: "Status Updated", message: `Invoice #${id} marked as ${nextStatus}.` });
+      } else {
+        toast({ type: "error", title: "Error", message: "Failed to update invoice status" });
+      }
+    } catch (err) {
+      toast({ type: "error", title: "Error", message: "Network error: " + err.message });
+    }
+  }
+
+  async function deleteInvoice(id) {
+    const inv = invoices.find(i => i.id === id);
+    if (!inv) return;
+    try {
+      const res = await fetch(`${API}/api/invoices/${inv._id}`, {
+        method: "DELETE",
+        headers: { Authorization: token }
+      });
+      if (res.ok) {
+        setInvoices((prev) => prev.filter((i) => i.id !== id));
+        toast({ type: "error", title: "Invoice Deleted", message: `Invoice #${id} has been removed.` });
+      } else {
+        toast({ type: "error", title: "Error", message: "Failed to delete invoice" });
+      }
+    } catch (err) {
+      toast({ type: "error", title: "Error", message: "Network error: " + err.message });
+    }
   }
 
   return (
