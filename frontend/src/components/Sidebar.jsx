@@ -31,9 +31,15 @@ function Sidebar() {
     if (isAdmin) {
       return ALL_LINKS;
     }
-    // If they have no plan selected (e.g. trial/new user), show all links
+    // New user with no plan — basic pages only
     if (!plan) {
-      return ALL_LINKS;
+      return ALL_LINKS.filter(
+        (link) =>
+          link.to === "/dashboard" ||
+          link.to === "/dashboard/projects" ||
+          link.to === "/dashboard/settings" ||
+          link.to === "/dashboard/support"
+      );
     }
 
     if (plan === "Plus") {

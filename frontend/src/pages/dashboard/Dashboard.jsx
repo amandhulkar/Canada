@@ -834,7 +834,10 @@ function UserDashboard() {
 
   const plan = user?.plan;
   const hasAccess = (item) => {
-    if (!plan) return true; // Trial has full access
+    if (!plan) {
+      // New user with no plan — basic pages only
+      return ["projects", "settings", "support"].includes(item);
+    }
     if (plan === "Business") return true;
     if (plan === "Pro") {
       return ["projects", "settings", "support", "services", "roles", "invoices", "teams"].includes(item);
