@@ -94,9 +94,9 @@ function Home() {
         <TrustedBySection />
         <ServicesSection />
         <AboutSection />
-        <PortfolioSection />
+        {/* <PortfolioSection /> */}
         <WhyChooseUsSection />
-        <ResultsSection />
+        {/* <ResultsSection /> */}
         {/* <TestimonialsSection /> */}
         <PricingSection />
         <FAQSection />

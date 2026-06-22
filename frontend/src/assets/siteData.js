@@ -227,7 +227,9 @@ export const pricingPlans = [
   {
     name: 'Plus',
     price: '$199',
+    priceAnnual: '$1592',
     cadence: '/month',
+    cadenceAnnual: '/year',
     featured: false,
     summary:
       'Access dashboard pages including Projects, Settings, Support Info, Access/Role, and Services, billed every 30 days.',
@@ -242,7 +244,9 @@ export const pricingPlans = [
   {
     name: 'Pro',
     price: '$299',
+    priceAnnual: '$2499',
     cadence: '/month',
+    cadenceAnnual: '/year',
     featured: false,
     summary:
       'Access dashboard pages including Projects, Settings, Support Info, Access/Role, Services, Invoices, and Team, plus any 4 templates, billed every 30 days.',
@@ -257,7 +261,9 @@ export const pricingPlans = [
   {
     name: 'Business',
     price: '$399',
+    priceAnnual: '$3499',
     cadence: '/month',
+    cadenceAnnual: '/year',
     featured: true,
     summary:
       'Complete dashboard access including Projects, Settings, Support Info, Access/Role, Services, Invoices, Team, Clients, and Reports, plus all 8 templates, billed every 30 days.',

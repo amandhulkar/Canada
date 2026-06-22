@@ -15,6 +15,7 @@ function PricingSection() {
   const [cardName, setCardName] = useState('')
   const [isProcessing, setIsProcessing] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
+  const [isAnnual, setIsAnnual] = useState(false)
 
   const navigate = useNavigate()
 
@@ -72,6 +73,29 @@ function PricingSection() {
           align="center"
         />
 
+        <div className="mb-12 flex flex-col items-center justify-center space-y-4 mt-8">
+          <div className="flex items-center space-x-4">
+            <span className={`text-lg font-semibold ${!isAnnual ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-500 dark:text-slate-400'}`}>Monthly</span>
+            <button
+              onClick={() => setIsAnnual(!isAnnual)}
+              className={`relative inline-flex h-8 w-16 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 ${
+                isAnnual ? 'bg-indigo-600' : 'bg-slate-200 dark:bg-slate-700'
+              }`}
+            >
+              <span
+                className={`inline-block h-6 w-6 transform rounded-full bg-white transition-transform ${
+                  isAnnual ? 'translate-x-9' : 'translate-x-1'
+                }`}
+              />
+            </button>
+            <span className={`text-lg font-semibold ${isAnnual ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-500 dark:text-slate-400'}`}>Annual</span>
+            <span className="rounded bg-[#10b981] px-2.5 py-1 text-sm font-bold text-white">Save 20%</span>
+          </div>
+          <p className="text-[#10b981] font-medium text-lg">
+            {isAnnual ? 'Billed annually - you save 20% compared to monthly' : <span className="text-slate-400">Billed monthly - switch to annual and save 20%</span>}
+          </p>
+        </div>
+
         <div className="grid gap-6 lg:grid-cols-3">
           {pricingPlans.map((plan, index) => (
             <Reveal key={plan.name} delay={index * 0.06}>
@@ -84,8 +108,8 @@ function PricingSection() {
                   <div>
                     <p className="text-sm uppercase tracking-[0.2em] text-muted">{plan.name}</p>
                     <div className="mt-4 flex items-end gap-2 text-ink">
-                      <span className="text-4xl font-semibold tracking-[-0.04em]">{plan.price}</span>
-                      {plan.cadence ? <span className="pb-1 text-muted">{plan.cadence}</span> : null}
+                      <span className="text-4xl font-semibold tracking-[-0.04em]">{isAnnual ? plan.priceAnnual : plan.price}</span>
+                      {plan.cadence ? <span className="pb-1 text-muted">{isAnnual ? plan.cadenceAnnual : plan.cadence}</span> : null}
                     </div>
                   </div>
                   {plan.featured ? (
@@ -156,15 +180,15 @@ function PricingSection() {
                       {selectedPlan.name} Plan
                     </span>
                     <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                      Billed monthly
+                      {isAnnual ? 'Billed annually' : 'Billed monthly'}
                     </p>
                   </div>
                   <div className="text-right">
                     <span className="text-xl font-bold text-slate-800 dark:text-slate-100">
-                      {selectedPlan.price}
+                      {isAnnual ? selectedPlan.priceAnnual : selectedPlan.price}
                     </span>
                     <span className="text-xs text-slate-500 dark:text-slate-400">
-                      {selectedPlan.cadence}
+                      {isAnnual ? selectedPlan.cadenceAnnual : selectedPlan.cadence}
                     </span>
                   </div>
                 </div>
