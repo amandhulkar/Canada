@@ -99,7 +99,7 @@ function Home() {
         {/* <ResultsSection /> */}
         {/* <TestimonialsSection /> */}
         <PricingSection />
-        <FAQSection />
+        {/* <FAQSection /> */}
         <ContactSection />
       </main>
       <Footer />
