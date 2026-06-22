@@ -17,7 +17,23 @@ const signup = async (req, res) => {
 
     console.log("USER CREATED:", user);
 
-    res.status(201).json(user);
+    const token = jwt.sign(
+      { userId: user._id, role: user.role },
+      process.env.JWT_SECRET,
+      { expiresIn: "7d" }
+    );
+
+    res.status(201).json({
+      success: true,
+      message: "Account created successfully",
+      token,
+      user: {
+        _id: user._id,
+        fullName: user.fullName,
+        email: user.email,
+        role: user.role,
+      },
+    });
   } catch (error) {
     res.status(500).json({
       message: error.message,

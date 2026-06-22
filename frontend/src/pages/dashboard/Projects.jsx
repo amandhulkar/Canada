@@ -6,6 +6,17 @@ const API = import.meta.env.VITE_API_URL || "http://127.0.0.1:5000";
 const STATUSES = ["Planning", "Design", "Development", "Testing", "Live", "On Hold"];
 const TRIAL_DAYS = 3;
 
+const EMPTY_FORM = {
+  name: "",
+  client: "",
+  startDate: new Date().toISOString().split("T")[0],
+  deadline: "",
+  status: "Planning",
+  team: "",
+  scopeOfWork: "",
+  deliverables: "",
+};
+
 function useCountdown() {
   const [target] = useState(() => {
     const saved = localStorage.getItem("trialEndsAt");
@@ -57,6 +68,9 @@ function Projects() {
   const timeLeft = useCountdown();
   const [projects, setProjects] = useState([]);
   const [filter, setFilter] = useState("All Statuses");
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [form, setForm] = useState(EMPTY_FORM);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -67,6 +81,36 @@ function Projects() {
       .then((data) => setProjects(Array.isArray(data) ? data : []))
       .catch((err) => console.log(err));
   }, []);
+
+  const handleAddProject = async (e) => {
+    e.preventDefault();
+    if (!form.name.trim()) {
+      alert("Project name is required.");
+      return;
+    }
+    setLoading(true);
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(`${API}/api/projects`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: token,
+        },
+        body: JSON.stringify(form),
+      });
+
+      if (!res.ok) throw new Error("Failed to create project");
+      const newProj = await res.json();
+      setProjects((prev) => [newProj, ...prev]);
+      setForm(EMPTY_FORM);
+      setShowAddModal(false);
+    } catch (err) {
+      alert(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const filteredProjects = filter === "All Statuses" ? projects : projects.filter((p) => p.status === filter);
   const totalProjects = projects.length;
@@ -122,6 +166,10 @@ function Projects() {
             className="bg-white rounded-lg px-4 py-2 text-sm font-bold text-indigo-600 shadow-sm border border-gray-100 hover:bg-indigo-50 transition">
             Browse Templates
           </Link>
+          <button onClick={() => setShowAddModal(true)}
+            className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg px-4 py-2 text-sm font-bold shadow-sm transition">
+            + Add Project
+          </button>
         </div>
 
         <div className="bg-white rounded-xl shadow-sm overflow-hidden">
@@ -178,6 +226,144 @@ function Projects() {
           </div>
         </div>
       </main>
+
+      {showAddModal && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-50 flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-slate-900 rounded-[2rem] border border-slate-100 dark:border-slate-800 p-8 max-w-lg w-full shadow-2xl relative overflow-hidden transition-all duration-300 transform scale-100 animate-in fade-in zoom-in-95 max-h-[90vh] overflow-y-auto">
+            <h3 className="text-2xl font-bold text-slate-800 dark:text-slate-100 mb-2">
+              Add New Project
+            </h3>
+            <p className="text-xs text-slate-400 dark:text-slate-500 mb-6">
+              Create a custom project manually without using a template.
+            </p>
+
+            <form onSubmit={handleAddProject} className="flex flex-col gap-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">
+                    Project Name *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={form.name}
+                    onChange={(e) => setForm({ ...form, name: e.target.value })}
+                    placeholder="e.g. Portfolio Website"
+                    className="w-full border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-indigo-400 transition"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">
+                    Client Name
+                  </label>
+                  <input
+                    type="text"
+                    value={form.client}
+                    onChange={(e) => setForm({ ...form, client: e.target.value })}
+                    placeholder="e.g. Acme Corp"
+                    className="w-full border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-indigo-400 transition"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">
+                    Start Date
+                  </label>
+                  <input
+                    type="date"
+                    value={form.startDate}
+                    onChange={(e) => setForm({ ...form, startDate: e.target.value })}
+                    className="w-full border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-indigo-400 transition"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">
+                    Deadline
+                  </label>
+                  <input
+                    type="date"
+                    value={form.deadline}
+                    onChange={(e) => setForm({ ...form, deadline: e.target.value })}
+                    className="w-full border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-indigo-400 transition"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">
+                    Status
+                  </label>
+                  <select
+                    value={form.status}
+                    onChange={(e) => setForm({ ...form, status: e.target.value })}
+                    className="w-full border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-indigo-400 transition"
+                  >
+                    {STATUSES.map(s => <option key={s} value={s}>{s}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">
+                    Assigned Team / Member
+                  </label>
+                  <input
+                    type="text"
+                    value={form.team}
+                    onChange={(e) => setForm({ ...form, team: e.target.value })}
+                    placeholder="e.g. Jane Doe"
+                    className="w-full border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-indigo-400 transition"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">
+                  Scope of Work
+                </label>
+                <textarea
+                  value={form.scopeOfWork}
+                  onChange={(e) => setForm({ ...form, scopeOfWork: e.target.value })}
+                  placeholder="Describe the scope of work..."
+                  rows="3"
+                  className="w-full border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-indigo-400 transition resize-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">
+                  Deliverables
+                </label>
+                <input
+                  type="text"
+                  value={form.deliverables}
+                  onChange={(e) => setForm({ ...form, deliverables: e.target.value })}
+                  placeholder="e.g. Figma file, Source code, Live deployment"
+                  className="w-full border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-indigo-400 transition"
+                />
+              </div>
+
+              <div className="flex gap-3 justify-end mt-4">
+                <button
+                  type="button"
+                  onClick={() => setShowAddModal(false)}
+                  className="text-sm font-medium px-5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="text-sm font-semibold px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white shadow-md disabled:opacity-50 transition cursor-pointer"
+                >
+                  {loading ? "Creating..." : "Create Project"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
