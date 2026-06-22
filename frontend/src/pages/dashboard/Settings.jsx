@@ -22,7 +22,28 @@ const NAV_ITEMS = [
   { key: "account", label: "Account", desc: "Logout and delete account" },
 ];
 
+const PLAN_DETAILS = {
+  Business: {
+    badge: "Most popular",
+    name: "Business",
+    price: "$399",
+    cadence: "/month",
+    summary:
+      "Complete dashboard access including Projects, Settings, Support Info, Access/Role, Services, Invoices, Team, Clients, and Reports, plus all 8 templates, billed every 30 days.",
+    features: [
+      "Complete dashboard access",
+      "Projects, Settings, and Support Info",
+      "Access/Role, Services, and Invoices",
+      "Team, Clients, and Reports access",
+      "Access to all 8 templates",
+      "Priority support",
+    ],
+  },
+};
+
 function ProfileSection({ user }) {
+  const activePlan = PLAN_DETAILS[user.plan];
+
   return (
     <div className="flex flex-col gap-4">
       <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 flex items-center justify-between">
@@ -63,6 +84,43 @@ function ProfileSection({ user }) {
           ))}
         </div>
       </div>
+
+      {activePlan && (
+        <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 border-2 border-emerald-400 dark:border-emerald-600 shadow-sm">
+          <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-5">
+            <div>
+              <span className="inline-block bg-emerald-600 text-white text-xs font-semibold px-3 py-1 rounded-full mb-3">
+                {activePlan.badge}
+              </span>
+              <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-100">
+                {activePlan.name}
+              </h2>
+              <p className="mt-2">
+                <span className="text-4xl font-bold text-emerald-600 dark:text-emerald-400">
+                  {activePlan.price}
+                </span>
+                <span className="text-slate-400 dark:text-slate-500">{activePlan.cadence}</span>
+              </p>
+            </div>
+            <span className="bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 text-sm font-semibold px-4 py-2 rounded-full">
+              Active plan
+            </span>
+          </div>
+
+          <p className="text-sm text-slate-500 dark:text-slate-400 leading-6 mb-5">
+            {activePlan.summary}
+          </p>
+
+          <ul className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm text-slate-600 dark:text-slate-300">
+            {activePlan.features.map((feature) => (
+              <li key={feature} className="flex items-start gap-2 bg-slate-50 dark:bg-slate-700 rounded-xl px-4 py-3">
+                <span className="text-emerald-500 font-bold">✓</span>
+                <span>{feature}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
     </div>
   );
 }

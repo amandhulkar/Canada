@@ -18,12 +18,12 @@ function Sidebar() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const isAdmin = useMemo(() => {
+  const { isAdmin, plan } = useMemo(() => {
     try {
       const user = JSON.parse(localStorage.getItem("currentUser"));
-      return user?.role === "admin";
+      return { isAdmin: user?.role === "admin", plan: user?.plan };
     } catch {
-      return false;
+      return { isAdmin: false, plan: null };
     }
   }, []);
 
@@ -31,14 +31,40 @@ function Sidebar() {
     if (isAdmin) {
       return ALL_LINKS;
     }
-    return ALL_LINKS.filter(
-      (link) =>
-        link.to === "/dashboard" ||
-        link.to === "/dashboard/projects" ||
-        link.to === "/dashboard/settings" ||
-        link.to === "/dashboard/support"
-    );
-  }, [isAdmin]);
+    // If they have no plan selected (e.g. trial/new user), show all links
+    if (!plan) {
+      return ALL_LINKS;
+    }
+
+    if (plan === "Plus") {
+      return ALL_LINKS.filter(
+        (link) =>
+          link.to === "/dashboard" ||
+          link.to === "/dashboard/projects" ||
+          link.to === "/dashboard/settings" ||
+          link.to === "/dashboard/support" ||
+          link.to === "/dashboard/services" ||
+          link.to === "/dashboard/access-roles"
+      );
+    }
+
+    if (plan === "Pro") {
+      return ALL_LINKS.filter(
+        (link) =>
+          link.to === "/dashboard" ||
+          link.to === "/dashboard/projects" ||
+          link.to === "/dashboard/settings" ||
+          link.to === "/dashboard/support" ||
+          link.to === "/dashboard/services" ||
+          link.to === "/dashboard/access-roles" ||
+          link.to === "/dashboard/invoices" ||
+          link.to === "/dashboard/teams"
+      );
+    }
+
+    // Business or higher plan gets all links
+    return ALL_LINKS;
+  }, [isAdmin, plan]);
 
   const logout = () => {
     localStorage.removeItem("token");

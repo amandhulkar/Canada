@@ -832,6 +832,19 @@ function UserDashboard() {
     return "Good evening";
   };
 
+  const plan = user?.plan;
+  const hasAccess = (item) => {
+    if (!plan) return true; // Trial has full access
+    if (plan === "Business") return true;
+    if (plan === "Pro") {
+      return ["projects", "settings", "support", "services", "roles", "invoices", "teams"].includes(item);
+    }
+    if (plan === "Plus") {
+      return ["projects", "settings", "support", "services", "roles"].includes(item);
+    }
+    return false;
+  };
+
   return (
     <div className="min-h-screen bg-slate-100 dark:bg-slate-900 flex">
       <Sidebar />
@@ -846,7 +859,25 @@ function UserDashboard() {
             </p>
           </div>
 
+          <div className="flex gap-3">
+            {hasAccess("invoices") && (
+              <button
+                onClick={() => navigate("/dashboard/invoices?modal=open")}
+                className="bg-green-100 dark:bg-green-900/40 text-green-600 dark:text-green-400 font-semibold px-4 py-2.5 rounded-xl hover:bg-green-200 dark:hover:bg-green-900/60 transition"
+              >
+                + Invoice
+              </button>
+            )}
 
+            {hasAccess("clients") && (
+              <button
+                onClick={() => navigate("/dashboard/clients")}
+                className="bg-indigo-600 text-white font-semibold px-5 py-2.5 rounded-xl hover:bg-indigo-700 transition shadow-sm"
+              >
+                + Add Client
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Trial Banner */}
@@ -887,8 +918,14 @@ function UserDashboard() {
 
         {/* Quick links */}
         <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-4 gap-4 mb-8">
-          <QuickLink to="/dashboard/projects" title="Projects" sub="Projects" />
-          <QuickLink to="/dashboard/settings" title="Settings" sub="Manage Account" />
+          {hasAccess("clients") && <QuickLink to="/dashboard/clients" title="Clients" sub="Clients" />}
+          {hasAccess("projects") && <QuickLink to="/dashboard/projects" title="Projects" sub="Projects" />}
+          {hasAccess("invoices") && <QuickLink to="/dashboard/invoices" title="Invoices" sub="Invoices" />}
+          {hasAccess("teams") && <QuickLink to="/dashboard/teams" title="Team" sub="Team" />}
+          {hasAccess("services") && <QuickLink to="/dashboard/services" title="Services" sub="Services" />}
+          {hasAccess("roles") && <QuickLink to="/dashboard/access-roles" title="Roles" sub="Access" />}
+          {hasAccess("settings") && <QuickLink to="/dashboard/settings" title="Settings" sub="Manage Account" />}
+          {hasAccess("invoices") && <QuickLink to="/dashboard/invoices?modal=open" title="New" sub="New Invoice" highlight />}
         </div>
 
         {/* Charts */}

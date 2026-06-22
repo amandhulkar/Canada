@@ -289,12 +289,43 @@
       const token = localStorage.getItem("token") 
       if (!token) {
         alert("Please login first to use a template.")
-        navigate("/login")
+        navigate("/signup")
         return
       }
 
+      const currentUser = JSON.parse(localStorage.getItem("currentUser") || "{}");
+      const plan = currentUser?.plan;
+      const isAdmin = currentUser?.role === "admin";
+
       setLoading(true)
       try {
+        if (!isAdmin) {
+          if (!plan) {
+            alert("Templates require a subscription. Please subscribe to a Pro ($299) or Business ($399) plan to use templates.");
+            setLoading(false);
+            return;
+          }
+          if (plan === "Plus") {
+            alert("Your Plus plan ($199) does not include free templates. Please upgrade to a Pro ($299) or Business ($399) plan to use templates.");
+            setLoading(false);
+            return;
+          }
+          if (plan === "Pro") {
+            const checkRes = await fetch(`${API}/api/projects`, {
+              headers: { Authorization: token },
+            });
+            if (checkRes.ok) {
+              const projectsList = await checkRes.json();
+              const usedTemplatesCount = (Array.isArray(projectsList) ? projectsList : []).filter(p => p.templateId).length;
+              if (usedTemplatesCount >= 4) {
+                alert("You have reached the limit of 4 templates allowed under the Pro plan ($299). Please upgrade to the Business plan ($399) for unlimited template access.");
+                setLoading(false);
+                return;
+              }
+            }
+          }
+        }
+
         const res = await fetch(`${API}/api/projects`, {
           method: "POST",
           headers: {

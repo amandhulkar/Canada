@@ -96,6 +96,9 @@ function SignupPage() {
           return;
         }
 
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("currentUser", JSON.stringify(data.user));
+
         alert("Account Created Successfully");
 
         setForm({
@@ -105,7 +108,7 @@ function SignupPage() {
           confirm: "",
         });
 
-        setTab("signin");
+        navigate("/dashboard/settings");
       } catch (error) {
         console.log(error);
         alert("Server Error");
