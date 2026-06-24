@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { FiCheck } from 'react-icons/fi'
 import Container from '../components/Container'
 import PrimaryButton from '../components/PrimaryButton'
@@ -18,6 +18,7 @@ function PricingSection() {
   const [isAnnual, setIsAnnual] = useState(false)
 
   const navigate = useNavigate()
+  const location = useLocation()
 
   const user = JSON.parse(localStorage.getItem("currentUser")) || {}
   const userName = user.fullName || user.name || ""
@@ -28,10 +29,28 @@ function PricingSection() {
     }
   }, [selectedPlan, userName])
 
+  useEffect(() => {
+    const params = new URLSearchParams(location.search)
+    const planName = params.get('plan')
+    const billing = params.get('billing')
+    if (!planName || !localStorage.getItem('currentUser')) return
+
+    const plan = pricingPlans.find((item) => item.name === planName)
+    if (plan) {
+      setIsAnnual(billing === 'annual')
+      setSelectedPlan(plan)
+      navigate('/#pricing', { replace: true })
+    }
+  }, [location.search, navigate])
+
   const handleChoosePlan = (plan) => {
     const isLoggedIn = !!localStorage.getItem("currentUser")
     if (!isLoggedIn) {
-      navigate('/signup')
+      sessionStorage.setItem(
+        "pendingPlanCheckout",
+        JSON.stringify({ plan: plan.name, billing: isAnnual ? "annual" : "monthly" })
+      )
+      navigate('/signup?tab=signin')
     } else {
       setSelectedPlan(plan)
     }

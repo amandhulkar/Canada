@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import templates from "../data/templates";
+import { findTemplateById } from "../utils/templatesApi";
 
 const NAV_LINKS = ["Home", "About", "Features", "Contact"];
 
@@ -31,8 +31,31 @@ function TemplatePreviewPage() {
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [pageLoading, setPageLoading] = useState(true);
+  const [template, setTemplate] = useState(null);
 
-  const template = templates.find((t) => String(t.id) === id);
+  useEffect(() => {
+    let isMounted = true;
+    setPageLoading(true);
+    findTemplateById(id).then((foundTemplate) => {
+      if (isMounted) {
+        setTemplate(foundTemplate || null);
+        setPageLoading(false);
+      }
+    });
+    return () => {
+      isMounted = false;
+    };
+  }, [id]);
+
+  if (pageLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#F0F2F8]">
+        <p className="text-gray-500 text-lg">Loading template...</p>
+      </div>
+    );
+  }
+
   if (!template) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#F0F2F8]">
@@ -50,6 +73,12 @@ function TemplatePreviewPage() {
       </div>
     );
   }
+
+  const previewData = template.defaultData || {};
+  const previewTitle = previewData.heroTitle || "A stylish storefront built to sell collections fast.";
+  const previewSubtitle = previewData.heroSubtitle || "Highlight new arrivals, best sellers, and editorial photography in a premium ecommerce layout.";
+  const previewAbout = previewData.aboutText || "This demo combines product storytelling and fast purchase paths for fashion-focused brands.";
+  const previewImage = template.image || previewData.heroImage;
 
   const handleUseTemplate = async () => {
     if (loading) return;
@@ -174,10 +203,10 @@ function TemplatePreviewPage() {
               Store Demo
             </p>
             <h1 className="text-4xl md:text-5xl lg:text-[3.25rem] font-extrabold text-[#1A1A2E] leading-tight mb-6">
-              A stylish storefront built to sell collections fast.
+              {previewTitle}
             </h1>
             <p className="text-gray-500 text-base mb-10 leading-relaxed">
-              Highlight new arrivals, best sellers, and editorial photography in a premium ecommerce layout.
+              {previewSubtitle}
             </p>
             <div className="flex flex-wrap gap-4">
               <button
@@ -202,7 +231,7 @@ function TemplatePreviewPage() {
             <div className="absolute inset-0 bg-gradient-to-br from-pink-300/30 via-purple-200/20 to-transparent rounded-3xl blur-2xl scale-105 -z-10" />
             <div className="bg-white rounded-3xl shadow-xl overflow-hidden border border-white/60">
               <img
-                src={template.image}
+                src={previewImage}
                 alt={template.name}
                 className="w-full h-72 md:h-80 object-cover"
               />
@@ -217,7 +246,7 @@ function TemplatePreviewPage() {
           Optimized for online sales
         </h2>
         <p className="text-gray-500 mb-10">
-          This demo combines product storytelling and fast purchase paths for fashion-focused brands.
+          {previewAbout}
         </p>
 
         {/* Feature Cards */}

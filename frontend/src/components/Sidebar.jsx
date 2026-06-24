@@ -4,6 +4,7 @@ import { useMemo } from "react";
 const ALL_LINKS = [
   { to: "/dashboard", label: "Dashboard" },
   { to: "/dashboard/analytics", label: "📊 Analytics" },
+  { to: "/dashboard/templates", label: "Templates" },
   { to: "/dashboard/clients", label: "Clients" },
   { to: "/dashboard/teams", label: "Teams" },
   { to: "/dashboard/projects", label: "Projects" },
@@ -74,8 +75,8 @@ function Sidebar() {
       );
     }
 
-    // Business or higher plan gets all links
-    return ALL_LINKS;
+    // Business or higher plan gets all user links
+    return ALL_LINKS.filter((link) => link.to !== "/dashboard/templates");
   }, [isAdmin, plan]);
 
   const logout = () => {

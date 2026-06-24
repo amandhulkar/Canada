@@ -6,6 +6,7 @@ const clientRoutes = require("./routes/clientRoutes");
 // const leadRoutes = require("./routes/leadRoutes");
 const projectRoutes = require("./routes/projectRoutes");
 const invoiceRoutes = require("./routes/invoiceRoutes");
+const templateRoutes = require("./routes/templateRoutes");
 
 const adminRoutes = require("./routes/admin");
 
@@ -29,6 +30,7 @@ app.use("/api/clients", clientRoutes);
 
 app.use("/api/projects", projectRoutes);
 app.use("/api/invoices", invoiceRoutes);
+app.use("/api/templates", templateRoutes);
 
 app.use("/api/admin", adminRoutes);
 

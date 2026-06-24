@@ -18,6 +18,7 @@ import Settings from "./pages/dashboard/Settings";
 import AccessRoles from "./pages/dashboard/AccessRoles";
 import Support from "./pages/dashboard/Support";
 import Analytics from "./pages/dashboard/Analytics";
+import TemplatesAdmin from "./pages/dashboard/TemplatesAdmin";
 
 import ClientDetail from "./pages/dashboard/ClientDetail";
 import ProjectDetail from "./pages/dashboard/ProjectDetail";
@@ -61,6 +62,7 @@ function Layout() {
         <Route path="/dashboard/settings" element={<Settings />} />
         <Route path="/dashboard/support" element={<Support />} />
         <Route path="/dashboard/analytics" element={<Analytics />} />
+        <Route path="/dashboard/templates" element={<TemplatesAdmin />} />
 
         <Route path="/dashboard/clients/:id" element={<ClientDetail />} />
         <Route path="/dashboard/projects/:id" element={<ProjectDetail />} />

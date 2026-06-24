@@ -63,6 +63,16 @@ function SignupPage() {
   const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
 
+  const redirectAfterAuth = (fallback = "/dashboard") => {
+    const pendingPlan = JSON.parse(sessionStorage.getItem("pendingPlanCheckout") || "null");
+    if (pendingPlan?.plan) {
+      sessionStorage.removeItem("pendingPlanCheckout");
+      navigate(`/?plan=${encodeURIComponent(pendingPlan.plan)}&billing=${pendingPlan.billing || "monthly"}#pricing`);
+      return;
+    }
+    navigate(fallback);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (loading) return;
@@ -108,7 +118,7 @@ function SignupPage() {
           confirm: "",
         });
 
-        navigate("/dashboard/settings");
+        redirectAfterAuth("/dashboard/settings");
       } catch (error) {
         console.log(error);
         alert("Server Error");
@@ -148,7 +158,7 @@ function SignupPage() {
 
         alert("Login Successful");
 
-        navigate("/dashboard");
+        redirectAfterAuth("/dashboard");
       } catch (error) {
         console.log(error);
         alert("Server Error");

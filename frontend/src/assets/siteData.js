@@ -101,12 +101,19 @@ export const services = [
   },
 ]
 
+// export const aboutStats = [
+//   { label: 'Teams launched faster', value: '340+' },
+//   { label: 'Average retention', value: '18 months' },
+//   { label: 'Revenue influenced', value: '$82Cr+' },
+//   { label: 'Cross-functional specialists', value: '24' },
+// ]
 export const aboutStats = [
-  { label: 'Teams launched faster', value: '340+' },
-  { label: 'Average retention', value: '18 months' },
-  { label: 'Revenue influenced', value: '$82Cr+' },
-  { label: 'Cross-functional specialists', value: '24' },
+  { label: '', value: '' },
+  { label: '', value: '' },
+  // { label: '', value: '' },
+  // { label: '', value: '' },
 ]
+
 
 export const portfolioItems = [
   {

@@ -271,11 +271,11 @@
 
   // export default TemplatesPage;
 
-    import { useState } from "react";
+    import { useEffect, useState } from "react";
   import { useNavigate } from "react-router-dom";
   import Container from "../components/Container";
   import Footer from "../sections/Footer";
-  import templates, { categories } from "../data/templates";
+  import { getMergedTemplates, getTemplateCategories, staticTemplates } from "../utils/templatesApi";
 
   function TemplateCard({ template, onPreview }) {
     const [hovered, setHovered] = useState(false)
@@ -464,6 +464,19 @@
     const [activeCategory, setActiveCategory] = useState("All");
     const [searchQuery, setSearchQuery] = useState("");
     const [previewTemplate, setPreviewTemplate] = useState(null);
+    const [templates, setTemplates] = useState(staticTemplates);
+
+    useEffect(() => {
+      let isMounted = true;
+      getMergedTemplates().then((mergedTemplates) => {
+        if (isMounted) setTemplates(mergedTemplates);
+      });
+      return () => {
+        isMounted = false;
+      };
+    }, []);
+
+    const categories = getTemplateCategories(templates);
 
     // const filtered =
     //   activeCategory === "All"

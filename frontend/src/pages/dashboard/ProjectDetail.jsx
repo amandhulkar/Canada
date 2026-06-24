@@ -672,8 +672,8 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Sidebar from "../../components/Sidebar";
-import templates from "../../data/templates";
 import BusinessTemplate from "../../templates/BusinessTemplate";
+import { findTemplateById } from "../../utils/templatesApi";
 
 const API = import.meta.env.VITE_API_URL || "http://127.0.0.1:5000";
 
@@ -703,6 +703,8 @@ function ProjectDetail() {
   const [activeTab, setActiveTab] = useState("overview");
   const [editMode, setEditMode] = useState(false);
   const [templateData, setTemplateData] = useState(DEFAULT_TEMPLATE_DATA);
+  const [template, setTemplate] = useState(null);
+  const [templateLoading, setTemplateLoading] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [editForm, setEditForm] = useState({});
 
@@ -765,9 +767,25 @@ function ProjectDetail() {
     }
   };
 
-  const template = templates.find(
-    (t) => String(t.id) === String(project?.templateId)
-  );
+  useEffect(() => {
+    if (!project?.templateId) {
+      setTemplate(null);
+      return;
+    }
+
+    let isMounted = true;
+    setTemplateLoading(true);
+    findTemplateById(project.templateId).then((foundTemplate) => {
+      if (isMounted) {
+        setTemplate(foundTemplate || null);
+        setTemplateLoading(false);
+      }
+    });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [project?.templateId]);
 
   useEffect(() => {
     if (project) {
@@ -775,7 +793,7 @@ function ProjectDetail() {
       const base = saved ? project.templateData : template?.defaultData || {};
       setTemplateData({ ...DEFAULT_TEMPLATE_DATA, ...base });
     }
-  }, [project]);
+  }, [project, template]);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -1425,7 +1443,9 @@ function ProjectDetail() {
             <div className="flex items-center justify-between p-4 border-b border-gray-100 flex-wrap gap-3 bg-gray-50">
               <div>
                 <h2 className="text-base font-bold text-gray-800">🖥 Template Workspace</h2>
-                <p className="text-xs text-gray-400 mt-0.5">{template ? `Editing "${template.name}"` : "No template linked"}</p>
+                <p className="text-xs text-gray-400 mt-0.5">
+                  {templateLoading ? "Loading template..." : template ? `Editing "${template.name}"` : "No template linked"}
+                </p>
               </div>
               <div className="flex items-center gap-2">
                 <button onClick={() => setEditMode(!editMode)}
@@ -1441,7 +1461,9 @@ function ProjectDetail() {
               </div>
             </div>
 
-            {!template ? (
+            {templateLoading ? (
+              <div className="p-10 text-center text-gray-400 bg-gray-50">Loading template workspace...</div>
+            ) : !template ? (
               <div className="p-10 text-center text-gray-400 bg-gray-50">No template linked to this project.</div>
             ) : (
               <div className={`flex ${editMode ? "flex-col lg:flex-row" : "flex-col"}`}>
