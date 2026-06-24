@@ -12,7 +12,7 @@ function ContactSection() {
         <Reveal>
           <SectionHeading
             kicker="Contact"
-            title="See how Velora can bring more clarity and speed to your growth workflow."
+            title="See how FindTemplates can bring more clarity and speed to your growth workflow."
             description="Get in touch with 17219296 Canada Inc. using the company details below, and share what your team is trying to improve."
           />
 

@@ -8,7 +8,7 @@ function WhyChooseUsSection() {
     <section className="section-shell">
       <Container>
         <SectionHeading
-          kicker="Why teams choose Velora"
+          kicker="Why teams choose FindTemplates"
           title="A modern SaaS experience that keeps growth work simple, clear, and beautifully organized."
           description="The product is designed to reduce friction for growing teams while still feeling premium at every touchpoint."
         />

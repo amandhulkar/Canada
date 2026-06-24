@@ -799,26 +799,47 @@ function ProjectDetail() {
 
   const handleSaveTemplate = async () => {
     const token = localStorage.getItem("token");
-    await fetch(`${API}/api/projects/${id}`, {
+    const projectToSave = { ...project, templateData };
+    const res = await fetch(`${API}/api/projects/${id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json", Authorization: token },
-      body: JSON.stringify({ ...project, templateData }),
+      body: JSON.stringify(projectToSave),
     });
+    const updated = await res.json();
+    setProject({ ...projectToSave, ...updated, templateData });
     alert("✅ Changes saved!");
   };
 
   const handleComplete = async () => {
     const token = localStorage.getItem("token");
+    const completedProject = {
+      ...project,
+      status: "Live",
+      completed: true,
+      progress: 100,
+      templateData,
+    };
     const res = await fetch(`${API}/api/projects/${id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json", Authorization: token },
-      body: JSON.stringify({ ...project, status: "Live", completed: true }),
+      body: JSON.stringify(completedProject),
     });
     const updated = await res.json();
-    setProject(updated);
+    setProject({ ...completedProject, ...updated, progress: 100, templateData });
+    setEditForm({ ...completedProject, ...updated, progress: 100, templateData });
   };
 
-  const handleDownload = () => {
+  const handleDownload = async () => {
+    const getAssetFileName = (url, fallback = "hero-image") => {
+      try {
+        const pathname = new URL(url).pathname;
+        const fileName = pathname.split("/").filter(Boolean).pop() || fallback;
+        return fileName.includes(".") ? fileName : `${fileName}.jpg`;
+      } catch {
+        return `${fallback}.jpg`;
+      }
+    };
+
     const {
       heroImage = "",
       heroTitle = project.name || "My Website",
@@ -840,6 +861,8 @@ function ProjectDetail() {
 
     const brand = brandName || heroTitle.split(" ").slice(0, 2).join(" ");
     const footer = footerText || `© 2026 ${brand}. All rights reserved.`;
+    const heroImageFileName = heroImage ? getAssetFileName(heroImage) : "";
+    const heroImagePath = heroImageFileName ? `assets/${heroImageFileName}` : "";
 
     const html = `<!DOCTYPE html>
 <html lang="en">
@@ -864,7 +887,7 @@ function ProjectDetail() {
     .nav-cta { background: #E91E8C; color: #fff; border: none; cursor: pointer; padding: 10px 22px; border-radius: 999px; font-size: 14px; font-weight: 600; text-decoration: none; }
 
     /* HERO */
-    .hero { position: relative; height: 520px; background: url('${heroImage}') center/cover no-repeat; display: flex; align-items: center; justify-content: center; text-align: center; }
+    .hero { position: relative; height: 520px; background: ${heroImagePath ? `url('${heroImagePath}') center/cover no-repeat` : "linear-gradient(135deg, #f472b6, #6366f1)"}; display: flex; align-items: center; justify-content: center; text-align: center; }
     .hero-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.52); }
     .hero-content { position: relative; z-index: 2; color: #fff; max-width: 750px; padding: 0 24px; }
     .hero-content h1 { font-size: 52px; font-weight: 900; line-height: 1.15; margin-bottom: 16px; }
@@ -923,7 +946,7 @@ function ProjectDetail() {
     <ul class="nav-links">
       <li><a href="#home">Home</a></li>
       <li><a href="#about">About</a></li>
-      <li><a href="#features">Features</a></li>
+      <li><a href="#services">Services</a></li>
       <li><a href="#contact">Contact</a></li>
     </ul>
     <a href="#contact" class="nav-cta">Get Started</a>
@@ -935,7 +958,7 @@ function ProjectDetail() {
       <h1>${heroTitle}</h1>
       <p>${heroSubtitle}</p>
       <div class="hero-buttons">
-        <a href="#features" class="btn-primary">Explore</a>
+        <a href="#services" class="btn-primary">Explore</a>
         <a href="#about" class="btn-outline">Learn More</a>
       </div>
     </div>
@@ -999,11 +1022,58 @@ function ProjectDetail() {
 </body>
 </html>`;
 
+    const folderName = (project.name || "website").replace(/\s+/g, "_");
+
+    if (window.showDirectoryPicker) {
+      try {
+        const rootHandle = await window.showDirectoryPicker({ mode: "readwrite" });
+        const projectHandle = await rootHandle.getDirectoryHandle(folderName, { create: true });
+        const assetsHandle = await projectHandle.getDirectoryHandle("assets", { create: true });
+        const publicHandle = await projectHandle.getDirectoryHandle("public", { create: true });
+
+        const writeFile = async (directoryHandle, fileName, content, type = "text/plain") => {
+          const fileHandle = await directoryHandle.getFileHandle(fileName, { create: true });
+          const writable = await fileHandle.createWritable();
+          await writable.write(new Blob([content], { type }));
+          await writable.close();
+        };
+
+        await writeFile(projectHandle, "index.html", html, "text/html");
+
+        if (heroImage && heroImageFileName) {
+          try {
+            const imageRes = await fetch(heroImage);
+            if (imageRes.ok) {
+              const imageBlob = await imageRes.blob();
+              const imageFileHandle = await assetsHandle.getFileHandle(heroImageFileName, { create: true });
+              const imageWritable = await imageFileHandle.createWritable();
+              await imageWritable.write(imageBlob);
+              await imageWritable.close();
+            }
+          } catch (imageError) {
+            console.error("Hero image download failed:", imageError);
+            await writeFile(assetsHandle, "IMAGE_DOWNLOAD_NOTE.txt", `Could not download hero image automatically. Original image URL: ${heroImage}`);
+          }
+        }
+
+        await writeFile(assetsHandle, "README.txt", "Website images, CSS, and JavaScript files belong in this assets folder.");
+        await writeFile(publicHandle, "README.txt", "Add public/static files in this public folder.");
+        alert(`✅ Website folder saved: ${folderName}`);
+        return;
+      } catch (error) {
+        if (error?.name === "AbortError") return;
+        console.error("Folder download failed:", error);
+        alert("Folder save failed. Downloading HTML file instead.");
+      }
+    } else {
+      alert("Your browser does not support folder save picker. Downloading HTML file instead.");
+    }
+
     const blob = new Blob([html], { type: "text/html" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `${(project.name || "website").replace(/\s+/g, "_")}.html`;
+    a.download = `${folderName}.html`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -1366,7 +1436,7 @@ function ProjectDetail() {
                 <button onClick={handleSaveTemplate} className="bg-indigo-100 text-indigo-700 px-3 py-2 rounded-lg text-xs font-semibold hover:bg-indigo-200 transition">💾 Save</button>
                 <button onClick={handleComplete} className="bg-emerald-500 text-white px-3 py-2 rounded-lg text-xs font-semibold hover:bg-emerald-600 transition">✅ Complete</button>
                 {project.completed && (
-                  <button onClick={handleDownload} className="bg-gray-800 text-white px-3 py-2 rounded-lg text-xs font-semibold hover:bg-black transition">⬇ Download HTML</button>
+                  <button onClick={handleDownload} className="bg-gray-800 text-white px-3 py-2 rounded-lg text-xs font-semibold hover:bg-black transition">⬇ Download Folder</button>
                 )}
               </div>
             </div>

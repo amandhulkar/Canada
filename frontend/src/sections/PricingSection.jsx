@@ -54,7 +54,23 @@ function PricingSection() {
       setIsSuccess(true)
       setTimeout(() => {
         // Upgrade plan dynamically
-        const updatedUser = { ...user, plan: selectedPlan.name }
+        const startDate = new Date()
+        const endDate = new Date(startDate)
+        if (isAnnual) {
+          endDate.setFullYear(endDate.getFullYear() + 1)
+        } else {
+          endDate.setDate(endDate.getDate() + 30)
+        }
+
+        const updatedUser = {
+          ...user,
+          plan: selectedPlan.name,
+          billingCycle: isAnnual ? "annual" : "monthly",
+          planPrice: isAnnual ? selectedPlan.priceAnnual : selectedPlan.price,
+          planCadence: isAnnual ? selectedPlan.cadenceAnnual : selectedPlan.cadence,
+          planStartedAt: startDate.toISOString(),
+          planEndsAt: endDate.toISOString(),
+        }
         localStorage.setItem("currentUser", JSON.stringify(updatedUser))
 
         handleClose()
@@ -89,10 +105,11 @@ function PricingSection() {
               />
             </button>
             <span className={`text-lg font-semibold ${isAnnual ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-500 dark:text-slate-400'}`}>Annual</span>
-            <span className="rounded bg-[#10b981] px-2.5 py-1 text-sm font-bold text-white">Save 20%</span>
+            <span className="rounded bg-[#10b981] px-2.5 py-1 text-sm font-bold text-white"></span>
           </div>
           <p className="text-[#10b981] font-medium text-lg">
-            {isAnnual ? 'Billed annually - you save 20% compared to monthly' : <span className="text-slate-400">Billed monthly - switch to annual and save 20%</span>}
+            {/* {isAnnual ? 'Billed annually - you save 20% compared to monthly' : <span className="text-slate-400">Billed monthly - switch to annual and save 20%</span>} */}
+            {/* {isAnnual ? 'Billed annually - you save 20% compared to monthly' : <span className="text-slate-400"> </span>} */}
           </p>
         </div>
 

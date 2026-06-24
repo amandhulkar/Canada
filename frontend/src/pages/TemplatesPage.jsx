@@ -294,14 +294,19 @@
       }
 
       const currentUser = JSON.parse(localStorage.getItem("currentUser") || "{}");
-      const plan = currentUser?.plan;
+      const planExpired = (() => {
+        if (!currentUser?.planEndsAt) return false;
+        const endDate = new Date(currentUser.planEndsAt);
+        return !Number.isNaN(endDate.getTime()) && endDate.getTime() < Date.now();
+      })();
+      const plan = planExpired ? null : currentUser?.plan;
       const isAdmin = currentUser?.role === "admin";
 
       setLoading(true)
       try {
         if (!isAdmin) {
           if (!plan) {
-            alert("Templates require a subscription. Please subscribe to a Pro ($299) or Business ($399) plan to use templates.");
+            alert(planExpired ? "Your plan has expired. Please renew or upgrade to use templates." : "Templates require a subscription. Please subscribe to a Pro ($299) or Business ($399) plan to use templates.");
             setLoading(false);
             return;
           }

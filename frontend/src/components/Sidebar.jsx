@@ -14,6 +14,12 @@ const ALL_LINKS = [
   { to: "/dashboard/support", label: "Support Info" },
 ];
 
+const isPlanExpired = (user) => {
+  if (!user?.planEndsAt) return false;
+  const endDate = new Date(user.planEndsAt);
+  return !Number.isNaN(endDate.getTime()) && endDate.getTime() < Date.now();
+};
+
 function Sidebar() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -21,7 +27,7 @@ function Sidebar() {
   const { isAdmin, plan } = useMemo(() => {
     try {
       const user = JSON.parse(localStorage.getItem("currentUser"));
-      return { isAdmin: user?.role === "admin", plan: user?.plan };
+      return { isAdmin: user?.role === "admin", plan: isPlanExpired(user) ? null : user?.plan };
     } catch {
       return { isAdmin: false, plan: null };
     }

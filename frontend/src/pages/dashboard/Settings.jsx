@@ -9,7 +9,39 @@ const getUser = () => {
   const email = user.email || "";
   const accountType = user.accountType || "Personal account";
   const initials = name.split(" ").map((w) => w[0]).join("").toUpperCase().slice(0, 2);
-  return { name, email, accountType, initials, plan: user.plan || "Individual - trial" };
+  return {
+    name,
+    email,
+    accountType,
+    initials,
+    plan: user.plan || "Individual - trial",
+    billingCycle: user.billingCycle || "trial",
+    planPrice: user.planPrice || "Free",
+    planCadence: user.planCadence || "",
+    planStartedAt: user.planStartedAt || "",
+    planEndsAt: user.planEndsAt || "",
+  };
+};
+
+const formatPlanDate = (date) => {
+  if (!date) return "Not set";
+  const parsed = new Date(date);
+  if (Number.isNaN(parsed.getTime())) return "Not set";
+  return parsed.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
+};
+
+const getDaysLeft = (date) => {
+  if (!date) return "Not set";
+  const parsed = new Date(date);
+  if (Number.isNaN(parsed.getTime())) return "Not set";
+  const diff = Math.ceil((parsed.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+  if (diff < 0) return "Expired";
+  if (diff === 0) return "Ends today";
+  return `${diff} days left`;
 };
 
 const NAV_ITEMS = [
@@ -23,13 +55,49 @@ const NAV_ITEMS = [
 ];
 
 const PLAN_DETAILS = {
+  Plus: {
+    badge: "Active",
+    name: "Plus",
+    price: "$199",
+    annualPrice: "$1592",
+    cadence: "/month",
+    annualCadence: "/year",
+    summary:
+      "Access dashboard pages including Projects, Settings, Support Info, Access/Role, and Services.",
+    features: [
+      "Projects page access",
+      "Settings page access",
+      "Support Info page access",
+      "Access/Role page access",
+      "Services page access",
+    ],
+  },
+  Pro: {
+    badge: "Active",
+    name: "Pro",
+    price: "$299",
+    annualPrice: "$2499",
+    cadence: "/month",
+    annualCadence: "/year",
+    summary:
+      "Access dashboard pages including Projects, Settings, Support Info, Access/Role, Services, Invoices, and Team, plus any 4 templates.",
+    features: [
+      "Projects and Settings access",
+      "Support Info and Access/Role access",
+      "Services and Invoices access",
+      "Team page access",
+      "Access to any 4 templates",
+    ],
+  },
   Business: {
     badge: "Most popular",
     name: "Business",
     price: "$399",
+    annualPrice: "$3499",
     cadence: "/month",
+    annualCadence: "/year",
     summary:
-      "Complete dashboard access including Projects, Settings, Support Info, Access/Role, Services, Invoices, Team, Clients, and Reports, plus all 8 templates, billed every 30 days.",
+      "Complete dashboard access including Projects, Settings, Support Info, Access/Role, Services, Invoices, Team, Clients, and Reports, plus all 8 templates.",
     features: [
       "Complete dashboard access",
       "Projects, Settings, and Support Info",
@@ -43,6 +111,17 @@ const PLAN_DETAILS = {
 
 function ProfileSection({ user }) {
   const activePlan = PLAN_DETAILS[user.plan];
+  const isAnnual = user.billingCycle === "annual";
+  const displayPrice = user.planPrice || (activePlan ? (isAnnual ? activePlan.annualPrice : activePlan.price) : "Free");
+  const displayCadence = user.planCadence || (activePlan ? (isAnnual ? activePlan.annualCadence : activePlan.cadence) : "");
+  const planTimeline = [
+    { label: "Selected plan", value: user.plan },
+    { label: "Billing cycle", value: user.billingCycle === "trial" ? "Trial" : isAnnual ? "Annual" : "Monthly" },
+    { label: "Price", value: `${displayPrice}${displayCadence}` },
+    { label: "Started on", value: formatPlanDate(user.planStartedAt) },
+    { label: "Ends on", value: formatPlanDate(user.planEndsAt) },
+    { label: "Status", value: getDaysLeft(user.planEndsAt) },
+  ];
 
   return (
     <div className="flex flex-col gap-4">
@@ -85,6 +164,29 @@ function ProfileSection({ user }) {
         </div>
       </div>
 
+      <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 border border-indigo-100 dark:border-indigo-900/40 shadow-sm">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-5">
+          <div>
+            <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100">Subscription details</h2>
+            <p className="text-sm text-slate-400 dark:text-slate-500 mt-1">
+              Your plan purchase date, billing cycle, and expiry are shown here.
+            </p>
+          </div>
+          <span className="bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 text-sm font-semibold px-4 py-2 rounded-full capitalize">
+            {user.billingCycle === "trial" ? "Trial" : `${user.billingCycle} billing`}
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          {planTimeline.map((item) => (
+            <div key={item.label} className="bg-slate-50 dark:bg-slate-700 rounded-xl px-5 py-4">
+              <p className="text-sm text-slate-400 dark:text-slate-400 mb-1">{item.label}</p>
+              <p className="text-base font-semibold text-slate-800 dark:text-slate-100">{item.value}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
       {activePlan && (
         <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 border-2 border-emerald-400 dark:border-emerald-600 shadow-sm">
           <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-5">
@@ -97,9 +199,9 @@ function ProfileSection({ user }) {
               </h2>
               <p className="mt-2">
                 <span className="text-4xl font-bold text-emerald-600 dark:text-emerald-400">
-                  {activePlan.price}
+                  {displayPrice}
                 </span>
-                <span className="text-slate-400 dark:text-slate-500">{activePlan.cadence}</span>
+                <span className="text-slate-400 dark:text-slate-500">{displayCadence}</span>
               </p>
             </div>
             <span className="bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 text-sm font-semibold px-4 py-2 rounded-full">

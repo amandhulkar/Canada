@@ -691,6 +691,8 @@ const PROJECT_STATUSES = [
 ];
 
 function PricingModal({ open, onClose, onChoosePlan }) {
+  const [isAnnual, setIsAnnual] = useState(false);
+
   if (!open) return null;
 
   return (
@@ -707,9 +709,28 @@ function PricingModal({ open, onClose, onChoosePlan }) {
         <h2 className="text-3xl font-bold text-green-600 dark:text-green-400 text-center">
           Upgrade your plan
         </h2>
-        <p className="text-gray-400 dark:text-slate-400 text-center mt-2 mb-8">
+        <p className="text-gray-400 dark:text-slate-400 text-center mt-2 mb-5">
           Choose a plan to unlock full access after your trial ends.
         </p>
+
+        <div className="flex items-center justify-center gap-3 mb-8">
+          <span className={`text-sm font-semibold ${!isAnnual ? "text-green-600 dark:text-green-400" : "text-slate-400 dark:text-slate-500"}`}>
+            Monthly
+          </span>
+          <button
+            type="button"
+            onClick={() => setIsAnnual((prev) => !prev)}
+            className={`relative h-7 w-14 rounded-full transition cursor-pointer ${isAnnual ? "bg-green-600" : "bg-slate-200 dark:bg-slate-700"}`}
+            aria-label="Toggle billing period"
+          >
+            <span
+              className={`absolute left-0 top-1 h-5 w-5 rounded-full bg-white shadow transition-transform ${isAnnual ? "translate-x-8" : "translate-x-1"}`}
+            />
+          </button>
+          <span className={`text-sm font-semibold ${isAnnual ? "text-green-600 dark:text-green-400" : "text-slate-400 dark:text-slate-500"}`}>
+            Annual
+          </span>
+        </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {pricingPlans.map((plan) => (
@@ -729,10 +750,12 @@ function PricingModal({ open, onClose, onChoosePlan }) {
               <h3 className="text-xl font-bold text-gray-800 dark:text-slate-100">{plan.name}</h3>
               <p className="mt-2">
                 <span className="text-3xl font-bold text-green-600 dark:text-green-400">
-                  {plan.price}
+                  {isAnnual ? plan.priceAnnual : plan.price}
                 </span>
                 {plan.cadence && (
-                  <span className="text-gray-400 dark:text-slate-400">{plan.cadence}</span>
+                  <span className="text-gray-400 dark:text-slate-400">
+                    {isAnnual ? plan.cadenceAnnual : plan.cadence}
+                  </span>
                 )}
               </p>
               {plan.summary && (
@@ -749,7 +772,7 @@ function PricingModal({ open, onClose, onChoosePlan }) {
               </ul>
 
               <button
-                onClick={() => onChoosePlan(plan.name)}
+                onClick={() => onChoosePlan(plan.name, isAnnual)}
                 className={`w-full mt-6 font-semibold px-4 py-2.5 rounded-xl transition ${
                   plan.featured
                     ? "bg-green-600 text-white hover:bg-green-700"
@@ -788,10 +811,10 @@ function UserDashboard() {
     }
   }, [selectedPlanForCheckout, userName]);
 
-  const handleChoosePlan = (planName) => {
+  const handleChoosePlan = (planName, isAnnual = false) => {
     setPricingOpen(false);
     const plan = pricingPlans.find(p => p.name === planName);
-    setSelectedPlanForCheckout(plan);
+    setSelectedPlanForCheckout(plan ? { ...plan, isAnnual } : null);
   };
 
   const handleCloseCheckout = () => {
@@ -810,7 +833,23 @@ function UserDashboard() {
       setIsProcessing(false);
       setIsSuccess(true);
       setTimeout(() => {
-        const updatedUser = { ...user, plan: selectedPlanForCheckout.name };
+        const startDate = new Date();
+        const endDate = new Date(startDate);
+        if (selectedPlanForCheckout.isAnnual) {
+          endDate.setFullYear(endDate.getFullYear() + 1);
+        } else {
+          endDate.setDate(endDate.getDate() + 30);
+        }
+
+        const updatedUser = {
+          ...user,
+          plan: selectedPlanForCheckout.name,
+          billingCycle: selectedPlanForCheckout.isAnnual ? "annual" : "monthly",
+          planPrice: selectedPlanForCheckout.isAnnual ? selectedPlanForCheckout.priceAnnual : selectedPlanForCheckout.price,
+          planCadence: selectedPlanForCheckout.isAnnual ? selectedPlanForCheckout.cadenceAnnual : selectedPlanForCheckout.cadence,
+          planStartedAt: startDate.toISOString(),
+          planEndsAt: endDate.toISOString(),
+        };
         localStorage.setItem("currentUser", JSON.stringify(updatedUser));
         handleCloseCheckout();
         navigate("/dashboard/settings");
@@ -832,7 +871,12 @@ function UserDashboard() {
     return "Good evening";
   };
 
-  const plan = user?.plan;
+  const planExpired = (() => {
+    if (!user?.planEndsAt) return false;
+    const endDate = new Date(user.planEndsAt);
+    return !Number.isNaN(endDate.getTime()) && endDate.getTime() < Date.now();
+  })();
+  const plan = planExpired ? null : user?.plan;
   const hasAccess = (item) => {
     if (!plan) {
       // New user with no plan — basic pages only
@@ -1030,15 +1074,15 @@ function UserDashboard() {
                       {selectedPlanForCheckout.name} Plan
                     </span>
                     <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                      Billed monthly
+                      {selectedPlanForCheckout.isAnnual ? "Billed annually" : "Billed monthly"}
                     </p>
                   </div>
                   <div className="text-right">
                     <span className="text-xl font-bold text-slate-800 dark:text-slate-100">
-                      {selectedPlanForCheckout.price}
+                      {selectedPlanForCheckout.isAnnual ? selectedPlanForCheckout.priceAnnual : selectedPlanForCheckout.price}
                     </span>
                     <span className="text-xs text-slate-500 dark:text-slate-400">
-                      {selectedPlanForCheckout.cadence}
+                      {selectedPlanForCheckout.isAnnual ? selectedPlanForCheckout.cadenceAnnual : selectedPlanForCheckout.cadence}
                     </span>
                   </div>
                 </div>
