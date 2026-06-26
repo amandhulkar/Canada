@@ -709,15 +709,6 @@ function QuickLink({ to, title, sub, highlight }) {
   );
 }
 
-const PROJECT_STATUSES = [
-  { label: "Planning", color: "#a5b4fc" },
-  { label: "Design", color: "#7c3aed" },
-  { label: "Development", color: "#312e81" },
-  { label: "Testing", color: "#d1d5db" },
-  { label: "Live", color: "#10b981" },
-  { label: "On Hold", color: "#fb923c" },
-];
-
 function PricingModal({ open, onClose, onChoosePlan }) {
   const [isAnnual, setIsAnnual] = useState(false);
 
@@ -1060,42 +1051,6 @@ function UserDashboard() {
           {hasAccess("invoices") && <QuickLink to="/dashboard/invoices?modal=open" title="New" sub="New Invoice" highlight />}
         </div>
 
-        {/* Charts */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
-          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm p-6">
-            <h3 className="text-xl font-bold text-gray-800 dark:text-slate-100 mb-6">
-              Website Projects by Status
-            </h3>
-            <div className="h-40 flex items-center justify-center text-gray-300 dark:text-slate-600 text-sm">
-              No project data yet
-            </div>
-            <div className="flex flex-wrap gap-x-6 gap-y-2 justify-center mt-4">
-              {PROJECT_STATUSES.map((s) => (
-                <div key={s.label} className="flex items-center gap-2 text-sm text-gray-500 dark:text-slate-400">
-                  <span className="w-4 h-4 rounded" style={{ backgroundColor: s.color }} />
-                  {s.label}
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm p-6">
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="text-xl font-bold text-gray-800 dark:text-slate-100">
-                Revenue Analytics - {new Date().getFullYear()}
-              </h3>
-              <span className="text-sm font-semibold text-blue-500 bg-blue-50 dark:bg-blue-900/30 dark:text-blue-400 px-3 py-1 rounded-full">
-                No data
-              </span>
-            </div>
-            <p className="text-gray-400 dark:text-slate-500 text-sm mb-4">
-              No paid or pending invoice totals are available for {new Date().getFullYear()} yet.
-            </p>
-            <div className="h-40 flex items-center justify-center text-gray-300 dark:text-slate-600 text-sm">
-              Revenue chart will appear here
-            </div>
-          </div>
-        </div>
 
         {/* Recent Activity */}
         <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm p-6 mb-6">

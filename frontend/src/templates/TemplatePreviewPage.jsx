@@ -94,7 +94,6 @@ function TemplatePreviewPage() {
     const token = localStorage.getItem("token");
     const currentUser = JSON.parse(localStorage.getItem("currentUser") || "null");
     if (!token || !currentUser?._id) {
-      alert("Please login first to use a template.");
       navigate("/signup?tab=signin");
       return;
     }
@@ -121,7 +120,15 @@ function TemplatePreviewPage() {
           templateData: template.defaultData || {},
         }),
       });
-      if (!res.ok) throw new Error(await res.text() || `Status ${res.status}`);
+      if (!res.ok) {
+        if (res.status === 401 || res.status === 403) {
+          localStorage.removeItem("token");
+          localStorage.removeItem("currentUser");
+          navigate("/signup?tab=signin");
+          return;
+        }
+        throw new Error(await res.text() || `Status ${res.status}`);
+      }
       const project = await res.json();
       if (!project?._id) throw new Error("No project ID returned.");
       navigate(`/dashboard/projects/${project._id}`);

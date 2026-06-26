@@ -289,7 +289,6 @@
       const token = localStorage.getItem("token")
       const currentUser = JSON.parse(localStorage.getItem("currentUser") || "null");
       if (!token || !currentUser?._id) {
-        alert("Please login first to use a template.")
         navigate("/signup?tab=signin")
         return
       }
@@ -353,6 +352,12 @@
         })
 
         if (!res.ok) {
+          if (res.status === 401 || res.status === 403) {
+            localStorage.removeItem("token")
+            localStorage.removeItem("currentUser")
+            navigate("/signup?tab=signin")
+            return
+          }
           const errText = await res.text()
           throw new Error(errText || `Request failed with status ${res.status}`)
         }
