@@ -120,7 +120,7 @@ function EditClientModal({ open, onClose, client, onSave }) {
   );
 }
 
-function AddProjectModal({ open, onClose, clientName, onSave, error }) {
+function AddProjectModal({ open, onClose, clientName, teamMembers, onSave, error }) {
   const [form, setForm] = useState({
     name: TEMPLATE_OPTIONS[0] || "",
     startDate: "",
@@ -196,7 +196,14 @@ function AddProjectModal({ open, onClose, clientName, onSave, error }) {
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-600 dark:text-slate-300 mb-1">Assigned Team</label>
-              <input name="team" value={form.team} onChange={handleChange} className={inputClass} placeholder="e.g. Design Team" />
+              <select name="team" value={form.team} onChange={handleChange} className={inputClass}>
+                <option value="">Select developer</option>
+                {teamMembers.map((member) => (
+                  <option key={member._id} value={member.fullName}>
+                    {member.fullName}
+                  </option>
+                ))}
+              </select>
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-600 dark:text-slate-300 mb-1">Progress (%)</label>
@@ -237,6 +244,7 @@ function ClientDetail() {
   const [editOpen, setEditOpen] = useState(false);
   const [projectModalOpen, setProjectModalOpen] = useState(false);
   const [projectError, setProjectError] = useState("");
+  const [teamMembers, setTeamMembers] = useState([]);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -246,6 +254,16 @@ function ClientDetail() {
       .then((res) => res.json())
       .then((data) => { setClient(data); setLoading(false); })
       .catch((err) => { console.log(err); setLoading(false); });
+
+    fetch(`${API}/api/admin/users?t=${Date.now()}`, { headers: { Authorization: token }, cache: "no-store" })
+      .then((res) => res.ok ? res.json() : { users: [] })
+      .then((data) => {
+        const developersOnly = Array.isArray(data.users)
+          ? data.users.filter((member) => member.accessRole === "developer")
+          : [];
+        setTeamMembers(developersOnly);
+      })
+      .catch((err) => console.log(err));
   }, [id]);
 
   useEffect(() => {
@@ -606,6 +624,7 @@ function ClientDetail() {
         open={projectModalOpen}
         onClose={() => setProjectModalOpen(false)}
         clientName={client.clientName}
+        teamMembers={teamMembers}
         onSave={handleAddProject}
         error={projectError}
       />

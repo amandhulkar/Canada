@@ -52,6 +52,19 @@ router.post("/", protect, requirePermission(PERMISSIONS.MANAGE_PROJECTS), async 
     const companyId = getCompanyId(req);
     const safeBody = cleanProjectBody(req.body);
 
+    if (req.user.plan === "Pro" && safeBody.templateId) {
+      const usedTemplatesCount = await Project.countDocuments({
+        companyId,
+        templateId: { $exists: true, $ne: "" },
+      });
+
+      if (usedTemplatesCount >= 4) {
+        return res.status(403).json({
+          message: "You have reached the limit of 4 templates allowed under the Pro plan. Please upgrade to the Business plan for unlimited template access.",
+        });
+      }
+    }
+
     const alreadyAssigned = await Project.findOne({
       companyId,
       name: safeBody.name,

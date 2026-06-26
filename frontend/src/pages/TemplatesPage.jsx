@@ -352,8 +352,8 @@
         })
 
         if (!res.ok) {
-          if (res.status === 401 || res.status === 403) {
-            navigate("/dashboard")
+          if (res.status === 401) {
+            navigate("/signup?tab=signin")
             return
           }
           const errText = await res.text()
@@ -368,7 +368,13 @@
         navigate(`/dashboard/projects/${project._id}`)
       } catch (err) {
         console.error("Failed to create project from template:", err)
-        alert(`Something went wrong: ${err.message}`)
+        let message = err.message
+        try {
+          message = JSON.parse(err.message).message || message
+        } catch {
+          // Use original message when it is not JSON.
+        }
+        alert(message)
       } finally {
         setLoading(false)
       }

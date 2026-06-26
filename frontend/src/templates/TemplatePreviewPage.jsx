@@ -33,6 +33,7 @@ function TemplatePreviewPage() {
   const [loading, setLoading] = useState(false);
   const [pageLoading, setPageLoading] = useState(true);
   const [template, setTemplate] = useState(null);
+  const [isPurchased, setIsPurchased] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -121,18 +122,30 @@ function TemplatePreviewPage() {
         }),
       });
       if (!res.ok) {
-        if (res.status === 401 || res.status === 403) {
-          navigate("/dashboard");
+        if (res.status === 401) {
+          navigate("/signup?tab=signin");
           return;
         }
-        throw new Error(await res.text() || `Status ${res.status}`);
+        const errorText = await res.text();
+        if (errorText.toLowerCase().includes("already saved")) {
+          setIsPurchased(true);
+          navigate("/dashboard/projects");
+          return;
+        }
+        throw new Error(errorText || `Status ${res.status}`);
       }
       const project = await res.json();
       if (!project?._id) throw new Error("No project ID returned.");
       navigate(`/dashboard/projects/${project._id}`);
     } catch (err) {
       console.error(err);
-      alert(`Something went wrong: ${err.message}`);
+      let message = err.message;
+      try {
+        message = JSON.parse(err.message).message || message;
+      } catch {
+        // Use original message when it is not JSON.
+      }
+      alert(message);
     } finally {
       setLoading(false);
     }
@@ -160,10 +173,10 @@ function TemplatePreviewPage() {
           <button
             onClick={handleUseTemplate}
             disabled={loading}
-            className="rounded-full px-5 py-2 text-sm font-semibold text-white transition disabled:opacity-60 hover:opacity-90"
+            className="rounded-full px-5 py-2 text-sm font-semibold text-white transition disabled:opacity-80 hover:opacity-90"
             style={{ background: "#E91E8C" }}
           >
-            {loading ? "Loading..." : "Use This Template"}
+            {loading ? "Loading..." : isPurchased ? "Use Again" : "Use This Template"}
           </button>
         </div>
       </div>
@@ -224,14 +237,21 @@ function TemplatePreviewPage() {
               {previewSubtitle}
             </p>
             <div className="flex flex-wrap gap-4">
-              <button
-                onClick={handleUseTemplate}
-                disabled={loading}
-                className="font-semibold px-7 py-3 rounded-full transition-all duration-200 shadow-md hover:scale-[1.02] active:scale-95 disabled:opacity-60"
-                style={{ background: "#E91E8C", color: "#fff" }}
-              >
-                {loading ? "Loading..." : "Use This Template"}
-              </button>
+              <div className="flex flex-wrap items-center gap-3">
+                {isPurchased && (
+                  <span className="rounded-full bg-green-100 px-4 py-2 text-sm font-semibold text-green-700">
+                    Purchased
+                  </span>
+                )}
+                <button
+                  onClick={handleUseTemplate}
+                  disabled={loading}
+                  className="font-semibold px-7 py-3 rounded-full transition-all duration-200 shadow-md hover:scale-[1.02] active:scale-95 disabled:opacity-80"
+                  style={{ background: "#E91E8C", color: "#fff" }}
+                >
+                  {loading ? "Loading..." : isPurchased ? "Use Again" : "Use This Template"}
+                </button>
+              </div>
               <button
                 onClick={() => navigate("/templates")}
                 className="border-2 border-[#E91E8C] text-[#E91E8C] hover:bg-pink-50 font-semibold px-7 py-3 rounded-full transition-all duration-200 active:scale-95"

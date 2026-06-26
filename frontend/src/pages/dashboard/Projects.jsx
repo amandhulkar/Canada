@@ -115,10 +115,10 @@ function Projects() {
     fetch(`${API}/api/admin/users?t=${Date.now()}`, { headers, cache: "no-store" })
       .then((res) => res.ok ? res.json() : { users: [] })
       .then((data) => {
-        const usersOnly = Array.isArray(data.users)
-          ? data.users.filter((member) => member.role !== "admin")
+        const developersOnly = Array.isArray(data.users)
+          ? data.users.filter((member) => member.accessRole === "developer")
           : [];
-        setTeamMembers(usersOnly);
+        setTeamMembers(developersOnly);
       })
       .catch((err) => console.log(err));
 
