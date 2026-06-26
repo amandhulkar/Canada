@@ -5,7 +5,7 @@ import templates from "../../data/templates";
 
 const API = import.meta.env.VITE_API_URL || "http://127.0.0.1:5000";
 
-const TABS = ["Overview", "Projects", "Invoice History"];
+const TABS = ["Overview", "Projects"];
 const STATUSES = ["Planning", "Design", "Development", "Testing", "Live", "On Hold"];
 const TEMPLATE_OPTIONS = templates.map((template) => template.name);
 
@@ -127,6 +127,7 @@ function AddProjectModal({ open, onClose, clientName, teamMembers, onSave, error
     deadline: "",
     status: STATUSES[0],
     team: "",
+    assignedTo: "",
     progress: "0",
     scopeOfWork: "",
     deliverables: "",
@@ -140,6 +141,7 @@ function AddProjectModal({ open, onClose, clientName, teamMembers, onSave, error
         deadline: "",
         status: STATUSES[0],
         team: "",
+        assignedTo: "",
         progress: "0",
         scopeOfWork: "",
         deliverables: "",
@@ -150,7 +152,19 @@ function AddProjectModal({ open, onClose, clientName, teamMembers, onSave, error
   if (!open) return null;
 
   const inputClass = "w-full rounded-lg border border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-900 text-gray-800 dark:text-slate-100 placeholder:text-gray-400 dark:placeholder:text-slate-500 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400";
-  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
+  const handleChange = (e) => {
+    if (e.target.name === "assignedTo") {
+      const selectedMember = teamMembers.find((member) => member._id === e.target.value);
+      setForm({
+        ...form,
+        assignedTo: selectedMember?._id || "",
+        team: selectedMember?.fullName || "",
+      });
+      return;
+    }
+
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -196,10 +210,10 @@ function AddProjectModal({ open, onClose, clientName, teamMembers, onSave, error
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-600 dark:text-slate-300 mb-1">Assigned Team</label>
-              <select name="team" value={form.team} onChange={handleChange} className={inputClass}>
+              <select name="assignedTo" value={form.assignedTo} onChange={handleChange} className={inputClass}>
                 <option value="">Select developer</option>
                 {teamMembers.map((member) => (
-                  <option key={member._id} value={member.fullName}>
+                  <option key={member._id} value={member._id}>
                     {member.fullName}
                   </option>
                 ))}
@@ -277,7 +291,10 @@ function ClientDetail() {
       .then((res) => res.json())
       .then((data) => {
         const allProjects = Array.isArray(data) ? data : [];
-        setProjects(allProjects.filter((p) => normalizeName(p.client) === normalizeName(client.clientName)));
+        setProjects(allProjects.filter((p) => (
+          String(p.clientId || "") === String(client._id) ||
+          (!p.clientId && normalizeName(p.client) === normalizeName(client.clientName))
+        )));
       })
       .catch((err) => console.log(err))
       .finally(() => setProjectsLoading(false));
@@ -324,6 +341,7 @@ function ClientDetail() {
           ...projectData,
           name: projectData.name.trim(),
           client: client.clientName,
+          clientId: client._id,
           progress,
           templateId: selectedTemplate ? String(selectedTemplate.id) : "",
           templateData: selectedTemplate?.defaultData || {},
@@ -351,9 +369,9 @@ function ClientDetail() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen bg-slate-100 dark:bg-slate-900">
+      <div className="flex min-h-screen flex-col md:flex-row bg-slate-100 dark:bg-slate-900">
         <Sidebar />
-        <main className="flex-1 flex items-center justify-center">
+        <main className="min-w-0 flex-1 flex items-center justify-center p-4 sm:p-6 lg:p-8">
           <div className="text-indigo-400 text-lg font-semibold animate-pulse">Loading...</div>
         </main>
       </div>
@@ -362,9 +380,9 @@ function ClientDetail() {
 
   if (!client) {
     return (
-      <div className="flex min-h-screen bg-slate-100 dark:bg-slate-900">
+      <div className="flex min-h-screen flex-col md:flex-row bg-slate-100 dark:bg-slate-900">
         <Sidebar />
-        <main className="flex-1 flex items-center justify-center">
+        <main className="min-w-0 flex-1 flex items-center justify-center p-4 sm:p-6 lg:p-8">
           <div className="text-center">
             <p className="text-5xl mb-4">😕</p>
             <p className="text-lg font-bold text-gray-700 dark:text-slate-300">Client not found</p>
@@ -376,10 +394,10 @@ function ClientDetail() {
   }
 
   return (
-    <div className="flex min-h-screen bg-slate-100 dark:bg-slate-900">
+    <div className="flex min-h-screen flex-col md:flex-row bg-slate-100 dark:bg-slate-900">
       <Sidebar />
 
-      <main className="flex-1 p-8 space-y-6">
+      <main className="min-w-0 flex-1 p-4 sm:p-6 lg:p-8 space-y-6">
 
         {/* Breadcrumb + Header */}
         <div>
@@ -597,19 +615,6 @@ function ClientDetail() {
           </div>
         )}
 
-        {activeTab === "Invoice History" && (
-          <div className="bg-white dark:bg-slate-800 rounded-2xl p-10 shadow-sm text-center">
-            <p className="text-4xl mb-3">🧾</p>
-            <p className="font-bold text-gray-700 dark:text-slate-300">No invoices yet</p>
-            <p className="text-sm text-gray-400 dark:text-slate-500 mt-1">Create an invoice for this client from the invoices page.</p>
-            <button
-              onClick={handleAddInvoice}
-              className="mt-5 px-5 py-2 text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl shadow-sm transition"
-            >
-              + Add Invoice
-            </button>
-          </div>
-        )}
 
       </main>
 

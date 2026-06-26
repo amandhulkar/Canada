@@ -518,15 +518,15 @@
 
         {/* HERO SECTION — YE ADD KAR */}
       <div style={{ background: "linear-gradient(135deg, #f5f5f5 0%, #efefef 50%, #f9f9f9 100%)" }}
-        className="py-16 text-center">
+        className="px-4 py-12 sm:py-16 text-center">
         <p className="text-xs font-bold uppercase tracking-[0.2em] mb-4" style={{ color: "#6c5ce7" }}>
           TEMPLATES
         </p>
-        <h1 className="text-5xl font-extrabold tracking-[-0.03em] mb-4" style={{ color: "#14132a" }}>
+        <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-[-0.03em] mb-4" style={{ color: "#14132a" }}>
           Select Your{" "}
           <span style={{ color: "#6c5ce7" }}>template</span>
         </h1>
-        <p className="text-base mb-8" style={{ color: "#888" }}>
+        <p className="mx-auto max-w-2xl text-sm sm:text-base mb-8" style={{ color: "#888" }}>
           {templates.length} professionally designed templates for key business categories. Fully customizable — no design skills needed.
         </p>
 
@@ -547,7 +547,7 @@
         </div>
 
         {/* Stats */}
-        <div className="mt-6 flex items-center justify-center gap-8 text-sm" style={{ color: "#888" }}>
+        <div className="mt-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs sm:text-sm" style={{ color: "#888" }}>
           <p><strong style={{ color: "#14132a" }}>{templates.length}</strong> Templates</p>
           <p><strong style={{ color: "#14132a" }}>{categories.length - 1}</strong> Categories</p>
           <p><strong style={{ color: "#14132a" }}>$199</strong> per download</p>
@@ -613,7 +613,7 @@
             onClick={() => setPreviewTemplate(null)}
           >
             <div
-              className="relative w-full max-w-3xl overflow-hidden rounded-2xl bg-white"
+              className="relative w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-2xl bg-white"
               onClick={(e) => e.stopPropagation()}
             >
               <button
@@ -626,10 +626,10 @@
               <img
                 src={previewTemplate.image}
                 alt={previewTemplate.name}
-                className="h-[420px] w-full object-cover"
+                className="h-56 sm:h-72 md:h-[420px] w-full object-cover"
               />
               <div className="p-6">
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     <h2 className="text-2xl font-bold" style={{ color: "#14132a" }}>
                       {previewTemplate.name}
@@ -645,7 +645,7 @@
                     {previewTemplate.price}
                   </span>
                 </div>
-                <div className="mt-6 flex justify-end gap-3">
+                <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
                   <button
                     onClick={() => setPreviewTemplate(null)}
                     className="rounded-full px-6 py-2.5 text-sm font-semibold"

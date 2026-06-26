@@ -443,18 +443,18 @@ function ProjectDetail() {
 
   if (!project)
     return (
-      <div className="flex min-h-screen bg-slate-100">
+      <div className="flex min-h-screen flex-col md:flex-row bg-slate-100">
         <Sidebar />
-        <main className="flex-1 flex items-center justify-center">
+        <main className="min-w-0 flex-1 flex items-center justify-center p-4 sm:p-6 lg:p-8">
           <p className="text-gray-400 text-lg">Loading...</p>
         </main>
       </div>
     );
 
   return (
-    <div className="flex min-h-screen bg-slate-100">
+    <div className="flex min-h-screen flex-col md:flex-row bg-slate-100">
       <Sidebar />
-      <main className="flex-1 p-8">
+      <main className="min-w-0 flex-1 p-4 sm:p-6 lg:p-8">
 
         {/* Header */}
         <div className="flex items-center justify-between mb-6">

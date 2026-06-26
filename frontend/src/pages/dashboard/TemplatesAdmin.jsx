@@ -142,9 +142,9 @@ function TemplatesAdmin() {
 
   if (!isAdmin) {
     return (
-      <div className="flex min-h-screen bg-slate-100 dark:bg-slate-900">
+      <div className="flex min-h-screen flex-col md:flex-row bg-slate-100 dark:bg-slate-900">
         <Sidebar />
-        <main className="flex-1 p-8">
+        <main className="min-w-0 flex-1 p-4 sm:p-6 lg:p-8">
           <div className="bg-white dark:bg-slate-800 rounded-2xl p-8 text-center">
             <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">Admin only</h1>
             <p className="text-slate-400 dark:text-slate-500 mt-2">Only admin users can manage templates.</p>
@@ -155,9 +155,9 @@ function TemplatesAdmin() {
   }
 
   return (
-    <div className="flex min-h-screen bg-slate-100 dark:bg-slate-900">
+    <div className="flex min-h-screen flex-col md:flex-row bg-slate-100 dark:bg-slate-900">
       <Sidebar />
-      <main className="flex-1 p-8">
+      <main className="min-w-0 flex-1 p-4 sm:p-6 lg:p-8">
         <div className="flex items-start justify-between mb-6">
           <div>
             <h1 className="text-3xl font-bold text-indigo-900 dark:text-indigo-400">Template Management</h1>

@@ -13,10 +13,12 @@ const EMPTY_FORM = {
   name: "",
   projectType: "Business",
   client: "",
+  clientId: "",
   startDate: new Date().toISOString().split("T")[0],
   deadline: "",
   status: "Planning",
   team: "",
+  assignedTo: "",
   scopeOfWork: "",
   deliverables: "",
   templateId: "",
@@ -30,10 +32,12 @@ const sampleProjectForm = () => {
     name: "Business Website Development",
     projectType: "Business",
     client: "Acme Studios",
+    clientId: "",
     startDate: new Date().toISOString().split("T")[0],
     deadline: deadline.toISOString().split("T")[0],
     status: "Development",
     team: "Aman Sharma",
+    assignedTo: "",
     scopeOfWork: "Build a responsive business website with homepage, services, contact form, and admin dashboard setup.",
     deliverables: "Source code, live deployment, admin access, and documentation",
     templateId: "",
@@ -134,7 +138,11 @@ function Projects() {
 
   useEffect(() => {
     if (!location.state?.openAddProject) return;
-    setForm((prev) => ({ ...prev, team: location.state.assignedTeam || prev.team }));
+    setForm((prev) => ({
+      ...prev,
+      team: location.state.assignedTeam || prev.team,
+      assignedTo: location.state.assignedTo || prev.assignedTo,
+    }));
     setShowAddModal(true);
     navigate(location.pathname, { replace: true });
   }, [location, navigate]);
@@ -226,9 +234,9 @@ function Projects() {
   };
 
   return (
-    <div className="flex min-h-screen bg-slate-100 dark:bg-slate-900">
+    <div className="flex min-h-screen flex-col md:flex-row bg-slate-100 dark:bg-slate-900">
       <Sidebar />
-      <main className="flex-1 p-8">
+      <main className="min-w-0 flex-1 p-4 sm:p-6 lg:p-8">
         <div className="mb-6">
           <h1 className="text-4xl font-bold text-indigo-600">Projects</h1>
           <p className="text-gray-400 mt-1">Track all website projects and their progress</p>
@@ -402,16 +410,17 @@ function Projects() {
                   Client Name
                 </label>
                 <select
-                  value={form.client}
+                  value={form.clientId || form.client}
                   onChange={(e) => {
-                    const selectedClient = clientOptions.find((client) => client.clientName === e.target.value);
+                    const selectedClient = clientOptions.find((client) => client._id === e.target.value || client.clientName === e.target.value);
                     const selectedTemplate = projectOptions.find((template) => template.name === selectedClient?.workspace);
                     const nextDeadline = new Date();
                     nextDeadline.setDate(nextDeadline.getDate() + 30);
 
                     setForm({
                       ...form,
-                      client: e.target.value,
+                      clientId: selectedClient?._id || "",
+                      client: selectedClient?.clientName || "",
                       name: selectedClient?.workspace || form.name,
                       projectType: selectedClient?.websiteType || selectedTemplate?.category || form.projectType,
                       deadline: form.deadline || nextDeadline.toISOString().split("T")[0],
@@ -425,7 +434,7 @@ function Projects() {
                 >
                   <option value="">Select client</option>
                   {clientOptions.map((client) => (
-                    <option key={client._id} value={client.clientName}>
+                    <option key={client._id} value={client._id}>
                       {client.clientName}
                     </option>
                   ))}
@@ -475,13 +484,20 @@ function Projects() {
                     Assigned Team / Member
                   </label>
                   <select
-                    value={form.team}
-                    onChange={(e) => setForm({ ...form, team: e.target.value })}
+                    value={form.assignedTo || form.team}
+                    onChange={(e) => {
+                      const selectedMember = teamMembers.find((member) => member._id === e.target.value || member.fullName === e.target.value);
+                      setForm({
+                        ...form,
+                        assignedTo: selectedMember?._id || "",
+                        team: selectedMember?.fullName || "",
+                      });
+                    }}
                     className="w-full border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-indigo-400 transition"
                   >
                     <option value="">Select member</option>
                     {teamMembers.map((member) => (
-                      <option key={member._id} value={member.fullName}>
+                      <option key={member._id} value={member._id}>
                         {member.fullName} {member.accessRole && member.accessRole !== "client" ? `(${member.accessRole})` : ""}
                       </option>
                     ))}

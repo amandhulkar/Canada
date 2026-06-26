@@ -184,7 +184,7 @@
 //     <div className="min-h-screen bg-slate-100 dark:bg-slate-900 flex">
 //       <Sidebar />
 
-//       <main className="flex-1 p-8">
+//       <main className="min-w-0 flex-1 p-4 sm:p-6 lg:p-8">
 //         {/* Header */}
 //         <div className="flex justify-between items-start mb-6">
 //           <div>
@@ -433,9 +433,9 @@ function AdminDashboard({ user }) {
   };
 
   return (
-    <div className="flex min-h-screen bg-slate-50 dark:bg-slate-900">
+    <div className="flex min-h-screen flex-col md:flex-row bg-slate-50 dark:bg-slate-900">
       <Sidebar />
-      <main className="flex-1 p-8 overflow-x-hidden">
+      <main className="min-w-0 flex-1 p-4 sm:p-6 lg:p-8 overflow-x-hidden">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
           <div>
@@ -941,7 +941,7 @@ function UserDashboard() {
     <div className="min-h-screen bg-slate-100 dark:bg-slate-900 flex">
       <Sidebar />
 
-      <main className="flex-1 p-8">
+      <main className="min-w-0 flex-1 p-4 sm:p-6 lg:p-8">
         {/* Header */}
         <div className="flex justify-between items-start mb-6">
           <div>

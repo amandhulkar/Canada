@@ -156,16 +156,16 @@ function TemplatePreviewPage() {
 
       {/* ── Sticky Top Action Bar ── */}
       <div
-        className="sticky top-0 z-50 flex items-center justify-between px-6 py-3"
+        className="sticky top-0 z-50 flex flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-6"
         style={{ background: "#14132a" }}
       >
         <span className="text-sm font-semibold text-white/60 hidden sm:block">
           Preview — {template.name}
         </span>
-        <div className="flex items-center gap-3 ml-auto">
+        <div className="flex w-full flex-col gap-2 sm:ml-auto sm:w-auto sm:flex-row sm:items-center sm:gap-3">
           <button
             onClick={() => navigate("/templates")}
-            className="rounded-full px-5 py-2 text-sm font-semibold transition hover:bg-white/10"
+            className="w-full rounded-full px-5 py-2 text-sm font-semibold transition hover:bg-white/10 sm:w-auto"
             style={{ color: "#fff", border: "1px solid rgba(255,255,255,0.25)" }}
           >
             ← Back to Templates
@@ -173,7 +173,7 @@ function TemplatePreviewPage() {
           <button
             onClick={handleUseTemplate}
             disabled={loading}
-            className="rounded-full px-5 py-2 text-sm font-semibold text-white transition disabled:opacity-80 hover:opacity-90"
+            className="w-full rounded-full px-5 py-2 text-sm font-semibold text-white transition disabled:opacity-80 hover:opacity-90 sm:w-auto"
             style={{ background: "#E91E8C" }}
           >
             {loading ? "Loading..." : isPurchased ? "Use Again" : "Use This Template"}
@@ -222,7 +222,7 @@ function TemplatePreviewPage() {
       </nav>
 
       {/* ── Hero Section ── */}
-      <section className="max-w-7xl mx-auto px-6 pt-16 pb-20">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 pt-10 sm:pt-16 pb-12 sm:pb-20">
         <div className="flex flex-col lg:flex-row items-center gap-12">
 
           {/* Left: Text */}
@@ -230,14 +230,14 @@ function TemplatePreviewPage() {
             <p className="text-[#E91E8C] font-semibold text-sm mb-4 tracking-wide">
               Store Demo
             </p>
-            <h1 className="text-4xl md:text-5xl lg:text-[3.25rem] font-extrabold text-[#1A1A2E] leading-tight mb-6">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-[3.25rem] font-extrabold text-[#1A1A2E] leading-tight mb-6">
               {previewTitle}
             </h1>
             <p className="text-gray-500 text-base mb-10 leading-relaxed">
               {previewSubtitle}
             </p>
-            <div className="flex flex-wrap gap-4">
-              <div className="flex flex-wrap items-center gap-3">
+            <div className="flex flex-col gap-4 sm:flex-row sm:flex-wrap">
+              <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center">
                 {isPurchased && (
                   <span className="rounded-full bg-green-100 px-4 py-2 text-sm font-semibold text-green-700">
                     Purchased
@@ -246,7 +246,7 @@ function TemplatePreviewPage() {
                 <button
                   onClick={handleUseTemplate}
                   disabled={loading}
-                  className="font-semibold px-7 py-3 rounded-full transition-all duration-200 shadow-md hover:scale-[1.02] active:scale-95 disabled:opacity-80"
+                  className="w-full sm:w-auto font-semibold px-7 py-3 rounded-full transition-all duration-200 shadow-md hover:scale-[1.02] active:scale-95 disabled:opacity-80"
                   style={{ background: "#E91E8C", color: "#fff" }}
                 >
                   {loading ? "Loading..." : isPurchased ? "Use Again" : "Use This Template"}
@@ -254,7 +254,7 @@ function TemplatePreviewPage() {
               </div>
               <button
                 onClick={() => navigate("/templates")}
-                className="border-2 border-[#E91E8C] text-[#E91E8C] hover:bg-pink-50 font-semibold px-7 py-3 rounded-full transition-all duration-200 active:scale-95"
+                className="w-full sm:w-auto border-2 border-[#E91E8C] text-[#E91E8C] hover:bg-pink-50 font-semibold px-7 py-3 rounded-full transition-all duration-200 active:scale-95"
               >
                 Back to Templates
               </button>
@@ -268,7 +268,7 @@ function TemplatePreviewPage() {
               <img
                 src={previewImage}
                 alt={template.name}
-                className="w-full h-72 md:h-80 object-cover"
+                className="w-full h-56 sm:h-72 md:h-80 object-cover"
               />
             </div>
           </div>
@@ -276,8 +276,8 @@ function TemplatePreviewPage() {
       </section>
 
       {/* ── Features Section ── */}
-      <section className="max-w-7xl mx-auto px-6 pb-12">
-        <h2 className="text-3xl font-extrabold text-[#1A1A2E] mb-2">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 pb-12">
+        <h2 className="text-2xl sm:text-3xl font-extrabold text-[#1A1A2E] mb-2">
           Optimized for online sales
         </h2>
         <p className="text-gray-500 mb-10">

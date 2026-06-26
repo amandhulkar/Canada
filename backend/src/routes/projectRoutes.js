@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const Project = require("../models/Project");
 const Client = require("../models/Client");
+const User = require("../models/User");
 const protect = require("../middleware/authMiddleware");
 const requirePermission = require("../middleware/permissionMiddleware");
 const { PERMISSIONS } = require("../permissions");
@@ -26,6 +27,7 @@ const projectScope = (req, extra = {}) => {
     ...base,
     $or: [
       { user: req.user.userId },
+      { assignedTo: req.user.userId },
       { team: req.user.fullName || "" },
     ],
   };
@@ -34,6 +36,47 @@ const projectScope = (req, extra = {}) => {
 const cleanProjectBody = (body) => {
   const { _id, user, createdBy, companyId, role, ...safeBody } = body;
   return safeBody;
+};
+
+const normalizeProjectBody = async (req, safeBody) => {
+  const companyId = getCompanyId(req);
+  const normalized = { ...safeBody };
+
+  if (normalized.clientId) {
+    const client = await Client.findOne({ _id: normalized.clientId, companyId });
+    if (!client) {
+      const error = new Error("Please select a valid client.");
+      error.status = 400;
+      throw error;
+    }
+    normalized.clientId = client._id;
+    normalized.client = client.clientName;
+    normalized.user = client.user || req.user.userId;
+  } else if (normalized.client) {
+    const client = await Client.findOne({ companyId, clientName: normalized.client });
+    if (client) {
+      normalized.clientId = client._id;
+      normalized.user = client.user || req.user.userId;
+    }
+  }
+
+  if (normalized.assignedTo) {
+    const developer = await User.findOne({ _id: normalized.assignedTo, companyId, accessRole: "developer" });
+    if (!developer) {
+      const error = new Error("Please select a valid developer.");
+      error.status = 400;
+      throw error;
+    }
+    normalized.assignedTo = developer._id;
+    normalized.team = developer.fullName;
+  } else if (normalized.team) {
+    const developer = await User.findOne({ companyId, fullName: normalized.team, accessRole: "developer" });
+    if (developer) {
+      normalized.assignedTo = developer._id;
+    }
+  }
+
+  return normalized;
 };
 
 // GET all projects — each company sees only its own
@@ -50,7 +93,7 @@ router.get("/", protect, requirePermission(PERMISSIONS.VIEW_PROJECTS), async (re
 router.post("/", protect, requirePermission(PERMISSIONS.MANAGE_PROJECTS), async (req, res) => {
   try {
     const companyId = getCompanyId(req);
-    const safeBody = cleanProjectBody(req.body);
+    const safeBody = await normalizeProjectBody(req, cleanProjectBody(req.body));
 
     if (req.user.plan === "Pro" && safeBody.templateId) {
       const usedTemplatesCount = await Project.countDocuments({
@@ -65,15 +108,24 @@ router.post("/", protect, requirePermission(PERMISSIONS.MANAGE_PROJECTS), async 
       }
     }
 
+    const clientMatch = safeBody.clientId
+      ? { clientId: safeBody.clientId }
+      : { client: safeBody.client };
     const alreadyAssigned = await Project.findOne({
       companyId,
       name: safeBody.name,
-      client: safeBody.client,
-      team: { $exists: true, $ne: "" },
+      ...clientMatch,
+      $or: [
+        { assignedTo: { $exists: true, $ne: null } },
+        { team: { $exists: true, $ne: "" } },
+      ],
     });
 
     if (alreadyAssigned) {
-      if (alreadyAssigned.team === safeBody.team) {
+      if (
+        (safeBody.assignedTo && String(alreadyAssigned.assignedTo || "") === String(safeBody.assignedTo)) ||
+        (!safeBody.assignedTo && alreadyAssigned.team === safeBody.team)
+      ) {
         return res.status(409).json({
           message: "This project is already saved for this team member.",
         });
@@ -84,18 +136,14 @@ router.post("/", protect, requirePermission(PERMISSIONS.MANAGE_PROJECTS), async 
       });
     }
 
-    const client = safeBody.client
-      ? await Client.findOne({ companyId, clientName: safeBody.client })
-      : null;
-
     const project = await Project.create({
       ...safeBody,
-      user: client?.user || req.user.userId,
+      user: safeBody.user || req.user.userId,
       companyId,
     });
     res.json(project);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(error.status || 500).json({ message: error.message });
   }
 });
 
@@ -103,13 +151,13 @@ router.post("/", protect, requirePermission(PERMISSIONS.MANAGE_PROJECTS), async 
 router.put("/:id", protect, requirePermission(PERMISSIONS.MANAGE_PROJECTS), async (req, res) => {
   try {
     const query = projectScope(req, { _id: req.params.id });
-    const project = await Project.findOneAndUpdate(query, cleanProjectBody(req.body), { new: true });
+    const project = await Project.findOneAndUpdate(query, await normalizeProjectBody(req, cleanProjectBody(req.body)), { new: true });
     if (!project) {
       return res.status(404).json({ message: "Project not found or unauthorized" });
     }
     res.json(project);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(error.status || 500).json({ message: error.message });
   }
 });
 

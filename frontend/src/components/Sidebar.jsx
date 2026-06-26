@@ -93,12 +93,12 @@ function Sidebar() {
   };
 
   return (
-    <aside className={`${collapsed ? "w-20" : "w-64"} min-h-screen bg-white dark:bg-slate-800 shadow-lg dark:shadow-slate-900 ${compact ? "p-3" : "p-6"} flex flex-col transition-all`}>
-      <h1 className={`${collapsed ? "text-xl text-center" : "text-3xl"} font-bold text-indigo-600 dark:text-indigo-400 mb-6`}>
+    <aside className={`w-full ${collapsed ? "md:w-20" : "md:w-64"} md:min-h-screen bg-white dark:bg-slate-800 shadow-lg dark:shadow-slate-900 ${compact ? "p-3" : "p-4 md:p-6"} flex flex-col transition-all`}>
+      <h1 className={`${collapsed ? "text-xl md:text-center" : "text-2xl md:text-3xl"} font-bold text-indigo-600 dark:text-indigo-400 mb-4 md:mb-6`}>
         {collapsed ? "FT" : "FindTemplates"}
       </h1>
 
-      <nav className={`${compact ? "space-y-2" : "space-y-4"} flex-1`}>
+      <nav className={`${compact ? "gap-2 md:space-y-2" : "gap-2 md:space-y-4"} flex md:block overflow-x-auto md:overflow-visible md:flex-1 pb-1 md:pb-0`}>
         {links.map((link) => {
           const isActive =
             link.to === "/dashboard"
@@ -110,7 +110,7 @@ function Sidebar() {
               key={link.to}
               to={link.to}
               title={collapsed ? link.label : undefined}
-              className={`block ${compact ? "p-2" : "p-3"} rounded-xl transition ${collapsed ? "text-center" : ""} ${
+              className={`block whitespace-nowrap ${compact ? "p-2" : "p-3"} rounded-xl transition ${collapsed ? "md:text-center" : ""} ${
                 isActive
                   ? "bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400"
                   : "text-slate-600 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-700"
@@ -125,7 +125,7 @@ function Sidebar() {
       <button
         onClick={logout}
         title={collapsed ? "Logout" : undefined}
-        className="mt-10 bg-red-500 hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors"
+        className="mt-4 md:mt-10 bg-red-500 hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors"
       >
         {collapsed ? "↩" : "Logout"}
       </button>

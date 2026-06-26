@@ -390,7 +390,10 @@ function Team() {
   };
 
   const getMemberRole = (member) => member.role === "admin" ? "admin" : member.accessRole || "client";
-  const getAssignedProjects = (member) => projects.filter((project) => project.team === member.fullName);
+  const getAssignedProjects = (member) => projects.filter((project) => (
+    String(project.assignedTo || "") === String(member._id) ||
+    (!project.assignedTo && project.team === member.fullName)
+  ));
 
   const filteredMembers =
     filter === "All Roles"
@@ -399,13 +402,13 @@ function Team() {
 
   const totalMembers = members.length;
   const developers = members.filter((m) => getMemberRole(m) === "developer").length;
-  const assignedProjects = projects.filter((project) => project.team).length;
+  const assignedProjects = projects.filter((project) => project.assignedTo || project.team).length;
 
   return (
-    <div className="flex min-h-screen bg-slate-100 dark:bg-slate-900">
+    <div className="flex min-h-screen flex-col md:flex-row bg-slate-100 dark:bg-slate-900">
       <Sidebar />
 
-      <main className="flex-1 p-8">
+      <main className="min-w-0 flex-1 p-4 sm:p-6 lg:p-8">
         <div className="flex items-start justify-between mb-6">
           <div>
             <h1 className="text-4xl font-bold text-indigo-900 dark:text-indigo-400">
@@ -505,7 +508,7 @@ function Team() {
                     <div className="flex items-center gap-2">
                       <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400">{assignedProjects.length}</span>
                       <button
-                        onClick={() => navigate("/dashboard/projects", { state: { openAddProject: true, assignedTeam: m.fullName } })}
+                        onClick={() => navigate("/dashboard/projects", { state: { openAddProject: true, assignedTo: m._id, assignedTeam: m.fullName } })}
                         className="text-[11px] font-semibold text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300"
                       >
                         + Add

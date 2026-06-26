@@ -39,10 +39,10 @@ const tagColors = {
 
 function Profile() {
   return (
-    <div className="flex min-h-screen bg-slate-100 dark:bg-slate-900">
+    <div className="flex min-h-screen flex-col md:flex-row bg-slate-100 dark:bg-slate-900">
       <Sidebar />
 
-      <main className="flex-1 p-8 space-y-6">
+      <main className="min-w-0 flex-1 p-4 sm:p-6 lg:p-8 space-y-6">
         {/* Hero Banner */}
         <div className="rounded-2xl bg-gradient-to-r from-indigo-600 via-indigo-500 to-violet-500 p-8 flex items-center gap-6 shadow-md">
           <div className="w-24 h-24 rounded-3xl bg-[#7c6dfa] flex items-center justify-center shrink-0 border-4 border-white/20 shadow-inner">

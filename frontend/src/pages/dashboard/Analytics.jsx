@@ -131,9 +131,9 @@ export default function Analytics() {
   const totalInvoices = invoices.length;
 
   return (
-    <div className="flex min-h-screen bg-slate-50 dark:bg-slate-900">
+    <div className="flex min-h-screen flex-col md:flex-row bg-slate-50 dark:bg-slate-900">
       <Sidebar />
-      <main className="flex-1 p-8 overflow-x-hidden">
+      <main className="min-w-0 flex-1 p-4 sm:p-6 lg:p-8 overflow-x-hidden">
 
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">

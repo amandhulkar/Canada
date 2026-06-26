@@ -244,19 +244,16 @@ function SignupPage() {
 
   return (
     <div
+      className="flex min-h-screen flex-col lg:flex-row"
       style={{
-        display: "flex",
-        minHeight: "100vh",
         fontFamily: "Inter, sans-serif",
       }}
     >
       {/* ── LEFT: Form Panel ── */}
       <div
+        className="w-full lg:w-[480px] lg:flex-shrink-0 px-5 py-8 sm:px-8 lg:px-12 lg:py-10"
         style={{
-          width: 480,
-          flexShrink: 0,
           background: "#fff",
-          padding: "40px 48px",
           display: "flex",
           flexDirection: "column",
           overflowY: "auto",
@@ -667,12 +664,12 @@ function SignupPage() {
 
       {/* ── RIGHT: Dashboard Preview ── */}
       <div
+        className="hidden lg:flex"
         style={{
           flex: 1,
           background:
             "linear-gradient(135deg, #ddd8ff 0%, #e8e4ff 40%, #d8d0ff 100%)",
           position: "relative",
-          display: "flex",
           flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
