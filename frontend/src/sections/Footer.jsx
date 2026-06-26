@@ -11,7 +11,7 @@ function Footer() {
       style={{ background: "#0f1c2e" }}
     >
       <Container className="space-y-10">
-       <div className="grid gap-10 lg:grid-cols-[1.15fr_0.85fr_0.85fr_1fr]">
+       <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-[1.25fr_0.85fr_1fr] lg:items-start">
   <div className="max-w-sm">
     <div className="flex items-center gap-2.5">
       <div
@@ -93,39 +93,6 @@ function Footer() {
             </div>
           </div>
 
-          <div>
-            {/* <div className="text-sm font-semibold uppercase tracking-[0.2em] text-white">
-              Company
-            </div> */}
-            <div
-              className="mt-4 flex flex-col gap-3 text-sm"
-              style={{ color: "#8aa0b8" }}
-            >
-              {/* {navLinks.slice(3).map((link) =>
-                link.href.startsWith("/") && !link.href.startsWith("/#") ? (
-                  <Link
-                    key={link.label}
-                    to={link.href}
-                    className="transition hover:text-white"
-                  >
-                    {link.label}
-                  </Link>
-                ) : (
-                  <a
-                    key={link.label}
-                    href={link.href}
-                    className="transition hover:text-white"
-                  >
-                    {link.label}
-                  </a>
-                ),
-              )} */}
-
-              {/* <Link to="/help-center" className="transition hover:text-white">
-                Help Center
-              </Link> */}
-            </div>
-          </div>
 
           <div>
             <div className="text-sm font-semibold uppercase tracking-[0.2em] text-white">
