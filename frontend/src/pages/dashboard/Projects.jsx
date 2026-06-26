@@ -1,13 +1,17 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import Sidebar from "../../components/Sidebar";
+import { hasPermission, getCurrentUser, PERMISSIONS } from "../../utils/permissions";
+import { getMergedTemplates } from "../../utils/templatesApi";
 
 const API = import.meta.env.VITE_API_URL || "http://127.0.0.1:5000";
 const STATUSES = ["Planning", "Design", "Development", "Testing", "Live", "On Hold"];
+const PROJECT_TYPES = ["Portfolio", "Business", "Blog", "E-commerce", "Photography", "Food & Dining", "Events", "Landing Page", "Web App", "Custom"];
 const TRIAL_DAYS = 3;
 
 const EMPTY_FORM = {
   name: "",
+  projectType: "Business",
   client: "",
   startDate: new Date().toISOString().split("T")[0],
   deadline: "",
@@ -15,6 +19,26 @@ const EMPTY_FORM = {
   team: "",
   scopeOfWork: "",
   deliverables: "",
+  templateId: "",
+  templateData: {},
+};
+
+const sampleProjectForm = () => {
+  const deadline = new Date();
+  deadline.setDate(deadline.getDate() + 30);
+  return {
+    name: "Business Website Development",
+    projectType: "Business",
+    client: "Acme Studios",
+    startDate: new Date().toISOString().split("T")[0],
+    deadline: deadline.toISOString().split("T")[0],
+    status: "Development",
+    team: "Aman Sharma",
+    scopeOfWork: "Build a responsive business website with homepage, services, contact form, and admin dashboard setup.",
+    deliverables: "Source code, live deployment, admin access, and documentation",
+    templateId: "",
+    templateData: {},
+  };
 };
 
 function useCountdown() {
@@ -65,22 +89,55 @@ function statusBadgeClasses(status) {
 }
 
 function Projects() {
+  const navigate = useNavigate();
+  const location = useLocation();
   const timeLeft = useCountdown();
   const [projects, setProjects] = useState([]);
+  const [teamMembers, setTeamMembers] = useState([]);
+  const [clientOptions, setClientOptions] = useState([]);
+  const [projectOptions, setProjectOptions] = useState([]);
   const [filter, setFilter] = useState("All Statuses");
   const [showAddModal, setShowAddModal] = useState(false);
   const [form, setForm] = useState(EMPTY_FORM);
   const [loading, setLoading] = useState(false);
+  const currentUser = getCurrentUser();
+  const canManageProjects = hasPermission(currentUser, PERMISSIONS.MANAGE_PROJECTS);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
-    fetch(`${API}/api/projects`, {
-      headers: { Authorization: token },
-    })
+    const headers = { Authorization: token };
+
+    fetch(`${API}/api/projects`, { headers })
       .then((res) => res.json())
       .then((data) => setProjects(Array.isArray(data) ? data : []))
       .catch((err) => console.log(err));
+
+    fetch(`${API}/api/admin/users?t=${Date.now()}`, { headers, cache: "no-store" })
+      .then((res) => res.ok ? res.json() : { users: [] })
+      .then((data) => {
+        const usersOnly = Array.isArray(data.users)
+          ? data.users.filter((member) => member.role !== "admin")
+          : [];
+        setTeamMembers(usersOnly);
+      })
+      .catch((err) => console.log(err));
+
+    fetch(`${API}/api/clients?t=${Date.now()}`, { headers, cache: "no-store" })
+      .then((res) => res.ok ? res.json() : [])
+      .then((data) => setClientOptions(Array.isArray(data) ? data : []))
+      .catch((err) => console.log(err));
+
+    getMergedTemplates()
+      .then((templates) => setProjectOptions(Array.isArray(templates) ? templates : []))
+      .catch((err) => console.log(err));
   }, []);
+
+  useEffect(() => {
+    if (!location.state?.openAddProject) return;
+    setForm((prev) => ({ ...prev, team: location.state.assignedTeam || prev.team }));
+    setShowAddModal(true);
+    navigate(location.pathname, { replace: true });
+  }, [location, navigate]);
 
   const handleAddProject = async (e) => {
     e.preventDefault();
@@ -88,6 +145,19 @@ function Projects() {
       alert("Project name is required.");
       return;
     }
+
+    const alreadyAssigned = projects.find((project) => (
+      project.name === form.name &&
+      project.client === form.client &&
+      project.team &&
+      project.team !== form.team
+    ));
+
+    if (alreadyAssigned) {
+      alert(`This project is already assigned to ${alreadyAssigned.team}. Delete or reassign that project before assigning it to another developer.`);
+      return;
+    }
+
     setLoading(true);
     try {
       const token = localStorage.getItem("token");
@@ -100,8 +170,9 @@ function Projects() {
         body: JSON.stringify(form),
       });
 
-      if (!res.ok) throw new Error("Failed to create project");
-      const newProj = await res.json();
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Failed to create project");
+      const newProj = data;
       setProjects((prev) => [newProj, ...prev]);
       setForm(EMPTY_FORM);
       setShowAddModal(false);
@@ -120,11 +191,24 @@ function Projects() {
   const pendingReview = projects.filter((p) => p.status === "Testing").length;
 
   const handleDelete = async (id) => {
+    if (!canManageProjects) {
+      alert("You don't have permission to delete projects.");
+      return;
+    }
+    if (!confirm("Delete this project?")) return;
+
     const token = localStorage.getItem("token");
-    await fetch(`${API}/api/projects/${id}`, {
+    const res = await fetch(`${API}/api/projects/${id}`, {
       method: "DELETE",
       headers: { Authorization: token },
     });
+
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      alert(data.message || "Failed to delete project");
+      return;
+    }
+
     setProjects((prev) => prev.filter((p) => p._id !== id));
   };
 
@@ -137,16 +221,6 @@ function Projects() {
           <p className="text-gray-400 mt-1">Track all website projects and their progress</p>
         </div>
 
-        <div className="bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-3xl p-6 mb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <div>
-            <h2 className="text-xl font-bold">Your {TRIAL_DAYS}-day dashboard trial is active</h2>
-            <p className="text-emerald-50 mt-1">Templates still require separate payment.</p>
-          </div>
-          <div className="bg-white/15 rounded-2xl px-6 py-3 text-center">
-            <p className="text-sm text-emerald-50">Trial ends in</p>
-            <p className="text-2xl font-bold tabular-nums">{timeLeft}</p>
-          </div>
-        </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
           <StatCard label="Total Projects"    value={totalProjects} accent="#6366f1" />
@@ -166,10 +240,12 @@ function Projects() {
             className="bg-white rounded-lg px-4 py-2 text-sm font-bold text-indigo-600 shadow-sm border border-gray-100 hover:bg-indigo-50 transition">
             Browse Templates
           </Link>
-          <button onClick={() => setShowAddModal(true)}
-            className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg px-4 py-2 text-sm font-bold shadow-sm transition">
-            + Add Project
-          </button>
+          {canManageProjects && (
+            <button onClick={() => setShowAddModal(true)}
+              className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg px-4 py-2 text-sm font-bold shadow-sm transition">
+              + Add Project
+            </button>
+          )}
         </div>
 
         <div className="bg-white rounded-xl shadow-sm overflow-hidden">
@@ -214,8 +290,18 @@ function Projects() {
                       <td className="px-6 py-4 text-gray-500">{p.team || "—"}</td>
                       <td className="px-6 py-4 text-right">
                         <div className="flex justify-end gap-3">
-                          <button className="text-gray-400 hover:text-indigo-600 transition">✏️</button>
-                          <button onClick={() => handleDelete(p._id)} className="text-gray-400 hover:text-red-500 transition">🗑️</button>
+                          {canManageProjects && (
+                            <>
+                              <button
+                                onClick={() => navigate(`/dashboard/projects/${p._id}`, { state: { openWorkspace: true } })}
+                                className="text-gray-400 hover:text-indigo-600 transition"
+                                title="Edit template"
+                              >
+                                ✏️
+                              </button>
+                              <button onClick={() => handleDelete(p._id)} className="text-gray-400 hover:text-red-500 transition">🗑️</button>
+                            </>
+                          )}
                         </div>
                       </td>
                     </tr>
@@ -230,12 +316,30 @@ function Projects() {
       {showAddModal && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-50 flex items-center justify-center p-4">
           <div className="bg-white dark:bg-slate-900 rounded-[2rem] border border-slate-100 dark:border-slate-800 p-8 max-w-lg w-full shadow-2xl relative overflow-hidden transition-all duration-300 transform scale-100 animate-in fade-in zoom-in-95 max-h-[90vh] overflow-y-auto">
-            <h3 className="text-2xl font-bold text-slate-800 dark:text-slate-100 mb-2">
-              Add New Project
-            </h3>
-            <p className="text-xs text-slate-400 dark:text-slate-500 mb-6">
-              Create a custom project manually without using a template.
-            </p>
+            <div className="flex items-start justify-between mb-6">
+              <div>
+                <h3 className="text-2xl font-bold text-slate-800 dark:text-slate-100 mb-2">
+                  Add New Project
+                </h3>
+                <p className="text-xs text-slate-400 dark:text-slate-500">
+                  Create a custom project manually without using a template.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setForm(sampleProjectForm())}
+                  className="mt-2 text-xs font-semibold text-indigo-500 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300"
+                >
+                  Auto fill sample
+                </button>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowAddModal(false)}
+                className="text-gray-400 hover:text-gray-600 dark:text-slate-500 dark:hover:text-slate-300 transition text-xl leading-none"
+              >
+                ✕
+              </button>
+            </div>
 
             <form onSubmit={handleAddProject} className="flex flex-col gap-4">
               <div className="grid grid-cols-2 gap-4">
@@ -243,27 +347,76 @@ function Projects() {
                   <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">
                     Project Name *
                   </label>
-                  <input
-                    type="text"
+                  <select
                     required
                     value={form.name}
-                    onChange={(e) => setForm({ ...form, name: e.target.value })}
-                    placeholder="e.g. Portfolio Website"
+                    onChange={(e) => {
+                      const selected = projectOptions.find((template) => template.name === e.target.value);
+                      setForm({
+                        ...form,
+                        name: e.target.value,
+                        projectType: selected?.category || form.projectType,
+                        templateId: selected ? String(selected.id || selected._id || "") : "",
+                        templateData: selected?.defaultData || {},
+                      });
+                    }}
                     className="w-full border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-indigo-400 transition"
-                  />
+                  >
+                    <option value="">Select project</option>
+                    {projectOptions.map((template) => (
+                      <option key={template.id || template._id || template.name} value={template.name}>
+                        {template.name}
+                      </option>
+                    ))}
+                  </select>
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">
-                    Client Name
+                    Project Type
                   </label>
-                  <input
-                    type="text"
-                    value={form.client}
-                    onChange={(e) => setForm({ ...form, client: e.target.value })}
-                    placeholder="e.g. Acme Corp"
+                  <select
+                    value={form.projectType}
+                    onChange={(e) => setForm({ ...form, projectType: e.target.value })}
                     className="w-full border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-indigo-400 transition"
-                  />
+                  >
+                    {PROJECT_TYPES.map((type) => <option key={type} value={type}>{type}</option>)}
+                  </select>
                 </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">
+                  Client Name
+                </label>
+                <select
+                  value={form.client}
+                  onChange={(e) => {
+                    const selectedClient = clientOptions.find((client) => client.clientName === e.target.value);
+                    const selectedTemplate = projectOptions.find((template) => template.name === selectedClient?.workspace);
+                    const nextDeadline = new Date();
+                    nextDeadline.setDate(nextDeadline.getDate() + 30);
+
+                    setForm({
+                      ...form,
+                      client: e.target.value,
+                      name: selectedClient?.workspace || form.name,
+                      projectType: selectedClient?.websiteType || selectedTemplate?.category || form.projectType,
+                      deadline: form.deadline || nextDeadline.toISOString().split("T")[0],
+                      templateId: selectedTemplate ? String(selectedTemplate.id || selectedTemplate._id || "") : form.templateId,
+                      templateData: selectedTemplate?.defaultData || form.templateData,
+                      scopeOfWork: form.scopeOfWork || (selectedClient?.workspace ? `Customize the ${selectedClient.workspace} template for ${selectedClient.clientName}.` : ""),
+                      deliverables: form.deliverables || "Final editable website, source files, and live deployment",
+                    });
+                  }}
+                  className="w-full border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-indigo-400 transition"
+                >
+                  <option value="">Select client</option>
+                  {clientOptions.map((client) => (
+                    <option key={client._id} value={client.clientName}>
+                      {client.clientName}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
@@ -308,13 +461,18 @@ function Projects() {
                   <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">
                     Assigned Team / Member
                   </label>
-                  <input
-                    type="text"
+                  <select
                     value={form.team}
                     onChange={(e) => setForm({ ...form, team: e.target.value })}
-                    placeholder="e.g. Jane Doe"
                     className="w-full border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-indigo-400 transition"
-                  />
+                  >
+                    <option value="">Select member</option>
+                    {teamMembers.map((member) => (
+                      <option key={member._id} value={member.fullName}>
+                        {member.fullName} {member.accessRole && member.accessRole !== "client" ? `(${member.accessRole})` : ""}
+                      </option>
+                    ))}
+                  </select>
                 </div>
               </div>
 

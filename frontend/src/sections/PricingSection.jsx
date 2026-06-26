@@ -71,7 +71,7 @@ function PricingSection() {
     setTimeout(() => {
       setIsProcessing(false)
       setIsSuccess(true)
-      setTimeout(() => {
+      setTimeout(async () => {
         // Upgrade plan dynamically
         const startDate = new Date()
         const endDate = new Date(startDate)
@@ -81,8 +81,7 @@ function PricingSection() {
           endDate.setDate(endDate.getDate() + 30)
         }
 
-        const updatedUser = {
-          ...user,
+        const planDetails = {
           plan: selectedPlan.name,
           billingCycle: isAnnual ? "annual" : "monthly",
           planPrice: isAnnual ? selectedPlan.priceAnnual : selectedPlan.price,
@@ -90,7 +89,25 @@ function PricingSection() {
           planStartedAt: startDate.toISOString(),
           planEndsAt: endDate.toISOString(),
         }
-        localStorage.setItem("currentUser", JSON.stringify(updatedUser))
+
+        try {
+          const token = localStorage.getItem("token")
+          const res = await fetch(`${import.meta.env.VITE_API_URL || "http://127.0.0.1:5000"}/api/auth/plan`, {
+            method: "PATCH",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: token,
+            },
+            body: JSON.stringify(planDetails),
+          })
+          const data = await res.json()
+          if (!res.ok) throw new Error(data.message || "Failed to save plan")
+          localStorage.setItem("currentUser", JSON.stringify(data.user))
+        } catch (error) {
+          const updatedUser = { ...user, ...planDetails }
+          localStorage.setItem("currentUser", JSON.stringify(updatedUser))
+          alert(error.message || "Plan saved locally, but failed to sync with server")
+        }
 
         handleClose()
         navigate('/dashboard')

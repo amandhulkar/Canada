@@ -3,6 +3,7 @@ const mongoose = require("mongoose");
 const projectSchema = new mongoose.Schema(
   {
     name: String,
+    projectType: String,
     client: String,
     startDate: String,
     deadline: String,
@@ -26,6 +27,12 @@ completed: {
     user: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
+    },
+    companyId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
+      index: true,
     },
   },
   { timestamps: true }

@@ -1,5 +1,7 @@
 const Template = require("../models/Template");
 
+const getCompanyId = (req) => req.user?.companyId || req.user?.userId;
+
 const normalizeTemplate = (template) => {
   const data = template.toObject ? template.toObject() : template;
   return {
@@ -10,9 +12,25 @@ const normalizeTemplate = (template) => {
 
 const cleanTemplateId = (id) => String(id || "").replace(/^db:/, "");
 
+const cleanTemplateBody = (body) => {
+  const { _id, id, createdBy, companyId, role, ...safeBody } = body;
+  return safeBody;
+};
+
+const templateScope = (req, extra = {}) => {
+  const companyId = getCompanyId(req);
+  return {
+    active: true,
+    ...(companyId
+      ? { companyId }
+      : { $or: [{ companyId: null }, { companyId: { $exists: false } }] }),
+    ...extra,
+  };
+};
+
 const getTemplates = async (req, res) => {
   try {
-    const templates = await Template.find({ active: true }).sort({ createdAt: -1 });
+    const templates = await Template.find(templateScope(req)).sort({ createdAt: -1 });
     res.json(templates.map(normalizeTemplate));
   } catch (error) {
     res.status(500).json({ message: "Failed to fetch templates" });
@@ -21,7 +39,7 @@ const getTemplates = async (req, res) => {
 
 const getTemplate = async (req, res) => {
   try {
-    const template = await Template.findOne({ _id: cleanTemplateId(req.params.id), active: true });
+    const template = await Template.findOne(templateScope(req, { _id: cleanTemplateId(req.params.id) }));
     if (!template) return res.status(404).json({ message: "Template not found" });
     res.json(normalizeTemplate(template));
   } catch (error) {
@@ -32,9 +50,10 @@ const getTemplate = async (req, res) => {
 const createTemplate = async (req, res) => {
   try {
     const template = await Template.create({
-      ...req.body,
+      ...cleanTemplateBody(req.body),
       active: req.body.active !== false,
       createdBy: req.user.userId,
+      companyId: getCompanyId(req),
     });
     res.status(201).json(normalizeTemplate(template));
   } catch (error) {
@@ -44,9 +63,9 @@ const createTemplate = async (req, res) => {
 
 const updateTemplate = async (req, res) => {
   try {
-    const template = await Template.findByIdAndUpdate(
-      cleanTemplateId(req.params.id),
-      req.body,
+    const template = await Template.findOneAndUpdate(
+      { _id: cleanTemplateId(req.params.id), companyId: getCompanyId(req) },
+      cleanTemplateBody(req.body),
       { new: true, runValidators: true }
     );
     if (!template) return res.status(404).json({ message: "Template not found" });
@@ -58,8 +77,8 @@ const updateTemplate = async (req, res) => {
 
 const deleteTemplate = async (req, res) => {
   try {
-    const template = await Template.findByIdAndUpdate(
-      cleanTemplateId(req.params.id),
+    const template = await Template.findOneAndUpdate(
+      { _id: cleanTemplateId(req.params.id), companyId: getCompanyId(req) },
       { active: false },
       { new: true }
     );

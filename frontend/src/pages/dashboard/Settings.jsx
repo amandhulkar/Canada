@@ -1,8 +1,14 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Sidebar from "../../components/Sidebar";
 
 // ✅ localStorage se dynamic user data lo
+const roleLabel = (user) => {
+  if (user?.role === "admin") return "Admin";
+  if (user?.accessRole === "developer") return "Developer";
+  return "Client";
+};
+
 const getUser = () => {
   const user = JSON.parse(localStorage.getItem("currentUser")) || {};
   const name = user.fullName || user.name || "Guest User";
@@ -14,6 +20,9 @@ const getUser = () => {
     email,
     accountType,
     initials,
+    role: user.role || "user",
+    accessRole: user.accessRole || "client",
+    displayRole: roleLabel(user),
     plan: user.plan || "Individual - trial",
     billingCycle: user.billingCycle || "trial",
     planPrice: user.planPrice || "Free",
@@ -48,8 +57,6 @@ const NAV_ITEMS = [
   { key: "profile", label: "Profile", desc: "User details and account summary" },
   { key: "theme", label: "Theme", desc: "Dark or bright dashboard mode" },
   { key: "preferences", label: "Preferences", desc: "Workspace behavior and shortcuts" },
-  { key: "notifications", label: "Notifications", desc: "Alerts, updates, and reminders" },
-  { key: "privacy", label: "Privacy", desc: "Visibility and analytics preferences" },
   { key: "security", label: "Security", desc: "Access, sessions, and password tools" },
   { key: "account", label: "Account", desc: "Logout and delete account" },
 ];
@@ -110,18 +117,21 @@ const PLAN_DETAILS = {
 };
 
 function ProfileSection({ user }) {
-  const activePlan = PLAN_DETAILS[user.plan];
+  const isAdmin = user.role === "admin";
+  const activePlan = isAdmin ? null : PLAN_DETAILS[user.plan];
   const isAnnual = user.billingCycle === "annual";
   const displayPrice = user.planPrice || (activePlan ? (isAnnual ? activePlan.annualPrice : activePlan.price) : "Free");
   const displayCadence = user.planCadence || (activePlan ? (isAnnual ? activePlan.annualCadence : activePlan.cadence) : "");
-  const planTimeline = [
-    { label: "Selected plan", value: user.plan },
-    { label: "Billing cycle", value: user.billingCycle === "trial" ? "Trial" : isAnnual ? "Annual" : "Monthly" },
-    { label: "Price", value: `${displayPrice}${displayCadence}` },
-    { label: "Started on", value: formatPlanDate(user.planStartedAt) },
-    { label: "Ends on", value: formatPlanDate(user.planEndsAt) },
-    { label: "Status", value: getDaysLeft(user.planEndsAt) },
-  ];
+  const planTimeline = isAdmin
+    ? []
+    : [
+        { label: "Selected plan", value: user.plan },
+        { label: "Billing cycle", value: user.billingCycle === "trial" ? "Trial" : isAnnual ? "Annual" : "Monthly" },
+        { label: "Price", value: `${displayPrice}${displayCadence}` },
+        { label: "Started on", value: formatPlanDate(user.planStartedAt) },
+        { label: "Ends on", value: formatPlanDate(user.planEndsAt) },
+        { label: "Status", value: getDaysLeft(user.planEndsAt) },
+      ];
 
   return (
     <div className="flex flex-col gap-4">
@@ -137,6 +147,9 @@ function ProfileSection({ user }) {
           </div>
         </div>
         <div className="flex items-center gap-3">
+          <span className="bg-emerald-50 dark:bg-emerald-900/30 border border-emerald-200 dark:border-emerald-700 text-emerald-700 dark:text-emerald-300 text-sm font-semibold px-4 py-1.5 rounded-full">
+            {user.displayRole}
+          </span>
           <span className="border border-indigo-300 dark:border-indigo-600 text-indigo-600 dark:text-indigo-400 text-sm font-medium px-4 py-1.5 rounded-full">
             {user.plan}
           </span>
@@ -153,6 +166,7 @@ function ProfileSection({ user }) {
           {[
             { label: "Full name", value: user.name },
             { label: "Email", value: user.email },
+            { label: "Account role", value: user.displayRole },
             { label: "Plan", value: user.plan },
             { label: "Account type", value: user.accountType },
           ].map((item) => (
@@ -164,28 +178,30 @@ function ProfileSection({ user }) {
         </div>
       </div>
 
-      <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 border border-indigo-100 dark:border-indigo-900/40 shadow-sm">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-5">
-          <div>
-            <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100">Subscription details</h2>
-            <p className="text-sm text-slate-400 dark:text-slate-500 mt-1">
-              Your plan purchase date, billing cycle, and expiry are shown here.
-            </p>
-          </div>
-          <span className="bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 text-sm font-semibold px-4 py-2 rounded-full capitalize">
-            {user.billingCycle === "trial" ? "Trial" : `${user.billingCycle} billing`}
-          </span>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-          {planTimeline.map((item) => (
-            <div key={item.label} className="bg-slate-50 dark:bg-slate-700 rounded-xl px-5 py-4">
-              <p className="text-sm text-slate-400 dark:text-slate-400 mb-1">{item.label}</p>
-              <p className="text-base font-semibold text-slate-800 dark:text-slate-100">{item.value}</p>
+      {!isAdmin && (
+        <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 border border-indigo-100 dark:border-indigo-900/40 shadow-sm">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-5">
+            <div>
+              <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100">Subscription details</h2>
+              <p className="text-sm text-slate-400 dark:text-slate-500 mt-1">
+                Your plan purchase date, billing cycle, and expiry are shown here.
+              </p>
             </div>
-          ))}
+            <span className="bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 text-sm font-semibold px-4 py-2 rounded-full capitalize">
+              {user.billingCycle === "trial" ? "Trial" : `${user.billingCycle} billing`}
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            {planTimeline.map((item) => (
+              <div key={item.label} className="bg-slate-50 dark:bg-slate-700 rounded-xl px-5 py-4">
+                <p className="text-sm text-slate-400 dark:text-slate-400 mb-1">{item.label}</p>
+                <p className="text-base font-semibold text-slate-800 dark:text-slate-100">{item.value}</p>
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
       {activePlan && (
         <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 border-2 border-emerald-400 dark:border-emerald-600 shadow-sm">
@@ -267,7 +283,30 @@ function ThemeSection() {
 }
 
 function PreferencesSection() {
-  const [prefs, setPrefs] = useState({ compactMode: false, autoSave: true, sidebarCollapsed: false });
+  const [prefs, setPrefs] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem("dashboardPreferences")) || { compactMode: false, autoSave: true, sidebarCollapsed: false };
+    } catch {
+      return { compactMode: false, autoSave: true, sidebarCollapsed: false };
+    }
+  });
+  const [saved, setSaved] = useState(false);
+
+  useEffect(() => {
+    document.documentElement.classList.toggle("compact", Boolean(prefs.compactMode));
+  }, [prefs.compactMode]);
+
+  const togglePref = (key) => {
+    setPrefs((prev) => {
+      const next = { ...prev, [key]: !prev[key] };
+      localStorage.setItem("dashboardPreferences", JSON.stringify(next));
+      document.documentElement.classList.toggle("compact", Boolean(next.compactMode));
+      window.dispatchEvent(new Event("dashboardPreferencesChanged"));
+      setSaved(true);
+      setTimeout(() => setSaved(false), 1500);
+      return next;
+    });
+  };
   return (
     <div className="bg-white dark:bg-slate-800 rounded-2xl p-6">
       <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100 mb-1">Preferences</h2>
@@ -284,7 +323,7 @@ function PreferencesSection() {
               <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">{p.desc}</p>
             </div>
             <button
-              onClick={() => setPrefs((prev) => ({ ...prev, [p.key]: !prev[p.key] }))}
+              onClick={() => togglePref(p.key)}
               className={`w-11 h-6 rounded-full transition-colors relative flex-shrink-0 ${prefs[p.key] ? "bg-indigo-500" : "bg-slate-200 dark:bg-slate-600"}`}
             >
               <span className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-all ${prefs[p.key] ? "left-5" : "left-0.5"}`} />
@@ -292,6 +331,7 @@ function PreferencesSection() {
           </div>
         ))}
       </div>
+      {saved && <p className="text-sm text-emerald-500 font-medium mt-4">Preferences saved</p>}
     </div>
   );
 }
@@ -367,27 +407,130 @@ function PrivacySection() {
 }
 
 function SecuritySection() {
+  const API = import.meta.env.VITE_API_URL || "http://127.0.0.1:5000";
+  const token = localStorage.getItem("token");
+  const storedUser = (() => {
+    try { return JSON.parse(localStorage.getItem("currentUser")) || {}; } catch { return {}; }
+  })();
+
+  const [message, setMessage] = useState("");
+  const [session, setSession] = useState(null);
+  const [passwordOpen, setPasswordOpen] = useState(false);
+  const [passwordForm, setPasswordForm] = useState({ currentPassword: "", newPassword: "", confirmPassword: "" });
+  const [twoFactor, setTwoFactor] = useState(Boolean(storedUser.twoFactorEnabled));
+
+  const showMessage = (text) => {
+    setMessage(text);
+    setTimeout(() => setMessage(""), 2500);
+  };
+
+  const updateCurrentUser = (user) => {
+    const current = JSON.parse(localStorage.getItem("currentUser") || "{}");
+    localStorage.setItem("currentUser", JSON.stringify({ ...current, ...user }));
+  };
+
+  const handlePasswordSubmit = async (e) => {
+    e.preventDefault();
+    if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+      showMessage("New password and confirm password do not match");
+      return;
+    }
+
+    const res = await fetch(`${API}/api/auth/password`, {
+      method: "PATCH",
+      headers: { Authorization: token, "Content-Type": "application/json" },
+      body: JSON.stringify({ currentPassword: passwordForm.currentPassword, newPassword: passwordForm.newPassword }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      showMessage(data.message || "Password update failed");
+      return;
+    }
+
+    setPasswordForm({ currentPassword: "", newPassword: "", confirmPassword: "" });
+    setPasswordOpen(false);
+    showMessage("Password updated successfully");
+  };
+
+  const handleSessions = async () => {
+    const res = await fetch(`${API}/api/auth/session`, { headers: { Authorization: token }, cache: "no-store" });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      showMessage(data.message || "Unable to load session");
+      return;
+    }
+    setSession(data.session);
+    showMessage("Current session loaded");
+  };
+
+  const revokeCurrentSession = () => {
+    localStorage.clear();
+    sessionStorage.clear();
+    window.location.href = "/signup?tab=signin";
+  };
+
+  const handleTwoFactor = async () => {
+    const next = !twoFactor;
+    const res = await fetch(`${API}/api/auth/two-factor`, {
+      method: "PATCH",
+      headers: { Authorization: token, "Content-Type": "application/json" },
+      body: JSON.stringify({ enabled: next }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      showMessage(data.message || "Two-factor update failed");
+      return;
+    }
+    setTwoFactor(Boolean(data.user?.twoFactorEnabled));
+    updateCurrentUser(data.user || { twoFactorEnabled: next });
+    showMessage(next ? "Two-factor preference enabled" : "Two-factor preference disabled");
+  };
+
+  const items = [
+    { label: "Change password", desc: "Update your login password in database", btn: "Update", action: () => setPasswordOpen(true) },
+    { label: "Active sessions", desc: session ? `${session.status} session for ${session.email}` : "View your current browser session", btn: "View", action: handleSessions },
+    // { label: "Two-factor authentication", desc: twoFactor ? "Two-factor preference is enabled" : "Add an extra layer of security", btn: twoFactor ? "Disable" : "Enable", action: handleTwoFactor },
+  ];
+
   return (
     <div className="bg-white dark:bg-slate-800 rounded-2xl p-6">
       <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100 mb-1">Security</h2>
       <p className="text-sm text-slate-400 dark:text-slate-500 mb-5">Access, sessions, and password tools.</p>
       <div className="flex flex-col gap-3">
-        {[
-          { label: "Change password", desc: "Update your login password", btn: "Update" },
-          { label: "Active sessions", desc: "View and revoke active sessions", btn: "View" },
-          { label: "Two-factor authentication", desc: "Add an extra layer of security", btn: "Enable" },
-        ].map((item) => (
+        {items.map((item) => (
           <div key={item.label} className="flex items-center justify-between bg-slate-50 dark:bg-slate-700 rounded-xl px-5 py-4">
             <div>
               <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">{item.label}</p>
               <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">{item.desc}</p>
             </div>
-            <button className="text-sm text-indigo-600 dark:text-indigo-400 font-medium border border-indigo-200 dark:border-indigo-700 px-4 py-1.5 rounded-lg hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition-colors">
+            <button onClick={item.action} className="text-sm text-indigo-600 dark:text-indigo-400 font-medium border border-indigo-200 dark:border-indigo-700 px-4 py-1.5 rounded-lg hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition-colors">
               {item.btn}
             </button>
           </div>
         ))}
       </div>
+
+      {session && (
+        <div className="mt-4 bg-indigo-50 dark:bg-indigo-900/20 rounded-xl px-5 py-4 text-sm text-slate-600 dark:text-slate-300">
+          <p><strong>Current session:</strong> {session.email}</p>
+          <p><strong>Status:</strong> {session.status}</p>
+          <button onClick={revokeCurrentSession} className="mt-3 text-red-600 dark:text-red-400 font-semibold hover:underline">Log out current session</button>
+        </div>
+      )}
+
+      {passwordOpen && (
+        <form onSubmit={handlePasswordSubmit} className="mt-4 bg-slate-50 dark:bg-slate-700 rounded-xl p-4 grid gap-3">
+          <input type="password" placeholder="Current password" value={passwordForm.currentPassword} onChange={(e) => setPasswordForm({ ...passwordForm, currentPassword: e.target.value })} className="rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-800 dark:text-slate-100" />
+          <input type="password" placeholder="New password" value={passwordForm.newPassword} onChange={(e) => setPasswordForm({ ...passwordForm, newPassword: e.target.value })} className="rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-800 dark:text-slate-100" />
+          <input type="password" placeholder="Confirm new password" value={passwordForm.confirmPassword} onChange={(e) => setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })} className="rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-800 dark:text-slate-100" />
+          <div className="flex gap-2 justify-end">
+            <button type="button" onClick={() => setPasswordOpen(false)} className="px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-600 text-sm text-slate-600 dark:text-slate-300">Cancel</button>
+            <button type="submit" className="px-4 py-2 rounded-lg bg-indigo-600 text-white text-sm font-semibold">Save Password</button>
+          </div>
+        </form>
+      )}
+
+      {message && <p className="text-sm text-emerald-500 font-medium mt-4">{message}</p>}
     </div>
   );
 }
@@ -437,11 +580,27 @@ export default function Settings() {
     navigate("/signup");
   };
 
-  const handleDelete = () => {
-    setModal(null);
-    localStorage.clear();
-    sessionStorage.clear();
-    navigate("/signup");
+  const handleDelete = async () => {
+    const token = localStorage.getItem("token");
+
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || "http://127.0.0.1:5000"}/api/auth/account`, {
+        method: "DELETE",
+        headers: { Authorization: token },
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        alert(data.message || "Account delete failed");
+        return;
+      }
+
+      setModal(null);
+      localStorage.clear();
+      sessionStorage.clear();
+      navigate("/signup?tab=signin", { replace: true });
+    } catch (error) {
+      alert("Account delete failed. Please try again.");
+    }
   };
 
   const filteredNav = NAV_ITEMS.filter(
@@ -454,8 +613,6 @@ export default function Settings() {
     profile: <ProfileSection user={user} />,
     theme: <ThemeSection />,
     preferences: <PreferencesSection />,
-    notifications: <NotificationsSection />,
-    privacy: <PrivacySection />,
     security: <SecuritySection />,
     account: <AccountSection onLogout={() => setModal("logout")} onDelete={() => setModal("delete")} />,
   };
@@ -469,7 +626,7 @@ export default function Settings() {
           <div>
             <h1 className="text-3xl font-bold text-indigo-900 dark:text-indigo-400">Settings</h1>
             <p className="text-sm text-slate-400 dark:text-slate-500 mt-1">
-              Manage your account, appearance, notifications, privacy, and security in one clean workspace.
+              Manage your account, appearance, preferences, and security in one clean workspace.
             </p>
           </div>
           <input
@@ -477,7 +634,7 @@ export default function Settings() {
             placeholder="Search profile, privacy, theme, logout..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-72 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-indigo-400 placeholder:text-slate-400 dark:placeholder:text-slate-500"
+            className="w-72 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-indigo-400 placeholder:text-slate-400 dark:placeholder:text-slate-500"
           />
         </div>
 

@@ -2,12 +2,33 @@ const express = require("express");
 const router = express.Router();
 const Project = require("../models/Project");
 const protect = require("../middleware/authMiddleware");
+const requirePermission = require("../middleware/permissionMiddleware");
+const { PERMISSIONS } = require("../permissions");
 
-// GET all projects — admin sees all, regular user sees only their own
-router.get("/", protect, async (req, res) => {
+const getCompanyId = (req) => req.user.companyId || req.user.userId;
+
+const projectScope = (req, extra = {}) => {
+  const base = { companyId: getCompanyId(req), ...extra };
+  if (req.user.role === "admin") return base;
+
+  return {
+    ...base,
+    $or: [
+      { user: req.user.userId },
+      { team: req.user.fullName || "" },
+    ],
+  };
+};
+
+const cleanProjectBody = (body) => {
+  const { _id, user, createdBy, companyId, role, ...safeBody } = body;
+  return safeBody;
+};
+
+// GET all projects — each company sees only its own
+router.get("/", protect, requirePermission(PERMISSIONS.VIEW_PROJECTS), async (req, res) => {
   try {
-    const query = req.user.role === "admin" ? {} : { user: req.user.userId };
-    const projects = await Project.find(query).populate("user");
+    const projects = await Project.find(projectScope(req)).populate("user");
     res.json(projects);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -15,11 +36,28 @@ router.get("/", protect, async (req, res) => {
 });
 
 // POST create project
-router.post("/", protect, async (req, res) => {
+router.post("/", protect, requirePermission(PERMISSIONS.MANAGE_PROJECTS), async (req, res) => {
   try {
+    const companyId = getCompanyId(req);
+    const safeBody = cleanProjectBody(req.body);
+
+    const alreadyAssigned = await Project.findOne({
+      companyId,
+      name: safeBody.name,
+      client: safeBody.client,
+      team: { $exists: true, $ne: "" },
+    });
+
+    if (alreadyAssigned && alreadyAssigned.team !== safeBody.team) {
+      return res.status(409).json({
+        message: `This project is already assigned to ${alreadyAssigned.team}. Delete or reassign that project before assigning it to another developer.`,
+      });
+    }
+
     const project = await Project.create({
-      ...req.body,
+      ...safeBody,
       user: req.user.userId,
+      companyId,
     });
     res.json(project);
   } catch (error) {
@@ -27,13 +65,11 @@ router.post("/", protect, async (req, res) => {
   }
 });
 
-// PUT update project — admin can update any, user only their own
-router.put("/:id", protect, async (req, res) => {
+// PUT update project — each company can update only its own
+router.put("/:id", protect, requirePermission(PERMISSIONS.MANAGE_PROJECTS), async (req, res) => {
   try {
-    const query = req.user.role === "admin"
-      ? { _id: req.params.id }
-      : { _id: req.params.id, user: req.user.userId };
-    const project = await Project.findOneAndUpdate(query, req.body, { new: true });
+    const query = projectScope(req, { _id: req.params.id });
+    const project = await Project.findOneAndUpdate(query, cleanProjectBody(req.body), { new: true });
     if (!project) {
       return res.status(404).json({ message: "Project not found or unauthorized" });
     }
@@ -43,12 +79,10 @@ router.put("/:id", protect, async (req, res) => {
   }
 });
 
-// DELETE project — admin can delete any, user only their own
-router.delete("/:id", protect, async (req, res) => {
+// DELETE project — each company can delete only its own
+router.delete("/:id", protect, requirePermission(PERMISSIONS.MANAGE_PROJECTS), async (req, res) => {
   try {
-    const query = req.user.role === "admin"
-      ? { _id: req.params.id }
-      : { _id: req.params.id, user: req.user.userId };
+    const query = projectScope(req, { _id: req.params.id });
     const project = await Project.findOneAndDelete(query);
     if (!project) {
       return res.status(404).json({ message: "Project not found or unauthorized" });
@@ -59,12 +93,10 @@ router.delete("/:id", protect, async (req, res) => {
   }
 });
 
-// GET by ID — admin can view any, user only their own
-router.get("/:id", protect, async (req, res) => {
+// GET by ID — each company can view only its own
+router.get("/:id", protect, requirePermission(PERMISSIONS.VIEW_PROJECTS), async (req, res) => {
   try {
-    const query = req.user.role === "admin"
-      ? { _id: req.params.id }
-      : { _id: req.params.id, user: req.user.userId };
+    const query = projectScope(req, { _id: req.params.id });
     const project = await Project.findOne(query);
     if (!project) {
       return res.status(404).json({ message: "Project not found or unauthorized" });

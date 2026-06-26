@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Sidebar from "../../components/Sidebar";
 import templates from "../../data/templates";
+import { getMergedTemplates } from "../../utils/templatesApi";
 
 const API = import.meta.env.VITE_API_URL || "http://127.0.0.1:5000";
 
@@ -11,11 +12,20 @@ const WEBSITE_TYPES = [
   "Portfolio",
   "Business",
   "Blog",
+  "Photography",
+  "Food & Dining",
+  "Events",
   "Landing Page",
   "Web App",
 ];
 
 const WORKSPACE_OPTIONS = templates.map((template) => template.name);
+
+const getWebsiteTypeFromTemplate = (template) => {
+  if (!template?.category) return WEBSITE_TYPES[0];
+  if (template.category === "Creative") return "Portfolio";
+  return WEBSITE_TYPES.includes(template.category) ? template.category : WEBSITE_TYPES[0];
+};
 
 function StatCard({ label, value, sub, accent }) {
   return (
@@ -35,6 +45,7 @@ function StatCard({ label, value, sub, accent }) {
 }
 
 function AddClientModal({ open, onClose, onSave }) {
+  const [workspaceTemplates, setWorkspaceTemplates] = useState(templates);
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -46,10 +57,26 @@ function AddClientModal({ open, onClose, onSave }) {
     lastPayment: "",
   });
 
+  useEffect(() => {
+    if (!open) return;
+    getMergedTemplates()
+      .then((mergedTemplates) => setWorkspaceTemplates(Array.isArray(mergedTemplates) ? mergedTemplates : templates))
+      .catch(() => setWorkspaceTemplates(templates));
+  }, [open]);
+
   if (!open) return null;
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  const handleWorkspaceChange = (e) => {
+    const selectedTemplate = workspaceTemplates.find((template) => template.name === e.target.value);
+    setForm({
+      ...form,
+      workspace: e.target.value,
+      websiteType: getWebsiteTypeFromTemplate(selectedTemplate),
+    });
   };
 
   const handleSubmit = (e) => {
@@ -66,9 +93,23 @@ function AddClientModal({ open, onClose, onSave }) {
       email: "",
       company: "",
       websiteType: WEBSITE_TYPES[0],
+      workspace: WORKSPACE_OPTIONS[0] || "",
       totalValue: "",
       balanceDue: "",
       lastPayment: "",
+    });
+  };
+
+  const autofill = () => {
+    setForm({
+      name: "Acme Studios",
+      email: "client@acmestudios.com",
+      company: "Acme Ltd",
+      websiteType: "Business",
+      workspace: WORKSPACE_OPTIONS[0] || "",
+      totalValue: "1200",
+      balanceDue: "300",
+      lastPayment: new Date().toISOString().split("T")[0],
     });
   };
 
@@ -79,7 +120,16 @@ function AddClientModal({ open, onClose, onSave }) {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4">
       <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl w-full max-w-md">
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-slate-700">
-          <h2 className="text-lg font-bold text-indigo-700 dark:text-indigo-400">Add Client</h2>
+          <div>
+            <h2 className="text-lg font-bold text-indigo-700 dark:text-indigo-400">Add Client</h2>
+            <button
+              type="button"
+              onClick={autofill}
+              className="mt-1 text-xs font-semibold text-indigo-500 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300"
+            >
+              Auto fill sample
+            </button>
+          </div>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600 dark:text-slate-500 dark:hover:text-slate-300 transition text-xl leading-none">✕</button>
         </div>
 
@@ -100,16 +150,16 @@ function AddClientModal({ open, onClose, onSave }) {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-600 dark:text-slate-300 mb-1">Website type</label>
-            <select name="websiteType" value={form.websiteType} onChange={handleChange} className={inputClass}>
-              {WEBSITE_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
+            <label className="block text-sm font-medium text-gray-600 dark:text-slate-300 mb-1">Workspace / Template</label>
+            <select name="workspace" value={form.workspace} onChange={handleWorkspaceChange} className={inputClass}>
+              {workspaceTemplates.map((template) => <option key={template.id || template._id || template.name} value={template.name}>{template.name}</option>)}
             </select>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-600 dark:text-slate-300 mb-1">Workspace / Template</label>
-            <select name="workspace" value={form.workspace} onChange={handleChange} className={inputClass}>
-              {WORKSPACE_OPTIONS.map((workspace) => <option key={workspace} value={workspace}>{workspace}</option>)}
+            <label className="block text-sm font-medium text-gray-600 dark:text-slate-300 mb-1">Website type</label>
+            <select name="websiteType" value={form.websiteType} onChange={handleChange} className={inputClass}>
+              {WEBSITE_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
             </select>
           </div>
 
@@ -196,13 +246,42 @@ function Clients() {
 
   const handleDelete = async (id) => {
     const token = localStorage.getItem("token");
-    // await fetch(`http://localhost:5000/api/clients/${id}`, 
+    // await fetch(`http://localhost:5000/api/clients/${id}`,
     await fetch(`${API}/api/clients/${id}`,
       {
       method: "DELETE",
       headers: { Authorization: token },
     });
     setClients((prev) => prev.filter((c) => c._id !== id));
+  };
+
+  const handleBalanceStatusChange = async (client, status) => {
+    const token = localStorage.getItem("token");
+    const nextBalanceDue = status === "paid" ? 0 : Number(client.balanceDue || client.totalValue || 0);
+
+    setClients((prev) => prev.map((item) => (
+      item._id === client._id ? { ...item, balanceDue: nextBalanceDue } : item
+    )));
+
+    try {
+      const res = await fetch(`${API}/api/clients/${client._id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: token,
+        },
+        body: JSON.stringify({ balanceDue: nextBalanceDue }),
+      });
+
+      if (!res.ok) {
+        throw new Error("Failed to update balance status");
+      }
+    } catch (error) {
+      alert(error.message);
+      setClients((prev) => prev.map((item) => (
+        item._id === client._id ? { ...item, balanceDue: client.balanceDue } : item
+      )));
+    }
   };
 
   const filteredClients =
@@ -269,6 +348,7 @@ function Clients() {
               <thead>
                 <tr className="text-left text-gray-400 dark:text-slate-500 uppercase text-xs tracking-wider border-b border-gray-100 dark:border-slate-700">
                   <th className="px-6 py-3 font-semibold">Client</th>
+                  <th className="px-6 py-3 font-semibold">Workspace</th>
                   <th className="px-6 py-3 font-semibold">Website Type</th>
                   <th className="px-6 py-3 font-semibold">Last Payment</th>
                   <th className="px-6 py-3 font-semibold">Total Value</th>
@@ -279,7 +359,7 @@ function Clients() {
               <tbody>
                 {filteredClients.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="py-20 text-center">
+                    <td colSpan={7} className="py-20 text-center">
                       <div className="text-5xl mb-4">👥</div>
                       <p className="text-lg font-bold text-gray-700 dark:text-slate-300">No clients found</p>
                       <p className="text-gray-400 dark:text-slate-500 mt-1">Add your first client to get started</p>
@@ -297,6 +377,10 @@ function Clients() {
                         {c.email && <p className="text-xs text-gray-400 dark:text-slate-500 mt-0.5">{c.email}</p>}
                       </td>
 
+                      <td className="px-6 py-4 text-gray-500 dark:text-slate-400 font-medium">
+                        {c.workspace || "—"}
+                      </td>
+
                       {/* Website type badge */}
                       <td className="px-6 py-4">
                         <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${BADGE_COLORS[c.websiteType] || "bg-gray-100 text-gray-600"}`}>
@@ -312,13 +396,18 @@ function Clients() {
 
                       {/* Balance due — Paid badge or amount */}
                       <td className="px-6 py-4">
-                        {c.balanceDue > 0 ? (
-                          <span className="text-orange-500 font-semibold">{currency(c.balanceDue)}</span>
-                        ) : (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 text-xs font-semibold">
-                            Paid ✓
-                          </span>
-                        )}
+                        <select
+                          value={c.balanceDue > 0 ? "due" : "paid"}
+                          onChange={(e) => handleBalanceStatusChange(c, e.target.value)}
+                          className={`rounded-full px-2.5 py-1 text-xs font-semibold outline-none border cursor-pointer ${
+                            c.balanceDue > 0
+                              ? "bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 border-orange-100 dark:border-orange-800"
+                              : "bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 border-emerald-100 dark:border-emerald-800"
+                          }`}
+                        >
+                          <option value="due">Due {c.balanceDue > 0 ? `- ${currency(c.balanceDue)}` : ""}</option>
+                          <option value="paid">Paid ✓</option>
+                        </select>
                       </td>
 
                       {/* Actions */}

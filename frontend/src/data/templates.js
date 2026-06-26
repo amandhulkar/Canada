@@ -99,7 +99,7 @@ const templates = [
     image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&q=80",
     defaultData: {
       heroImage: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=1200&q=80",
-      heroTitle: "Hi, I'm a Creative Designer",
+      heroTitle: "Hi, I'm a Creative Professional",
       heroSubtitle: "Showcasing my best work and projects",
       aboutText: "I design clean, functional, and beautiful digital experiences.",
     },
@@ -119,6 +119,21 @@ const templates = [
       aboutText: "Trusted by thousands of teams to manage their work efficiently.",
     },
   },
+  {
+    id: 9,
+    name: "Editorial Blog",
+    category: "Blog",
+    price: "$199",
+    rating: 4.7,
+    badge: "New",
+    image: "https://images.unsplash.com/photo-1499750310107-5fef28a66643?w=600&q=80",
+    defaultData: {
+      heroImage: "https://images.unsplash.com/photo-1499750310107-5fef28a66643?w=1200&q=80",
+      heroTitle: "Stories, Ideas & Insights",
+      heroSubtitle: "A clean editorial blog for creators and businesses",
+      aboutText: "Publish articles, guides, and updates with a polished reading experience.",
+    },
+  },
 ];
 
 export const categories = [
@@ -126,6 +141,7 @@ export const categories = [
   "E-commerce",
   "Photography",
   "Business",
+  "Blog",
   "Food & Dining",
   "Events",
   "Creative",

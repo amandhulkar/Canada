@@ -15,12 +15,13 @@ const TECH_STACK = {
 
 const SERVICES = [
   "Custom Website Development",
-  "Agency Management Platforms",
+  // "Agency Management Platforms",
   "E-commerce Stores",
   "Landing Page Design",
-  "Dashboard & CRM Systems",
-  "SEO Optimization",
-  "API Integration",
+  // "Dashboard & CRM Systems",
+  "Dashboard Systems",
+  // "SEO Optimization",
+  // "API Integration",
   "Website Maintenance & Support",
 ];
 
@@ -132,7 +133,7 @@ function Profile() {
         </div>
 
         {/* Tech Stack */}
-        <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm">
+        {/* <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm">
           <h2 className="text-sm font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-widest flex items-center gap-2 mb-5">
             <span>🔧</span> Tech Stack & Skills
           </h2>
@@ -155,7 +156,7 @@ function Profile() {
               </div>
             ))}
           </div>
-        </div>
+        </div> */}
 
         {/* Services + Availability */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">

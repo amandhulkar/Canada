@@ -1,6 +1,8 @@
 const jwt = require("jsonwebtoken");
+const User = require("../models/User");
+const { getEffectiveAccessRole } = require("../permissions");
 
-const protect = (req, res, next) => {
+const protect = async (req, res, next) => {
   try {
     const authHeader = req.headers.authorization;
 
@@ -19,22 +21,35 @@ const protect = (req, res, next) => {
       process.env.JWT_SECRET
     );
 
-    req.user = decoded;
+    const user = await User.findById(decoded.userId).select("fullName email role accessRole companyId banned");
+    if (!user) {
+      return res.status(401).json({ message: "Invalid Token" });
+    }
+    if (user.banned) {
+      return res.status(403).json({ message: "Your account has been suspended by admin" });
+    }
+
+    const companyId = user.companyId || user._id;
+
+    req.user = {
+      userId: user._id,
+      id: user._id,
+      fullName: user.fullName,
+      email: user.email,
+      role: user.role,
+      accessRole: getEffectiveAccessRole(user),
+      companyId,
+      banned: user.banned,
+    };
 
     next();
-  // } catch (error) {
-  //   return res.status(401).json({
-  //     message: "Invalid Token",
-  //   });
-  // }
-  }
-  catch (error) {
-  console.log(error);
+  } catch (error) {
+    console.log(error);
 
-  return res.status(401).json({
-    message: "Invalid Token",
-  });
-}
+    return res.status(401).json({
+      message: "Invalid Token",
+    });
+  }
 };
 
 module.exports = protect;

@@ -351,10 +351,30 @@ function AdminDashboard({ user }) {
     fetch(`${API}/api/admin/stats`, { headers }).then((r) => r.json()).then((d) => setStats(d));
   }, []);
 
+  const refreshAdminStats = async () => {
+    try {
+      const headers = { Authorization: token };
+      const data = await fetch(`${API}/api/admin/stats?t=${Date.now()}`, {
+        headers,
+        cache: "no-store",
+      }).then((r) => r.json());
+      setStats(data);
+    } catch (err) {
+      console.error("Failed to refresh admin stats:", err);
+    }
+  };
+
   const deleteUser = async (id) => {
     if (!confirm("Delete this user?")) return;
+    const deletedUser = users.find((u) => u._id === id);
     await fetch(`${API}/api/admin/users/${id}`, { method: "DELETE", headers: { Authorization: token } });
-    setUsers(users.filter((u) => u._id !== id));
+    setUsers((prev) => prev.filter((u) => u._id !== id));
+    setStats((prev) => prev ? {
+      ...prev,
+      totalUsers: Math.max(0, (prev.totalUsers || 0) - 1),
+      bannedUsers: deletedUser?.banned ? Math.max(0, (prev.bannedUsers || 0) - 1) : prev.bannedUsers,
+    } : prev);
+    refreshAdminStats();
   };
 
   const banUser = async (id) => {
@@ -365,7 +385,15 @@ function AdminDashboard({ user }) {
         alert(data.message || "Failed to suspend user");
         return;
       }
-      setUsers(users.map((u) => u._id === id ? { ...u, banned: data.banned } : u));
+      const oldUser = users.find((u) => u._id === id);
+      setUsers((prev) => prev.map((u) => u._id === id ? { ...u, banned: data.banned } : u));
+      setStats((prev) => prev ? {
+        ...prev,
+        bannedUsers: oldUser?.banned === data.banned
+          ? prev.bannedUsers
+          : Math.max(0, (prev.bannedUsers || 0) + (data.banned ? 1 : -1)),
+      } : prev);
+      refreshAdminStats();
     } catch (err) {
       alert("Network error: " + err.message);
     }
@@ -804,6 +832,7 @@ function UserDashboard() {
   const [isSuccess, setIsSuccess] = useState(false);
 
   const userName = user?.fullName || user?.name || "";
+  const accountRole = user?.role === "admin" ? "Admin" : user?.accessRole === "developer" ? "Developer" : "Client";
 
   useEffect(() => {
     if (selectedPlanForCheckout && !cardName) {
@@ -832,7 +861,7 @@ function UserDashboard() {
     setTimeout(() => {
       setIsProcessing(false);
       setIsSuccess(true);
-      setTimeout(() => {
+      setTimeout(async () => {
         const startDate = new Date();
         const endDate = new Date(startDate);
         if (selectedPlanForCheckout.isAnnual) {
@@ -841,8 +870,7 @@ function UserDashboard() {
           endDate.setDate(endDate.getDate() + 30);
         }
 
-        const updatedUser = {
-          ...user,
+        const planDetails = {
           plan: selectedPlanForCheckout.name,
           billingCycle: selectedPlanForCheckout.isAnnual ? "annual" : "monthly",
           planPrice: selectedPlanForCheckout.isAnnual ? selectedPlanForCheckout.priceAnnual : selectedPlanForCheckout.price,
@@ -850,7 +878,26 @@ function UserDashboard() {
           planStartedAt: startDate.toISOString(),
           planEndsAt: endDate.toISOString(),
         };
-        localStorage.setItem("currentUser", JSON.stringify(updatedUser));
+
+        try {
+          const token = localStorage.getItem("token");
+          const res = await fetch(`${import.meta.env.VITE_API_URL || "http://127.0.0.1:5000"}/api/auth/plan`, {
+            method: "PATCH",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: token,
+            },
+            body: JSON.stringify(planDetails),
+          });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.message || "Failed to save plan");
+          localStorage.setItem("currentUser", JSON.stringify(data.user));
+        } catch (error) {
+          const updatedUser = { ...user, ...planDetails };
+          localStorage.setItem("currentUser", JSON.stringify(updatedUser));
+          alert(error.message || "Plan saved locally, but failed to sync with server");
+        }
+
         handleCloseCheckout();
         navigate("/dashboard/settings");
       }, 2000);
@@ -904,6 +951,10 @@ function UserDashboard() {
             <p className="text-gray-400 dark:text-slate-500 mt-1">
               {getGreeting()} - {today}
             </p>
+            <div className="mt-3 inline-flex items-center gap-2 rounded-full bg-white dark:bg-slate-800 border border-emerald-100 dark:border-emerald-800 px-4 py-1.5 text-sm font-semibold text-emerald-700 dark:text-emerald-300 shadow-sm">
+              <span className="h-2 w-2 rounded-full bg-emerald-500"></span>
+              Logged in as {accountRole}
+            </div>
           </div>
 
           <div className="flex gap-3">
@@ -927,33 +978,67 @@ function UserDashboard() {
           </div>
         </div>
 
-        {/* Trial Banner */}
-        <div className="bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-3xl p-6 mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <div>
-            <h2 className="text-2xl font-bold">
-              {TRIAL_DAYS}-day dashboard trial is active
-            </h2>
-            <p className="text-emerald-50 mt-1">
-              You can use all dashboard features during the trial. Templates still require separate payment.
-            </p>
-          </div>
-
-          <div className="flex items-center gap-4">
-            <div className="bg-white/15 rounded-2xl px-6 py-3 text-center">
-              <p className="text-sm text-emerald-50">Trial ends in</p>
-              <p className="text-2xl font-bold tabular-nums">{timeLeft}</p>
+        {/* Plan / Trial Banner */}
+        {plan ? (
+          <div className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-3xl p-6 mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+              <h2 className="text-2xl font-bold">
+                {plan} plan is active
+              </h2>
+              <p className="text-indigo-50 mt-1">
+                {user?.billingCycle === "annual" ? "Annual" : "Monthly"} subscription active for {user?.fullName || user?.name || "this user"}.
+              </p>
             </div>
-            <div className="text-center">
-              <p className="text-sm text-emerald-50 mb-2">Full access to the website</p>
+
+            <div className="flex items-center gap-4">
+              <div className="bg-white/25 border border-white/25 rounded-2xl px-6 py-3 text-center shadow-sm">
+                <p className="text-sm font-semibold text-indigo-950/80">Plan price</p>
+                <p className="text-2xl font-extrabold text-slate-950 tabular-nums">
+                  {user?.planPrice || "—"}<span className="text-sm font-bold text-slate-900">{user?.planCadence || ""}</span>
+                </p>
+              </div>
+              <div className="bg-white/25 border border-white/25 rounded-2xl px-6 py-3 text-center shadow-sm">
+                <p className="text-sm font-semibold text-indigo-950/80">Valid until</p>
+                <p className="text-lg font-extrabold text-slate-950 tabular-nums">
+                  {user?.planEndsAt ? new Date(user.planEndsAt).toLocaleDateString() : "—"}
+                </p>
+              </div>
               <button
                 onClick={() => setPricingOpen(true)}
-                className="bg-white text-emerald-600 font-bold px-5 py-2 rounded-xl hover:bg-emerald-50 transition"
+                className="bg-white text-indigo-600 font-bold px-5 py-2 rounded-xl hover:bg-indigo-50 transition"
               >
-                Upgrade Plan
+                Change Plan
               </button>
             </div>
           </div>
-        </div>
+        ) : (
+          <div className="bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-3xl p-6 mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+              <h2 className="text-2xl font-bold">
+                {TRIAL_DAYS}-day dashboard trial is active
+              </h2>
+              <p className="text-emerald-50 mt-1">
+                Choose a plan to unlock access based on your subscription.
+              </p>
+            </div>
+
+            <div className="flex items-center gap-4">
+              <div className="bg-white/15 rounded-2xl px-6 py-3 text-center">
+                <p className="text-sm text-emerald-50">Trial ends in</p>
+                <p className="text-2xl font-bold tabular-nums">{timeLeft}</p>
+              </div>
+              <div className="text-center">
+                <p className="text-sm text-emerald-50 mb-2">Select a plan for your account</p>
+                <button
+                  onClick={() => setPricingOpen(true)}
+                  className="bg-white text-emerald-600 font-bold px-5 py-2 rounded-xl hover:bg-emerald-50 transition"
+                >
+                  Upgrade Plan
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Stats */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">

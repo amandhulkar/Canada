@@ -272,7 +272,7 @@
   // export default TemplatesPage;
 
     import { useEffect, useState } from "react";
-  import { useNavigate } from "react-router-dom";
+  import { useNavigate, useSearchParams } from "react-router-dom";
   import Container from "../components/Container";
   import Footer from "../sections/Footer";
   import { getMergedTemplates, getTemplateCategories, staticTemplates } from "../utils/templatesApi";
@@ -286,14 +286,14 @@
     const handleUseTemplate = async () => {
       if (loading) return
 
-      const token = localStorage.getItem("token") 
-      if (!token) {
+      const token = localStorage.getItem("token")
+      const currentUser = JSON.parse(localStorage.getItem("currentUser") || "null");
+      if (!token || !currentUser?._id) {
         alert("Please login first to use a template.")
-        navigate("/signup")
+        navigate("/signup?tab=signin")
         return
       }
 
-      const currentUser = JSON.parse(localStorage.getItem("currentUser") || "{}");
       const planExpired = (() => {
         if (!currentUser?.planEndsAt) return false;
         const endDate = new Date(currentUser.planEndsAt);
@@ -461,18 +461,32 @@
   }
 
   function TemplatesPage() {
-    const [activeCategory, setActiveCategory] = useState("All");
+    const [searchParams] = useSearchParams();
+    const [activeCategory, setActiveCategory] = useState(searchParams.get("category") || "All");
     const [searchQuery, setSearchQuery] = useState("");
     const [previewTemplate, setPreviewTemplate] = useState(null);
     const [templates, setTemplates] = useState(staticTemplates);
 
     useEffect(() => {
+      setActiveCategory(searchParams.get("category") || "All");
+    }, [searchParams]);
+
+    useEffect(() => {
       let isMounted = true;
-      getMergedTemplates().then((mergedTemplates) => {
-        if (isMounted) setTemplates(mergedTemplates);
-      });
+      const loadTemplates = () => {
+        getMergedTemplates().then((mergedTemplates) => {
+          if (isMounted) setTemplates(mergedTemplates);
+        });
+      };
+
+      loadTemplates();
+      window.addEventListener("templates:changed", loadTemplates);
+      window.addEventListener("focus", loadTemplates);
+
       return () => {
         isMounted = false;
+        window.removeEventListener("templates:changed", loadTemplates);
+        window.removeEventListener("focus", loadTemplates);
       };
     }, []);
 

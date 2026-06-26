@@ -216,7 +216,7 @@ export default function Analytics() {
         {/* Bottom row: Project status + Weekly Activity */}
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
           {/* Project Status Pie */}
-          <div className="bg-white dark:bg-slate-800 rounded-3xl border border-slate-100 dark:border-slate-800 p-6 shadow-sm">
+          {/* <div className="bg-white dark:bg-slate-800 rounded-3xl border border-slate-100 dark:border-slate-800 p-6 shadow-sm">
             <h2 className="text-base font-bold text-slate-800 dark:text-slate-100 mb-1">Project Status Distribution</h2>
             <p className="text-xs text-slate-400 dark:text-slate-500 mb-6">How your {totalProjects} projects are spread</p>
             <div className="flex flex-col sm:flex-row items-center gap-6">
@@ -250,10 +250,10 @@ export default function Analytics() {
                 </div>
               )}
             </div>
-          </div>
+          </div> */}
 
           {/* Weekly Task Activity */}
-          <div className="bg-white dark:bg-slate-800 rounded-3xl border border-slate-100 dark:border-slate-800 p-6 shadow-sm">
+          {/* <div className="bg-white dark:bg-slate-800 rounded-3xl border border-slate-100 dark:border-slate-800 p-6 shadow-sm">
             <h2 className="text-base font-bold text-slate-800 dark:text-slate-100 mb-1">Weekly Task Activity</h2>
             <p className="text-xs text-slate-400 dark:text-slate-500 mb-6">Tasks created vs completed this week</p>
             <ResponsiveContainer width="100%" height={200}>
@@ -267,7 +267,7 @@ export default function Analytics() {
                 <Bar dataKey="completed" name="Completed" fill="#10b981" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
-          </div>
+          </div> */}
         </div>
 
         {/* Quick links */}

@@ -17,41 +17,46 @@ const navLinks = [
 const templates = [
   {
     name: "Portfolio",
+    category: "Creative",
     preview: (
-      <div className="grid h-full w-full grid-cols-2 gap-1 rounded-xl border border-line bg-neutral-50 p-2">
-        <div className="row-span-2 rounded-md bg-ink"></div>
-        <div className="rounded-md bg-neutral-200"></div>
-        <div className="rounded-md bg-neutral-200"></div>
-      </div>
+      <img
+        src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&q=80"
+        alt="Portfolio template"
+        className="h-full w-full rounded-xl object-cover"
+      />
     ),
   },
   {
     name: "Business",
+    category: "Business",
     preview: (
-      <div className="relative h-full w-full overflow-hidden rounded-xl bg-[radial-gradient(circle_at_30%_30%,#4338ca,#0b0b1a_70%)]">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_65%_65%,rgba(91,75,245,0.55),transparent_60%)]"></div>
-      </div>
+      <img
+        src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=600&q=80"
+        alt="Business template"
+        className="h-full w-full rounded-xl object-cover"
+      />
     ),
   },
   {
     name: "Blog",
+    category: "Blog",
     preview: (
-      <div className="h-full w-full rounded-xl bg-[linear-gradient(160deg,#cfd6da,#8a96a3_60%,#e8ecef)]"></div>
+      <img
+        src="https://images.unsplash.com/photo-1499750310107-5fef28a66643?w=600&q=80"
+        alt="Blog template"
+        className="h-full w-full rounded-xl object-cover"
+      />
     ),
   },
   {
     name: "Store",
+    category: "E-commerce",
     preview: (
-      <div className="relative flex h-full w-full items-end justify-center rounded-xl bg-[linear-gradient(180deg,#fdeceb,#fdeceb_55%,#cfe8d8_55%)] pb-2">
-        <span className="absolute left-1/2 top-[14%] -translate-x-1/2 rounded bg-[#e8534e] px-2.5 py-1 text-[9px] font-extrabold tracking-wide text-white">
-          STORE
-        </span>
-        <div className="flex gap-1.5">
-          <div className="h-8 w-3.5 rounded-md bg-neutral-800"></div>
-          <div className="h-8 w-3.5 rounded-md bg-[#e8534e]"></div>
-          <div className="h-8 w-3.5 rounded-md bg-[#f0c14b]"></div>
-        </div>
-      </div>
+      <img
+        src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=600&q=80"
+        alt="Store template"
+        className="h-full w-full rounded-xl object-cover"
+      />
     ),
   },
 ];
@@ -117,7 +122,7 @@ function Navbar() {
                     {templates.map((t) => (
                       <Link
                         key={t.name}
-                        to="/templates"
+                        to={`/templates?category=${encodeURIComponent(t.category || t.name)}`}
                         className="group block text-left"
                       >
                         <div className="mb-3 aspect-[1/0.78] w-full overflow-hidden rounded-xl border border-line transition-transform group-hover:-translate-y-1 group-hover:shadow-soft">

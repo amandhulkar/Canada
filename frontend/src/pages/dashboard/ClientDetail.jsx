@@ -472,9 +472,13 @@ function ClientDetail() {
                     <p className="text-xs font-semibold tracking-wider text-gray-400 dark:text-slate-500 uppercase mb-1">Assigned Projects</p>
                     <p className="text-sm font-semibold text-gray-700 dark:text-slate-100">{projects.length ? `${projects.length} project${projects.length !== 1 ? "s" : ""}` : "No project access assigned"}</p>
                   </div>
-                  <div>
+                  {/* <div>
                     <p className="text-xs font-semibold tracking-wider text-gray-400 dark:text-slate-500 uppercase mb-1">Invite Status</p>
                     <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300">pending</span>
+                  </div> */}
+                  <div>
+                    <p className="text-xs font-semibold tracking-wider text-gray-400 dark:text-slate-500 uppercase mb-1">Client Email</p>
+                    <p className="text-sm font-semibold text-gray-700 dark:text-slate-100 break-all">{client.email || "—"}</p>
                   </div>
                   <div>
                     <p className="text-xs font-semibold tracking-wider text-gray-400 dark:text-slate-500 uppercase mb-1">Workspace</p>

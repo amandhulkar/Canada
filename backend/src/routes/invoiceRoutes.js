@@ -2,11 +2,20 @@ const express = require("express");
 const router = express.Router();
 const Invoice = require("../models/Invoice");
 const protect = require("../middleware/authMiddleware");
+const requirePermission = require("../middleware/permissionMiddleware");
+const { PERMISSIONS } = require("../permissions");
 
-// GET all invoices — admin sees all, regular user sees only their own
-router.get("/", protect, async (req, res) => {
+const getCompanyId = (req) => req.user.companyId || req.user.userId;
+
+const cleanInvoiceBody = (body) => {
+  const { _id, user, createdBy, companyId, role, invoiceNumber, ...safeBody } = body;
+  return safeBody;
+};
+
+// GET all invoices — each company sees only its own
+router.get("/", protect, requirePermission(PERMISSIONS.VIEW_INVOICES), async (req, res) => {
   try {
-    const query = req.user.role === "admin" ? {} : { user: req.user.userId };
+    const query = { companyId: getCompanyId(req) };
     const invoices = await Invoice.find(query).populate("user", "fullName email");
     res.json(invoices);
   } catch (error) {
@@ -15,15 +24,17 @@ router.get("/", protect, async (req, res) => {
 });
 
 // POST create invoice
-router.post("/", protect, async (req, res) => {
+router.post("/", protect, requirePermission(PERMISSIONS.CREATE_INVOICES), async (req, res) => {
   try {
-    const lastInvoice = await Invoice.findOne().sort({ invoiceNumber: -1 });
+    const companyId = getCompanyId(req);
+    const lastInvoice = await Invoice.findOne({ companyId }).sort({ invoiceNumber: -1 });
     const nextInvoiceNumber = lastInvoice && lastInvoice.invoiceNumber ? lastInvoice.invoiceNumber + 1 : 1001;
 
     const invoice = await Invoice.create({
-      ...req.body,
+      ...cleanInvoiceBody(req.body),
       invoiceNumber: nextInvoiceNumber,
       user: req.user.userId,
+      companyId,
     });
     res.json(invoice);
   } catch (error) {
@@ -31,13 +42,11 @@ router.post("/", protect, async (req, res) => {
   }
 });
 
-// PUT update invoice — admin can update any, user only their own
-router.put("/:id", protect, async (req, res) => {
+// PUT update invoice — each company can update only its own
+router.put("/:id", protect, requirePermission(PERMISSIONS.MANAGE_PAYMENTS), async (req, res) => {
   try {
-    const query = req.user.role === "admin"
-      ? { _id: req.params.id }
-      : { _id: req.params.id, user: req.user.userId };
-    const invoice = await Invoice.findOneAndUpdate(query, req.body, { new: true });
+    const query = { _id: req.params.id, companyId: getCompanyId(req) };
+    const invoice = await Invoice.findOneAndUpdate(query, cleanInvoiceBody(req.body), { new: true });
     if (!invoice) {
       return res.status(404).json({ message: "Invoice not found or unauthorized" });
     }
@@ -47,12 +56,10 @@ router.put("/:id", protect, async (req, res) => {
   }
 });
 
-// DELETE invoice — admin can delete any, user only their own
-router.delete("/:id", protect, async (req, res) => {
+// DELETE invoice — each company can delete only its own
+router.delete("/:id", protect, requirePermission(PERMISSIONS.MANAGE_PAYMENTS), async (req, res) => {
   try {
-    const query = req.user.role === "admin"
-      ? { _id: req.params.id }
-      : { _id: req.params.id, user: req.user.userId };
+    const query = { _id: req.params.id, companyId: getCompanyId(req) };
     const invoice = await Invoice.findOneAndDelete(query);
     if (!invoice) {
       return res.status(404).json({ message: "Invoice not found or unauthorized" });

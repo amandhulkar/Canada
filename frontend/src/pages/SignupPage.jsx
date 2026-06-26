@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 
@@ -33,16 +33,17 @@ const quickLinks = [
 function SignupPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const [tab, setTab] = useState(
-    searchParams.get("tab") === "signin" ? "signin" : "create",
-  );
+  const [tab, setTab] = useState("signin");
   const [showPass, setShowPass] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [accountType, setAccountType] = useState("Freelancer / Individual");
 
   //  NEW: role state (User / Admin select karne ke liye)
-  const [role, setRole] = useState("user");
+  const [role, setRole] = useState("admin");
   const [loading, setLoading] = useState(false);
+  const [forgotMode, setForgotMode] = useState(false);
+  const [resetStep, setResetStep] = useState("email");
+  const [resetForm, setResetForm] = useState({ email: "", otp: "", newPassword: "", confirmPassword: "" });
 
   const [form, setForm] = useState({
     name: "",
@@ -50,6 +51,13 @@ function SignupPage() {
     password: "",
     confirm: "",
   });
+
+  useEffect(() => {
+    const requestedTab = searchParams.get("tab");
+    if (requestedTab === "create" || requestedTab === "signin") {
+      setTab(requestedTab);
+    }
+  }, [searchParams]);
 
   // ✅ Preview mein dynamic name dikhane ke liye
   const previewName = form.name.trim() || "Your Name";
@@ -168,6 +176,67 @@ function SignupPage() {
     }
   };
 
+  const handleForgotRequest = async (e) => {
+    e.preventDefault();
+    if (loading) return;
+    setLoading(true);
+
+    try {
+      const res = await fetch(`${API}/api/auth/forgot-password`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: resetForm.email }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        alert(data.message || "Unable to send OTP");
+        return;
+      }
+
+      alert(data.message || "OTP sent to your email");
+      setResetStep("otp");
+    } catch (error) {
+      console.log(error);
+      alert("Server Error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResetPassword = async (e) => {
+    e.preventDefault();
+    if (loading) return;
+    if (resetForm.newPassword !== resetForm.confirmPassword) {
+      alert("Passwords do not match");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const res = await fetch(`${API}/api/auth/reset-password`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: resetForm.email, otp: resetForm.otp, newPassword: resetForm.newPassword }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        alert(data.message || "Password reset failed");
+        return;
+      }
+
+      alert("Password reset successfully. Please sign in with your new password.");
+      setForgotMode(false);
+      setResetStep("email");
+      setResetForm({ email: "", otp: "", newPassword: "", confirmPassword: "" });
+      setForm((prev) => ({ ...prev, password: "" }));
+    } catch (error) {
+      console.log(error);
+      alert("Server Error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleLogout = () => {
     localStorage.removeItem("currentUser");
     navigate("/");
@@ -223,36 +292,15 @@ function SignupPage() {
           Build beautiful websites &amp; dashboards - sign in to continue.
         </p>
 
-        {/* Tabs */}
-        <div
-          style={{
-            display: "flex",
-            borderBottom: "1.5px solid #eee",
-            marginBottom: 28,
-          }}
-        >
-          {["signin", "create"].map((t) => (
-            <button
-              key={t}
-              onClick={() => setTab(t)}
-              style={{
-                flex: 1,
-                padding: "10px 0",
-                background: "none",
-                border: "none",
-                cursor: "pointer",
-                fontSize: 14,
-                fontWeight: tab === t ? 700 : 400,
-                color: tab === t ? "#6c5ce7" : "#999",
-                borderBottom:
-                  tab === t ? "2.5px solid #6c5ce7" : "2.5px solid transparent",
-                marginBottom: -2,
-                transition: "all 0.2s",
-              }}
-            >
-              {t === "signin" ? "Sign In" : "Create Account"}
-            </button>
-          ))}
+        <div style={{ borderBottom: "1.5px solid #eee", marginBottom: 28, paddingBottom: 10 }}>
+          <h1 style={{ fontSize: 26, fontWeight: 800, color: "#14132a", margin: 0 }}>
+            {tab === "create" ? "Create Admin Account" : "Sign In"}
+          </h1>
+          <p style={{ fontSize: 12.5, color: "#999", marginTop: 6 }}>
+            {tab === "create"
+              ? "Create a new admin account to manage platform users and projects."
+              : "Sign in with your admin or user account to continue."}
+          </p>
         </div>
 
         {tab === "create" ? (
@@ -283,7 +331,6 @@ function SignupPage() {
                 style={inputStyle}
                 disabled={loading}
               >
-                <option value="user">User</option>
                 <option value="admin">Admin</option>
               </select>
             </div>
@@ -294,6 +341,7 @@ function SignupPage() {
               <input
                 name="name"
                 type="text"
+                autoComplete="name"
                 placeholder=" Your Name "
                 value={form.name}
                 onChange={handleChange}
@@ -309,6 +357,7 @@ function SignupPage() {
               <input
                 name="email"
                 type="email"
+                autoComplete="email"
                 placeholder="you@company.com"
                 value={form.email}
                 onChange={handleChange}
@@ -325,6 +374,7 @@ function SignupPage() {
                 <input
                   name="password"
                   type={showPass ? "text" : "password"}
+                  autoComplete="new-password"
                   placeholder="Min 8 characters"
                   value={form.password}
                   onChange={handleChange}
@@ -353,6 +403,7 @@ function SignupPage() {
                 <input
                   name="confirm"
                   type={showConfirm ? "text" : "password"}
+                  autoComplete="new-password"
                   placeholder="Re-enter password"
                   value={form.confirm}
                   onChange={handleChange}
@@ -430,14 +481,88 @@ function SignupPage() {
           </form>
         ) : (
           <form
-            onSubmit={handleSubmit}
+            onSubmit={forgotMode ? (resetStep === "email" ? handleForgotRequest : handleResetPassword) : handleSubmit}
             style={{ display: "flex", flexDirection: "column", gap: 20 }}
           >
+            {forgotMode ? (
+              <>
+                <div>
+                  <label style={labelStyle}>Email</label>
+                  <input
+                    type="email"
+                    placeholder="you@company.com"
+                    value={resetForm.email}
+                    onChange={(e) => setResetForm({ ...resetForm, email: e.target.value })}
+                    style={inputStyle}
+                    required
+                    disabled={loading || resetStep === "otp"}
+                  />
+                </div>
+
+                {resetStep === "otp" && (
+                  <>
+                    <div>
+                      <label style={labelStyle}>OTP</label>
+                      <input
+                        placeholder="Enter 6-digit OTP"
+                        value={resetForm.otp}
+                        onChange={(e) => setResetForm({ ...resetForm, otp: e.target.value })}
+                        style={inputStyle}
+                        required
+                        disabled={loading}
+                      />
+                    </div>
+                    <div>
+                      <label style={labelStyle}>New Password</label>
+                      <input
+                        type="password"
+                        placeholder="Min 8 characters"
+                        value={resetForm.newPassword}
+                        onChange={(e) => setResetForm({ ...resetForm, newPassword: e.target.value })}
+                        style={inputStyle}
+                        required
+                        disabled={loading}
+                      />
+                    </div>
+                    <div>
+                      <label style={labelStyle}>Confirm Password</label>
+                      <input
+                        type="password"
+                        placeholder="Confirm new password"
+                        value={resetForm.confirmPassword}
+                        onChange={(e) => setResetForm({ ...resetForm, confirmPassword: e.target.value })}
+                        style={inputStyle}
+                        required
+                        disabled={loading}
+                      />
+                    </div>
+                  </>
+                )}
+
+                <button
+                  type="submit"
+                  disabled={loading}
+                  style={{ marginTop: 4, width: "100%", padding: "15px", background: loading ? "#a29bfe" : "#6c5ce7", color: "#fff", border: "none", borderRadius: 12, fontSize: 15, fontWeight: 700, cursor: loading ? "not-allowed" : "pointer" }}
+                >
+                  {loading ? "Please wait..." : resetStep === "email" ? "Send OTP" : "Reset Password"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setForgotMode(false); setResetStep("email"); }}
+                  style={{ background: "none", border: "none", color: "#6c5ce7", fontWeight: 600, cursor: "pointer", fontSize: 12.5 }}
+                  disabled={loading}
+                >
+                  Back to Sign In
+                </button>
+              </>
+            ) : (
+              <>
             <div>
               <label style={labelStyle}>Email</label>
               <input
                 name="email"
                 type="email"
+                autoComplete="email"
                 placeholder="you@company.com"
                 value={form.email}
                 onChange={handleChange}
@@ -452,6 +577,7 @@ function SignupPage() {
                 <input
                   name="password"
                   type={showPass ? "text" : "password"}
+                  autoComplete="current-password"
                   placeholder="Your password"
                   value={form.password}
                   onChange={handleChange}
@@ -506,7 +632,17 @@ function SignupPage() {
               )}
             </button>
             <p style={{ textAlign: "center", fontSize: 12.5, color: "#aaa" }}>
-              Don't have an account?{" "}
+              <button
+                type="button"
+                onClick={() => { if (!loading) { setForgotMode(true); setResetForm((prev) => ({ ...prev, email: form.email })); } }}
+                style={{ background: "none", border: "none", color: loading ? "#aaa" : "#6c5ce7", fontWeight: 600, cursor: loading ? "not-allowed" : "pointer", fontSize: 12.5 }}
+                disabled={loading}
+              >
+                Forgot password?
+              </button>
+            </p>
+            <p style={{ textAlign: "center", fontSize: 12.5, color: "#aaa" }}>
+              New admin?{" "}
               <button
                 type="button"
                 onClick={() => !loading && setTab("create")}
@@ -520,9 +656,11 @@ function SignupPage() {
                 }}
                 disabled={loading}
               >
-                Create Account
+                Create Admin Account
               </button>
             </p>
+              </>
+            )}
           </form>
         )}
       </div>

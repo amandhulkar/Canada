@@ -1,8 +1,68 @@
 const mongoose = require("mongoose");
 
+const backfillCompanyIds = async () => {
+  const User = require("../models/User");
+  const Client = require("../models/Client");
+  const Project = require("../models/Project");
+  const Invoice = require("../models/Invoice");
+  const Template = require("../models/Template");
+
+  const users = await User.find({
+    $or: [{ companyId: { $exists: false } }, { companyId: null }],
+  });
+
+  for (const user of users) {
+    if (user.createdBy) {
+      const creator = await User.findById(user.createdBy).select("companyId");
+      user.companyId = creator?.companyId || user.createdBy;
+    } else {
+      user.companyId = user._id;
+    }
+    await user.save();
+  }
+
+  const usersById = await User.find({}).select("companyId");
+  const companyByUser = new Map(usersById.map((user) => [String(user._id), user.companyId || user._id]));
+
+  const backfillOwnedCollection = async (Model, ownerField) => {
+    const docs = await Model.find({
+      $or: [{ companyId: { $exists: false } }, { companyId: null }],
+      [ownerField]: { $exists: true, $ne: null },
+    });
+
+    for (const doc of docs) {
+      const companyId = companyByUser.get(String(doc[ownerField]));
+      if (!companyId) continue;
+      doc.companyId = companyId;
+      await doc.save();
+    }
+  };
+
+  await backfillOwnedCollection(Client, "createdBy");
+  await backfillOwnedCollection(Project, "user");
+  await backfillOwnedCollection(Invoice, "user");
+  await backfillOwnedCollection(Template, "createdBy");
+};
+
 const connectDB = async () => {
   try {
     const conn = await mongoose.connect(process.env.MONGO_URI);
+
+    try {
+      await conn.connection.collection("users").dropIndex("role_1");
+      console.log("Removed old single-admin role index");
+    } catch (indexError) {
+      if (indexError.codeName !== "IndexNotFound") {
+        console.log("Role index cleanup skipped:", indexError.message);
+      }
+    }
+
+    try {
+      await backfillCompanyIds();
+      console.log("Company isolation backfill complete");
+    } catch (backfillError) {
+      console.log("Company isolation backfill skipped:", backfillError.message);
+    }
 
     console.log(`MongoDB Connected: ${conn.connection.host}`);
   } catch (error) {

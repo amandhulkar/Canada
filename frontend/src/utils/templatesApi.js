@@ -7,9 +7,17 @@ export const getTemplateCategories = (templates) => [
   ...Array.from(new Set(templates.map((template) => template.category).filter(Boolean))),
 ];
 
+export const notifyTemplatesChanged = () => {
+  window.dispatchEvent(new Event("templates:changed"));
+};
+
 export const getMergedTemplates = async () => {
   try {
-    const res = await fetch(`${API}/api/templates`);
+    const token = localStorage.getItem("token");
+    const res = await fetch(`${API}/api/templates?t=${Date.now()}`, {
+      cache: "no-store",
+      headers: token ? { Authorization: token } : {},
+    });
     if (!res.ok) throw new Error("Failed to fetch templates");
     const dynamicTemplates = await res.json();
     return [...staticTemplates, ...(Array.isArray(dynamicTemplates) ? dynamicTemplates : [])];

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import Sidebar from "../../components/Sidebar";
+import { notifyTemplatesChanged } from "../../utils/templatesApi";
 
 const API = import.meta.env.VITE_API_URL || "http://127.0.0.1:5000";
 
@@ -56,7 +57,11 @@ function TemplatesAdmin() {
   const fetchTemplates = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${API}/api/templates`);
+      const token = localStorage.getItem("token");
+      const res = await fetch(`${API}/api/templates?t=${Date.now()}`, {
+        headers: { Authorization: token },
+        cache: "no-store",
+      });
       const data = await res.json();
       setTemplates(Array.isArray(data) ? data : []);
     } catch (error) {
@@ -102,6 +107,7 @@ function TemplatesAdmin() {
       });
       if (!res.ok) throw new Error(await res.text() || "Failed to save template");
       await fetchTemplates();
+      notifyTemplatesChanged();
       resetForm();
       alert(editingTemplate ? "✅ Template updated" : "✅ Template added");
     } catch (error) {
@@ -125,6 +131,7 @@ function TemplatesAdmin() {
       });
       if (!res.ok) throw new Error(await res.text() || "Failed to delete template");
       await fetchTemplates();
+      notifyTemplatesChanged();
       if (editingTemplate?.id === template.id) resetForm();
       alert("✅ Template deleted");
     } catch (error) {

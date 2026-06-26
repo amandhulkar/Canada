@@ -6,6 +6,8 @@ const clientSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    email: String,
+    company: String,
     websiteType: String,
     workspace: String,
     lastPayment: Date,
@@ -15,6 +17,12 @@ const clientSchema = new mongoose.Schema(
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
+    },
+    companyId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
+      index: true,
     },
   },
   { timestamps: true }

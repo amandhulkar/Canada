@@ -253,6 +253,13 @@ const defaultDue = () => {
 };
 
 const EMPTY_FORM = { client: "", project: "", amount: "", due: defaultDue(), status: "pending" };
+const SAMPLE_INVOICE_FORM = {
+  client: "Acme Studios",
+  project: "Business Website Development",
+  amount: "1200",
+  due: defaultDue(),
+  status: "pending",
+};
 const TABS = ["all", "paid", "pending"];
 const TAB_LABELS = { all: "All Invoices", paid: "Paid", pending: "Pending" };
 const TABLE_HEADERS = ["Invoice #", "Client", "Project", "Amount", "GST (18%)", "Total", "Due Date", "Status", "Actions"];
@@ -403,6 +410,7 @@ export default function Invoices() {
 
   function openModal() { setForm(initialForm()); setError(""); setModal(true); }
   function closeModal() { setModal(false); setError(""); }
+  function autofillInvoice() { setForm({ ...SAMPLE_INVOICE_FORM, due: defaultDue() }); setError(""); }
 
   async function addInvoice() {
     if (!form.client.trim() || !form.project.trim() || !form.amount || !form.due) {
@@ -619,7 +627,25 @@ export default function Invoices() {
       {modal && (
         <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center" onClick={closeModal}>
           <div className="bg-white dark:bg-slate-800 rounded-xl p-6 w-[480px] max-w-[95vw] shadow-xl" onClick={(e) => e.stopPropagation()}>
-            <h2 className="text-lg font-bold text-indigo-900 dark:text-indigo-400 mb-5">Create Invoice</h2>
+            <div className="flex items-start justify-between mb-5">
+              <div>
+                <h2 className="text-lg font-bold text-indigo-900 dark:text-indigo-400">Create Invoice</h2>
+                <button
+                  type="button"
+                  onClick={autofillInvoice}
+                  className="mt-1 text-xs font-semibold text-indigo-500 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300"
+                >
+                  Auto fill sample
+                </button>
+              </div>
+              <button
+                type="button"
+                onClick={closeModal}
+                className="text-gray-400 hover:text-gray-600 dark:text-slate-500 dark:hover:text-slate-300 transition text-xl leading-none"
+              >
+                ✕
+              </button>
+            </div>
 
             <div className="grid grid-cols-2 gap-3 mb-4">
               <div className="flex flex-col gap-1">

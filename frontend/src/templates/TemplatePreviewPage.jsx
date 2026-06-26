@@ -36,15 +36,24 @@ function TemplatePreviewPage() {
 
   useEffect(() => {
     let isMounted = true;
-    setPageLoading(true);
-    findTemplateById(id).then((foundTemplate) => {
-      if (isMounted) {
-        setTemplate(foundTemplate || null);
-        setPageLoading(false);
-      }
-    });
+    const loadTemplate = () => {
+      setPageLoading(true);
+      findTemplateById(id).then((foundTemplate) => {
+        if (isMounted) {
+          setTemplate(foundTemplate || null);
+          setPageLoading(false);
+        }
+      });
+    };
+
+    loadTemplate();
+    window.addEventListener("templates:changed", loadTemplate);
+    window.addEventListener("focus", loadTemplate);
+
     return () => {
       isMounted = false;
+      window.removeEventListener("templates:changed", loadTemplate);
+      window.removeEventListener("focus", loadTemplate);
     };
   }, [id]);
 
@@ -83,9 +92,10 @@ function TemplatePreviewPage() {
   const handleUseTemplate = async () => {
     if (loading) return;
     const token = localStorage.getItem("token");
-    if (!token) {
+    const currentUser = JSON.parse(localStorage.getItem("currentUser") || "null");
+    if (!token || !currentUser?._id) {
       alert("Please login first to use a template.");
-      navigate("/login");
+      navigate("/signup?tab=signin");
       return;
     }
     const API = import.meta.env.VITE_API_URL || "http://127.0.0.1:5000";

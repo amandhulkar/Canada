@@ -1,10 +1,18 @@
 const Client = require("../models/Client");
 
+const getCompanyId = (req) => req.user.companyId || req.user.userId;
+
+const cleanClientBody = (body) => {
+  const { _id, createdBy, companyId, user, role, ...safeBody } = body;
+  return safeBody;
+};
+
 const createClient = async (req, res) => {
   try {
     const client = await Client.create({
-      ...req.body,
+      ...cleanClientBody(req.body),
       createdBy: req.user.userId,
+      companyId: getCompanyId(req),
     });
 
     res.status(201).json(client);
@@ -17,18 +25,12 @@ const createClient = async (req, res) => {
 
 const getClients = async (req, res) => {
   try {
-    console.log("USER:", req.user);
-
     const clients = await Client.find({
-      createdBy: req.user.userId,
+      companyId: getCompanyId(req),
     });
-
-    console.log("CLIENTS:", clients);
 
     res.status(200).json(clients);
   } catch (error) {
-    console.log("ERROR:", error);
-
     res.status(500).json({
       message: error.message,
     });
@@ -38,7 +40,7 @@ const deleteClient = async (req, res) => {
   try {
     const client = await Client.findOneAndDelete({
       _id: req.params.id,
-      createdBy: req.user.userId,
+      companyId: getCompanyId(req),
     });
 
     if (!client) {
@@ -60,7 +62,10 @@ const deleteClient = async (req, res) => {
 
 const getClientById = async (req, res) => {
   try {
-    const client = await Client.findById(req.params.id);
+    const client = await Client.findOne({
+      _id: req.params.id,
+      companyId: getCompanyId(req),
+    });
     if (!client) {
       return res.status(404).json({ message: "Client not found" });
     }
@@ -72,9 +77,9 @@ const getClientById = async (req, res) => {
 
 const updateClient = async (req, res) => {
   try {
-    const client = await Client.findByIdAndUpdate(
-      req.params.id,
-      req.body,
+    const client = await Client.findOneAndUpdate(
+      { _id: req.params.id, companyId: getCompanyId(req) },
+      cleanClientBody(req.body),
       { new: true }
     );
     if (!client) return res.status(404).json({ message: "Client not found" });
