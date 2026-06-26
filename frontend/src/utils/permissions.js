@@ -38,6 +38,31 @@ export const ROLE_PERMISSIONS = {
   ],
 };
 
+export const PLAN_PERMISSIONS = {
+  Plus: [
+    PERMISSIONS.VIEW_DASHBOARD,
+    PERMISSIONS.VIEW_PROJECTS,
+    PERMISSIONS.SYSTEM_SETTINGS,
+    PERMISSIONS.SUPPORT_INFO,
+    PERMISSIONS.ACCESS_SETTINGS,
+    PERMISSIONS.VIEW_SERVICES,
+  ],
+  Pro: [
+    PERMISSIONS.VIEW_DASHBOARD,
+    PERMISSIONS.VIEW_PROJECTS,
+    PERMISSIONS.MANAGE_PROJECTS,
+    PERMISSIONS.SYSTEM_SETTINGS,
+    PERMISSIONS.SUPPORT_INFO,
+    PERMISSIONS.ACCESS_SETTINGS,
+    PERMISSIONS.VIEW_SERVICES,
+    PERMISSIONS.VIEW_INVOICES,
+    PERMISSIONS.CREATE_INVOICES,
+    PERMISSIONS.MANAGE_PAYMENTS,
+    PERMISSIONS.MANAGE_TEAM,
+  ],
+  Business: ["*"],
+};
+
 export const ACCESS_ROLES = Object.keys(ROLE_PERMISSIONS);
 
 export const getCurrentUser = () => {
@@ -61,43 +86,28 @@ export const hasPermission = (user, permission) => {
 };
 
 export const isPlanExpired = (user) => {
-  if (!user?.planEndsAt) return false;
+  if (!user?.planEndsAt) return !["Plus", "Pro", "Business"].includes(user?.plan);
   const endDate = new Date(user.planEndsAt);
-  return !Number.isNaN(endDate.getTime()) && endDate.getTime() < Date.now();
+  return Number.isNaN(endDate.getTime()) || endDate.getTime() < Date.now();
+};
+
+export const hasActivePlan = (user) => {
+  return ["Plus", "Pro", "Business"].includes(user?.plan) && !isPlanExpired(user);
 };
 
 export const hasPlanPermission = (user, permission) => {
   if (!permission) return true;
-  if (user?.role === "admin") return true;
-
-  const plan = isPlanExpired(user) ? null : user?.plan;
-  const planPermissions = {
-    Plus: [
-      PERMISSIONS.VIEW_DASHBOARD,
-      PERMISSIONS.VIEW_PROJECTS,
-      PERMISSIONS.SYSTEM_SETTINGS,
-      PERMISSIONS.SUPPORT_INFO,
-      PERMISSIONS.ACCESS_SETTINGS,
-      PERMISSIONS.VIEW_SERVICES,
-    ],
-    Pro: [
-      PERMISSIONS.VIEW_DASHBOARD,
-      PERMISSIONS.VIEW_PROJECTS,
-      PERMISSIONS.SYSTEM_SETTINGS,
-      PERMISSIONS.SUPPORT_INFO,
-      PERMISSIONS.ACCESS_SETTINGS,
-      PERMISSIONS.VIEW_SERVICES,
-      PERMISSIONS.VIEW_INVOICES,
-      PERMISSIONS.CREATE_INVOICES,
-      PERMISSIONS.MANAGE_TEAM,
-    ],
-    Business: ["*"],
-  };
-
-  const permissions = planPermissions[plan] || [];
+  const plan = hasActivePlan(user) ? user?.plan : null;
+  const permissions = PLAN_PERMISSIONS[plan] || [];
   return permissions.includes("*") || permissions.includes(permission);
 };
 
-export const hasFeatureAccess = (user, permission) => (
-  hasPermission(user, permission) || hasPlanPermission(user, permission)
-);
+export const hasFeatureAccess = (user, permission) => {
+  if (!permission) return true;
+  if (permission === PERMISSIONS.VIEW_DASHBOARD || permission === PERMISSIONS.SYSTEM_SETTINGS) return true;
+
+  const isInvitedUser = user?.companyId && user?._id && String(user.companyId) !== String(user._id);
+  if (isInvitedUser) return hasPermission(user, permission);
+
+  return hasPermission(user, permission) && hasPlanPermission(user, permission);
+};

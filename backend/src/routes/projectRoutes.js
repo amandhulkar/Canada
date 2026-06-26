@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const Project = require("../models/Project");
+const Client = require("../models/Client");
 const protect = require("../middleware/authMiddleware");
 const requirePermission = require("../middleware/permissionMiddleware");
 const { PERMISSIONS } = require("../permissions");
@@ -10,6 +11,16 @@ const getCompanyId = (req) => req.user.companyId || req.user.userId;
 const projectScope = (req, extra = {}) => {
   const base = { companyId: getCompanyId(req), ...extra };
   if (req.user.role === "admin") return base;
+
+  if (req.user.accessRole === "client") {
+    return {
+      ...base,
+      $or: [
+        { client: req.user.fullName || "" },
+        { user: req.user.userId },
+      ],
+    };
+  }
 
   return {
     ...base,
@@ -54,9 +65,13 @@ router.post("/", protect, requirePermission(PERMISSIONS.MANAGE_PROJECTS), async 
       });
     }
 
+    const client = safeBody.client
+      ? await Client.findOne({ companyId, clientName: safeBody.client })
+      : null;
+
     const project = await Project.create({
       ...safeBody,
-      user: req.user.userId,
+      user: client?.user || req.user.userId,
       companyId,
     });
     res.json(project);

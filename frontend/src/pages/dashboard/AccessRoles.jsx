@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import Sidebar from "../../components/Sidebar";
-import { getCurrentUser, hasPermission, PERMISSIONS as APP_PERMISSIONS } from "../../utils/permissions";
+import { getCurrentUser, hasFeatureAccess, PERMISSIONS as APP_PERMISSIONS } from "../../utils/permissions";
 
 const API = import.meta.env.VITE_API_URL || "http://127.0.0.1:5000";
 
@@ -46,14 +46,14 @@ const roleFromLabel = (label) => ROLE_OPTIONS.find((r) => r.label === label)?.va
 const initials = (name = "") => name.slice(0, 2).toUpperCase() || "U";
 
 function InviteModal({ open, onClose, onInvite }) {
-  const [form, setForm] = useState({ name: "", email: "", role: "developer" });
+  const [form, setForm] = useState({ name: "", email: "", password: "", role: "developer" });
 
   if (!open) return null;
 
   const handleSubmit = () => {
-    if (!form.name || !form.email) return;
+    if (!form.name || !form.email || !form.password) return;
     onInvite(form);
-    setForm({ name: "", email: "", role: "developer" });
+    setForm({ name: "", email: "", password: "", role: "developer" });
   };
 
   const inputClass =
@@ -74,6 +74,10 @@ function InviteModal({ open, onClose, onInvite }) {
           <div>
             <label className="block text-sm font-medium text-gray-600 dark:text-slate-300 mb-1">Email</label>
             <input placeholder="Email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} className={inputClass} />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-600 dark:text-slate-300 mb-1">Password</label>
+            <input type="text" minLength={8} placeholder="Minimum 8 characters" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} className={inputClass} />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-600 dark:text-slate-300 mb-1">Role</label>
@@ -102,7 +106,7 @@ export default function AccessRoles() {
   const [error, setError] = useState("");
 
   const currentUser = useMemo(() => getCurrentUser(), []);
-  const canManageTeam = hasPermission(currentUser, APP_PERMISSIONS.MANAGE_TEAM);
+  const canManageTeam = hasFeatureAccess(currentUser, APP_PERMISSIONS.MANAGE_TEAM);
   const token = localStorage.getItem("token");
 
   const authHeaders = useMemo(() => ({ Authorization: token }), [token]);
@@ -137,7 +141,7 @@ export default function AccessRoles() {
       const res = await fetch(`${API}/api/admin/users`, {
         method: "POST",
         headers: { ...authHeaders, "Content-Type": "application/json" },
-        body: JSON.stringify({ fullName: form.name, email: form.email, accessRole: roleFromLabel(form.role) }),
+        body: JSON.stringify({ fullName: form.name, email: form.email, password: form.password, role: form.role === "admin" ? "admin" : "user", accessRole: roleFromLabel(form.role) }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.message || "Unable to invite member");

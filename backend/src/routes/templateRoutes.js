@@ -2,6 +2,8 @@ const express = require("express");
 const jwt = require("jsonwebtoken");
 const protect = require("../middleware/authMiddleware");
 const adminOnly = require("../middleware/adminMiddleware");
+const requirePermission = require("../middleware/permissionMiddleware");
+const { PERMISSIONS } = require("../permissions");
 const User = require("../models/User");
 const {
   getTemplates,
@@ -41,8 +43,8 @@ const optionalAuth = async (req, res, next) => {
 
 router.get("/", optionalAuth, getTemplates);
 router.get("/:id", optionalAuth, getTemplate);
-router.post("/", protect, adminOnly, createTemplate);
-router.put("/:id", protect, adminOnly, updateTemplate);
-router.delete("/:id", protect, adminOnly, deleteTemplate);
+router.post("/", protect, adminOnly, requirePermission(PERMISSIONS.MANAGE_TEMPLATES), createTemplate);
+router.put("/:id", protect, adminOnly, requirePermission(PERMISSIONS.MANAGE_TEMPLATES), updateTemplate);
+router.delete("/:id", protect, adminOnly, requirePermission(PERMISSIONS.MANAGE_TEMPLATES), deleteTemplate);
 
 module.exports = router;

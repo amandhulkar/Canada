@@ -117,21 +117,18 @@ const PLAN_DETAILS = {
 };
 
 function ProfileSection({ user }) {
-  const isAdmin = user.role === "admin";
-  const activePlan = isAdmin ? null : PLAN_DETAILS[user.plan];
+  const activePlan = PLAN_DETAILS[user.plan];
   const isAnnual = user.billingCycle === "annual";
   const displayPrice = user.planPrice || (activePlan ? (isAnnual ? activePlan.annualPrice : activePlan.price) : "Free");
   const displayCadence = user.planCadence || (activePlan ? (isAnnual ? activePlan.annualCadence : activePlan.cadence) : "");
-  const planTimeline = isAdmin
-    ? []
-    : [
-        { label: "Selected plan", value: user.plan },
-        { label: "Billing cycle", value: user.billingCycle === "trial" ? "Trial" : isAnnual ? "Annual" : "Monthly" },
-        { label: "Price", value: `${displayPrice}${displayCadence}` },
-        { label: "Started on", value: formatPlanDate(user.planStartedAt) },
-        { label: "Ends on", value: formatPlanDate(user.planEndsAt) },
-        { label: "Status", value: getDaysLeft(user.planEndsAt) },
-      ];
+  const planTimeline = [
+    { label: "Selected plan", value: user.plan },
+    { label: "Billing cycle", value: user.billingCycle === "trial" ? "Trial" : isAnnual ? "Annual" : "Monthly" },
+    { label: "Price", value: `${displayPrice}${displayCadence}` },
+    { label: "Started on", value: formatPlanDate(user.planStartedAt) },
+    { label: "Ends on", value: formatPlanDate(user.planEndsAt) },
+    { label: "Status", value: getDaysLeft(user.planEndsAt) },
+  ];
 
   return (
     <div className="flex flex-col gap-4">
@@ -178,8 +175,7 @@ function ProfileSection({ user }) {
         </div>
       </div>
 
-      {!isAdmin && (
-        <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 border border-indigo-100 dark:border-indigo-900/40 shadow-sm">
+      <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 border border-indigo-100 dark:border-indigo-900/40 shadow-sm">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-5">
             <div>
               <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100">Subscription details</h2>
@@ -201,7 +197,6 @@ function ProfileSection({ user }) {
             ))}
           </div>
         </div>
-      )}
 
       {activePlan && (
         <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 border-2 border-emerald-400 dark:border-emerald-600 shadow-sm">

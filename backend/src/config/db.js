@@ -42,6 +42,32 @@ const backfillCompanyIds = async () => {
   await backfillOwnedCollection(Project, "user");
   await backfillOwnedCollection(Invoice, "user");
   await backfillOwnedCollection(Template, "createdBy");
+
+  const clients = await Client.find({ companyId: { $exists: true, $ne: null } });
+
+  for (const client of clients) {
+    const email = client.email?.toLowerCase().trim();
+    let linkedUser = client.user ? await User.findById(client.user) : null;
+
+    if (!linkedUser && email) {
+      linkedUser = await User.findOne({ email });
+      if (linkedUser) {
+        client.user = linkedUser._id;
+        await client.save();
+      }
+    }
+
+    if (!linkedUser) continue;
+
+    await Project.updateMany(
+      {
+        companyId: client.companyId,
+        client: client.clientName,
+        user: { $ne: linkedUser._id },
+      },
+      { $set: { user: linkedUser._id } }
+    );
+  }
 };
 
 const connectDB = async () => {
@@ -67,7 +93,8 @@ const connectDB = async () => {
     console.log(`MongoDB Connected: ${conn.connection.host}`);
   } catch (error) {
     console.error("Database Connection Error:", error.message);
-    process.exit(1);
+    console.error("Start MongoDB or update MONGO_URI in backend/.env, then save a file to let nodemon reconnect.");
+    return null;
   }
 };
 

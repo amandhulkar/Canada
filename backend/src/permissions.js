@@ -38,6 +38,31 @@ const ROLE_PERMISSIONS = {
   ],
 };
 
+const PLAN_PERMISSIONS = {
+  Plus: [
+    PERMISSIONS.VIEW_DASHBOARD,
+    PERMISSIONS.VIEW_PROJECTS,
+    PERMISSIONS.SYSTEM_SETTINGS,
+    PERMISSIONS.SUPPORT_INFO,
+    PERMISSIONS.ACCESS_SETTINGS,
+    PERMISSIONS.VIEW_SERVICES,
+  ],
+  Pro: [
+    PERMISSIONS.VIEW_DASHBOARD,
+    PERMISSIONS.VIEW_PROJECTS,
+    PERMISSIONS.MANAGE_PROJECTS,
+    PERMISSIONS.SYSTEM_SETTINGS,
+    PERMISSIONS.SUPPORT_INFO,
+    PERMISSIONS.ACCESS_SETTINGS,
+    PERMISSIONS.VIEW_SERVICES,
+    PERMISSIONS.VIEW_INVOICES,
+    PERMISSIONS.CREATE_INVOICES,
+    PERMISSIONS.MANAGE_PAYMENTS,
+    PERMISSIONS.MANAGE_TEAM,
+  ],
+  Business: ["*"],
+};
+
 const ACCESS_ROLES = Object.keys(ROLE_PERMISSIONS);
 
 const getEffectiveAccessRole = (user) => {
@@ -51,10 +76,38 @@ const hasPermission = (user, permission) => {
   return permissions.includes("*") || permissions.includes(permission);
 };
 
+const isPlanExpired = (user) => {
+  if (!user?.planEndsAt) return !["Plus", "Pro", "Business"].includes(user?.plan);
+  const endDate = new Date(user.planEndsAt);
+  return Number.isNaN(endDate.getTime()) || endDate.getTime() < Date.now();
+};
+
+const hasActivePlan = (user) => ["Plus", "Pro", "Business"].includes(user?.plan) && !isPlanExpired(user);
+
+const hasPlanPermission = (user, permission) => {
+  const plan = hasActivePlan(user) ? user.plan : null;
+  const permissions = PLAN_PERMISSIONS[plan] || [];
+  return permissions.includes("*") || permissions.includes(permission);
+};
+
+const hasFeatureAccess = (user, permission) => {
+  if (permission === PERMISSIONS.VIEW_DASHBOARD) return true;
+
+  const isInvitedUser = user?.companyId && user?.userId && String(user.companyId) !== String(user.userId);
+  if (isInvitedUser) return hasPermission(user, permission);
+
+  return hasPermission(user, permission) && hasPlanPermission(user, permission);
+};
+
 module.exports = {
   PERMISSIONS,
   ROLE_PERMISSIONS,
+  PLAN_PERMISSIONS,
   ACCESS_ROLES,
   getEffectiveAccessRole,
   hasPermission,
+  isPlanExpired,
+  hasActivePlan,
+  hasPlanPermission,
+  hasFeatureAccess,
 };

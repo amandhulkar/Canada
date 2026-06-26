@@ -2,6 +2,8 @@ const express = require("express");
 const router = express.Router();
 const protect = require("../middleware/authMiddleware");
 const adminOnly = require("../middleware/adminMiddleware");
+const requirePermission = require("../middleware/permissionMiddleware");
+const { PERMISSIONS } = require("../permissions");
 const {
   createUser,
   getAllUsers,
@@ -16,13 +18,13 @@ const {
 router.use(protect);
 router.use(adminOnly);
 
-router.get("/users", getAllUsers);
-router.post("/users", createUser);
-router.put("/users/:id", updateUser);
-router.delete("/users/:id", deleteUser);
-router.patch("/users/:id/ban", banUser);
-router.patch("/users/:id/access-role", updateAccessRole);
-router.get("/projects", getAllProjects);
-router.get("/stats", getRevenueStats);
+router.get("/users", requirePermission(PERMISSIONS.MANAGE_TEAM), getAllUsers);
+router.post("/users", requirePermission(PERMISSIONS.MANAGE_TEAM), createUser);
+router.put("/users/:id", requirePermission(PERMISSIONS.MANAGE_TEAM), updateUser);
+router.delete("/users/:id", requirePermission(PERMISSIONS.MANAGE_TEAM), deleteUser);
+router.patch("/users/:id/ban", requirePermission(PERMISSIONS.MANAGE_TEAM), banUser);
+router.patch("/users/:id/access-role", requirePermission(PERMISSIONS.MANAGE_TEAM), updateAccessRole);
+router.get("/projects", requirePermission(PERMISSIONS.VIEW_PROJECTS), getAllProjects);
+router.get("/stats", requirePermission(PERMISSIONS.VIEW_REVENUE), getRevenueStats);
 
 module.exports = router;

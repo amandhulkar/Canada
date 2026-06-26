@@ -1,19 +1,50 @@
 const Client = require("../models/Client");
+const User = require("../models/User");
 
 const getCompanyId = (req) => req.user.companyId || req.user.userId;
 
 const cleanClientBody = (body) => {
-  const { _id, createdBy, companyId, user, role, ...safeBody } = body;
+  const { _id, createdBy, companyId, user, role, password, ...safeBody } = body;
   return safeBody;
 };
 
 const createClient = async (req, res) => {
   try {
+    const companyId = getCompanyId(req);
+    const email = req.body.email?.toLowerCase().trim();
+
+    if (email) {
+      const existingClient = await Client.findOne({ email, companyId });
+      if (existingClient) {
+        return res.status(409).json({ message: "A client with this email already exists" });
+      }
+
+      const existingUser = await User.findOne({ email });
+      if (existingUser) {
+        return res.status(409).json({ message: "An account with this email already exists" });
+      }
+    }
+
     const client = await Client.create({
-      ...cleanClientBody(req.body),
+      ...cleanClientBody({ ...req.body, email }),
       createdBy: req.user.userId,
-      companyId: getCompanyId(req),
+      companyId,
     });
+
+    if (email && req.body.password) {
+      const user = await User.create({
+        fullName: req.body.clientName || req.body.name || "Client",
+        email,
+        password: req.body.password,
+        role: "user",
+        accessRole: "client",
+        createdBy: req.user.userId,
+        companyId,
+      });
+
+      client.user = user._id;
+      await client.save();
+    }
 
     res.status(201).json(client);
   } catch (error) {

@@ -14,6 +14,10 @@ const clientSchema = new mongoose.Schema(
     totalValue: Number,
     balanceDue: Number,
 
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    },
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",

@@ -21,7 +21,7 @@ const protect = async (req, res, next) => {
       process.env.JWT_SECRET
     );
 
-    const user = await User.findById(decoded.userId).select("fullName email role accessRole companyId banned");
+    const user = await User.findById(decoded.userId).select("fullName email role accessRole companyId banned plan billingCycle planStartedAt planEndsAt");
     if (!user) {
       return res.status(401).json({ message: "Invalid Token" });
     }
@@ -40,6 +40,10 @@ const protect = async (req, res, next) => {
       accessRole: getEffectiveAccessRole(user),
       companyId,
       banned: user.banned,
+      plan: user.plan,
+      billingCycle: user.billingCycle,
+      planStartedAt: user.planStartedAt,
+      planEndsAt: user.planEndsAt,
     };
 
     next();

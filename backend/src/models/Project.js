@@ -13,6 +13,10 @@ const projectSchema = new mongoose.Schema(
     scopeOfWork: String,
     deliverables: String,
     templateId: String,
+    tasks: {
+      type: Array,
+      default: [],
+    },
 
   templateData: {
   type: Object,

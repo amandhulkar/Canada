@@ -44,23 +44,42 @@ function StatCard({ label, value, sub, accent }) {
   );
 }
 
-function AddClientModal({ open, onClose, onSave }) {
-  const [workspaceTemplates, setWorkspaceTemplates] = useState(templates);
-  const [form, setForm] = useState({
+const getInitialClientForm = (workspaceTemplates = templates) => {
+  const firstTemplate = workspaceTemplates[0];
+
+  return {
     name: "",
     email: "",
+    password: "",
     company: "",
-    websiteType: WEBSITE_TYPES[0],
-    workspace: WORKSPACE_OPTIONS[0] || "",
+    websiteType: getWebsiteTypeFromTemplate(firstTemplate),
+    workspace: firstTemplate?.name || "",
     totalValue: "",
     balanceDue: "",
     lastPayment: "",
-  });
+  };
+};
+
+function AddClientModal({ open, onClose, onSave }) {
+  const [workspaceTemplates, setWorkspaceTemplates] = useState(templates);
+  const [form, setForm] = useState(() => getInitialClientForm());
+  const [isSaving, setIsSaving] = useState(false);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     if (!open) return;
+
+    setError("");
     getMergedTemplates()
-      .then((mergedTemplates) => setWorkspaceTemplates(Array.isArray(mergedTemplates) ? mergedTemplates : templates))
+      .then((mergedTemplates) => {
+        const nextTemplates = Array.isArray(mergedTemplates) && mergedTemplates.length ? mergedTemplates : templates;
+        setWorkspaceTemplates(nextTemplates);
+        setForm((current) => ({
+          ...current,
+          workspace: current.workspace || nextTemplates[0]?.name || "",
+          websiteType: current.workspace ? current.websiteType : getWebsiteTypeFromTemplate(nextTemplates[0]),
+        }));
+      })
       .catch(() => setWorkspaceTemplates(templates));
   }, [open]);
 
@@ -79,34 +98,38 @@ function AddClientModal({ open, onClose, onSave }) {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!form.name.trim()) return;
-    onSave({
-      ...form,
-      totalValue: Number(form.totalValue) || 0,
-      balanceDue: Number(form.balanceDue) || 0,
-      lastPayment: form.lastPayment || "—",
-    });
-    setForm({
-      name: "",
-      email: "",
-      company: "",
-      websiteType: WEBSITE_TYPES[0],
-      workspace: WORKSPACE_OPTIONS[0] || "",
-      totalValue: "",
-      balanceDue: "",
-      lastPayment: "",
-    });
+    if (!form.name.trim() || isSaving) return;
+
+    setIsSaving(true);
+    setError("");
+
+    try {
+      await onSave({
+        ...form,
+        totalValue: Number(form.totalValue) || 0,
+        balanceDue: Number(form.balanceDue) || 0,
+        lastPayment: form.lastPayment || "—",
+      });
+      setForm(getInitialClientForm(workspaceTemplates));
+    } catch (err) {
+      setError(err.message || "Unable to add client. Please try again.");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const autofill = () => {
+    const firstTemplate = workspaceTemplates[0];
+
     setForm({
       name: "Acme Studios",
       email: "client@acmestudios.com",
+      password: "Password@123",
       company: "Acme Ltd",
-      websiteType: "Business",
-      workspace: WORKSPACE_OPTIONS[0] || "",
+      websiteType: getWebsiteTypeFromTemplate(firstTemplate),
+      workspace: firstTemplate?.name || "",
       totalValue: "1200",
       balanceDue: "300",
       lastPayment: new Date().toISOString().split("T")[0],
@@ -117,8 +140,8 @@ function AddClientModal({ open, onClose, onSave }) {
     "w-full rounded-lg border border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-900 text-gray-800 dark:text-slate-100 placeholder:text-gray-400 dark:placeholder:text-slate-500 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400";
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4">
-      <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl w-full max-w-md">
+    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/30 p-4 sm:items-center">
+      <div className="my-4 max-h-[calc(100vh-2rem)] w-full max-w-md overflow-y-auto rounded-2xl bg-white shadow-xl dark:bg-slate-800">
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-slate-700">
           <div>
             <h2 className="text-lg font-bold text-indigo-700 dark:text-indigo-400">Add Client</h2>
@@ -134,6 +157,12 @@ function AddClientModal({ open, onClose, onSave }) {
         </div>
 
         <form onSubmit={handleSubmit} className="px-6 py-5 space-y-4">
+          {error && (
+            <div className="rounded-lg border border-red-100 bg-red-50 px-3 py-2 text-sm font-medium text-red-600 dark:border-red-900/40 dark:bg-red-900/20 dark:text-red-300">
+              {error}
+            </div>
+          )}
+
           <div>
             <label className="block text-sm font-medium text-gray-600 dark:text-slate-300 mb-1">Client name</label>
             <input name="name" value={form.name} onChange={handleChange} required placeholder="e.g. Acme Studios" className={inputClass} />
@@ -141,7 +170,12 @@ function AddClientModal({ open, onClose, onSave }) {
 
           <div>
             <label className="block text-sm font-medium text-gray-600 dark:text-slate-300 mb-1">Email</label>
-            <input name="email" type="email" value={form.email} onChange={handleChange} placeholder="e.g. client@example.com" className={inputClass} />
+            <input name="email" type="email" value={form.email} onChange={handleChange} placeholder="e.g. client@example.com" className={inputClass} required />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-600 dark:text-slate-300 mb-1">Login Password</label>
+            <input name="password" type="text" minLength={8} value={form.password} onChange={handleChange} placeholder="Minimum 8 characters" className={inputClass} required />
           </div>
 
           <div>
@@ -181,7 +215,7 @@ function AddClientModal({ open, onClose, onSave }) {
 
           <div className="flex justify-end gap-3 pt-2">
             <button type="button" onClick={onClose} className="px-4 py-2 text-sm font-medium text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200 transition">Cancel</button>
-            <button type="submit" className="px-4 py-2 text-sm font-semibold text-white rounded-lg bg-indigo-600 hover:bg-indigo-700 transition shadow-sm">Add Client</button>
+            <button type="submit" disabled={isSaving} className="px-4 py-2 text-sm font-semibold text-white rounded-lg bg-indigo-600 hover:bg-indigo-700 disabled:cursor-not-allowed disabled:bg-indigo-400 transition shadow-sm">{isSaving ? "Adding..." : "Add Client"}</button>
           </div>
         </form>
       </div>
@@ -219,10 +253,7 @@ function Clients() {
 
   const handleAddClient = async (client) => {
     const token = localStorage.getItem("token");
-    const res = await 
-    // fetch("http://localhost:5000/api/clients"
-    fetch(`${API}/api/clients`
-      , {
+    const res = await fetch(`${API}/api/clients`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -231,6 +262,7 @@ function Clients() {
       body: JSON.stringify({
         clientName: client.name,
         email: client.email,
+        password: client.password,
         company: client.company,
         websiteType: client.websiteType,
         workspace: client.workspace,
@@ -239,7 +271,13 @@ function Clients() {
         balanceDue: client.balanceDue,
       }),
     });
+
     const data = await res.json();
+
+    if (!res.ok) {
+      throw new Error(data.message || "Failed to add client");
+    }
+
     setClients((prev) => [...prev, data]);
     setModalOpen(false);
   };

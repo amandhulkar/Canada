@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import Sidebar from "../../components/Sidebar";
 
 const API = import.meta.env.VITE_API_URL || "http://127.0.0.1:5000";
-const ROLES = ["client", "developer", "admin"];
+const ROLES = ["developer"];
 const roleLabel = (role) => ({ admin: "Admin", developer: "Developer", client: "Client" }[role] || "Client");
 
 function StatCard({ label, value, accent }) {
@@ -274,7 +274,7 @@ function Team() {
         cache: "no-store",
       });
       const data = await res.json();
-      setMembers(Array.isArray(data.users) ? data.users.filter((member) => member.role !== "admin") : []);
+      setMembers(Array.isArray(data.users) ? data.users.filter((member) => member.accessRole === "developer") : []);
 
       const projectsRes = await fetch(`${API}/api/admin/projects?t=${Date.now()}`, {
         headers: { Authorization: token },
@@ -315,7 +315,7 @@ function Team() {
         alert(data.message || "Failed to add member");
         return false;
       }
-      if (data.user?.role !== "admin") {
+      if (data.user?.accessRole === "developer") {
         setMembers((prev) => [data.user, ...prev]);
       }
       setModalOpen(false);
@@ -380,8 +380,8 @@ function Team() {
       : members.filter((m) => getMemberRole(m) === filter);
 
   const totalMembers = members.length;
-  const admins = members.filter((m) => getMemberRole(m) === "admin").length;
   const developers = members.filter((m) => getMemberRole(m) === "developer").length;
+  const assignedProjects = projects.filter((project) => project.team).length;
 
   return (
     <div className="flex min-h-screen bg-slate-100 dark:bg-slate-900">
@@ -394,7 +394,7 @@ function Team() {
               Team Members
             </h1>
             <p className="text-gray-400 dark:text-slate-500 mt-1">
-              Add users and admins, then share their email and password for sign in
+              Add developers, then share their email and password for sign in
             </p>
           </div>
           <button
@@ -407,9 +407,9 @@ function Team() {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-          <StatCard label="Total Members" value={totalMembers} accent="#6366f1" />
-          <StatCard label="Admins" value={admins} accent="#3b82f6" />
+          <StatCard label="Total Developers" value={totalMembers} accent="#6366f1" />
           <StatCard label="Developers" value={developers} accent="#10b981" />
+          <StatCard label="Assigned Projects" value={assignedProjects} accent="#3b82f6" />
         </div>
 
         <div className="mb-4">

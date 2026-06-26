@@ -40,26 +40,18 @@ function ProjectDetail() {
 
   const COLUMNS = ["To Do", "Design", "Development", "Testing", "Client Review"];
 
-  const [tasks, setTasks] = useState(() => {
-    const savedTasks = localStorage.getItem(`tasks_project_${id}`);
-    if (savedTasks) {
-      try {
-        return JSON.parse(savedTasks);
-      } catch (e) {
-        console.error(e);
-      }
+  const defaultTasks = [
+    {
+      id: "task-default-1",
+      title: "Review Design Deliverables",
+      description: "Submit final UI layout templates for client feedback & approval.",
+      status: "Client Review",
+      priority: "High",
+      deadline: new Date(Date.now() + 86400000 * 3).toISOString().split('T')[0]
     }
-    return [
-      {
-        id: "task-default-1",
-        title: "Review Design Deliverables",
-        description: "Submit final UI layout templates for client feedback & approval.",
-        status: "Client Review",
-        priority: "High",
-        deadline: new Date(Date.now() + 86400000 * 3).toISOString().split('T')[0]
-      }
-    ];
-  });
+  ];
+
+  const [tasks, setTasks] = useState(defaultTasks);
 
   const [showTaskModal, setShowTaskModal] = useState(false);
   const [newTaskStatus, setNewTaskStatus] = useState("To Do");
@@ -68,9 +60,19 @@ function ProjectDetail() {
   const [newTaskPriority, setNewTaskPriority] = useState("Medium");
   const [newTaskDeadline, setNewTaskDeadline] = useState("");
 
-  useEffect(() => {
-    localStorage.setItem(`tasks_project_${id}`, JSON.stringify(tasks));
-  }, [tasks, id]);
+  const saveProjectUpdates = async (updates) => {
+    const token = localStorage.getItem("token");
+    const res = await fetch(`${API}/api/projects/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json", Authorization: token },
+      body: JSON.stringify(updates),
+    });
+    const updated = await res.json();
+    if (!res.ok) throw new Error(updated?.message || "Project could not be saved.");
+    setProject((prev) => ({ ...prev, ...updated }));
+    setEditForm((prev) => ({ ...prev, ...updated }));
+    return updated;
+  };
 
   const handleDragStart = (e, taskId) => {
     e.dataTransfer.setData("text/plain", taskId);
@@ -80,7 +82,7 @@ function ProjectDetail() {
     e.preventDefault();
   };
 
-  const handleDrop = (e, targetStatus) => {
+  const handleDrop = async (e, targetStatus) => {
     const taskId = e.dataTransfer.getData("text/plain");
     const updatedTasks = tasks.map(task => {
       if (task.id === taskId) {
@@ -89,11 +91,26 @@ function ProjectDetail() {
       return task;
     });
     setTasks(updatedTasks);
+
+    try {
+      await saveProjectUpdates({ tasks: updatedTasks });
+    } catch (error) {
+      alert(error.message);
+      setTasks(tasks);
+    }
   };
 
-  const deleteTask = (taskId) => {
-    if (confirm("Delete this task?")) {
-      setTasks(tasks.filter(t => t.id !== taskId));
+  const deleteTask = async (taskId) => {
+    if (!confirm("Delete this task?")) return;
+
+    const updatedTasks = tasks.filter(t => t.id !== taskId);
+    setTasks(updatedTasks);
+
+    try {
+      await saveProjectUpdates({ tasks: updatedTasks });
+    } catch (error) {
+      alert(error.message);
+      setTasks(tasks);
     }
   };
 
@@ -133,52 +150,44 @@ function ProjectDetail() {
     const token = localStorage.getItem("token");
     fetch(`${API}/api/projects/${id}`, { headers: { Authorization: token } })
       .then((res) => res.json())
-      .then((data) => { setProject(data); setEditForm(data); })
+      .then((data) => {
+        setProject(data);
+        setEditForm(data);
+        setTasks(Array.isArray(data.tasks) && data.tasks.length ? data.tasks : defaultTasks);
+      })
       .catch((err) => console.log(err));
   }, [id]);
 
   const handleSave = async () => {
-    const token = localStorage.getItem("token");
-    const res = await fetch(`${API}/api/projects/${id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json", Authorization: token },
-      body: JSON.stringify(editForm),
-    });
-    const updated = await res.json();
-    setProject(updated);
-    setShowEditModal(false);
+    try {
+      await saveProjectUpdates(editForm);
+      setShowEditModal(false);
+    } catch (error) {
+      alert(error.message);
+    }
   };
 
   const handleSaveTemplate = async () => {
-    const token = localStorage.getItem("token");
-    const projectToSave = { ...project, templateData };
-    const res = await fetch(`${API}/api/projects/${id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json", Authorization: token },
-      body: JSON.stringify(projectToSave),
-    });
-    const updated = await res.json();
-    setProject({ ...projectToSave, ...updated, templateData });
-    alert("✅ Changes saved!");
+    try {
+      await saveProjectUpdates({ templateData });
+      alert("✅ Changes saved!");
+    } catch (error) {
+      alert(error.message);
+    }
   };
 
   const handleComplete = async () => {
-    const token = localStorage.getItem("token");
-    const completedProject = {
-      ...project,
-      status: "Live",
-      completed: true,
-      progress: 100,
-      templateData,
-    };
-    const res = await fetch(`${API}/api/projects/${id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json", Authorization: token },
-      body: JSON.stringify(completedProject),
-    });
-    const updated = await res.json();
-    setProject({ ...completedProject, ...updated, progress: 100, templateData });
-    setEditForm({ ...completedProject, ...updated, progress: 100, templateData });
+    try {
+      await saveProjectUpdates({
+        status: "Live",
+        completed: true,
+        progress: 100,
+        templateData,
+        tasks,
+      });
+    } catch (error) {
+      alert(error.message);
+    }
   };
 
   const handleDownload = async () => {
@@ -661,13 +670,20 @@ function ProjectDetail() {
                       priority: newTaskPriority,
                       deadline: newTaskDeadline || new Date().toISOString().split('T')[0]
                     };
-                    setTasks([...tasks, newTask]);
-                    // Reset
-                    setNewTaskTitle("");
-                    setNewTaskDesc("");
-                    setNewTaskPriority("Medium");
-                    setNewTaskDeadline("");
-                    setShowTaskModal(false);
+                    const updatedTasks = [...tasks, newTask];
+                    setTasks(updatedTasks);
+                    saveProjectUpdates({ tasks: updatedTasks })
+                      .then(() => {
+                        setNewTaskTitle("");
+                        setNewTaskDesc("");
+                        setNewTaskPriority("Medium");
+                        setNewTaskDeadline("");
+                        setShowTaskModal(false);
+                      })
+                      .catch((error) => {
+                        alert(error.message);
+                        setTasks(tasks);
+                      });
                   }} className="flex flex-col gap-5">
                     <div>
                       <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100">

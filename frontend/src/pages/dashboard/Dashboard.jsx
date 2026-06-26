@@ -1284,7 +1284,16 @@ function UserDashboard() {
 
 function Dashboard() {
   const user = JSON.parse(localStorage.getItem("currentUser"));
-  if (user?.role === "admin") return <AdminDashboard user={user} />;
+  const planExpired = (() => {
+    if (!user?.planEndsAt) return !["Plus", "Pro", "Business"].includes(user?.plan);
+    const endDate = new Date(user.planEndsAt);
+    return Number.isNaN(endDate.getTime()) || endDate.getTime() < Date.now();
+  })();
+
+  if (user?.role === "admin" && user?.plan === "Business" && !planExpired) {
+    return <AdminDashboard user={user} />;
+  }
+
   return <UserDashboard user={user} />;
 }
 

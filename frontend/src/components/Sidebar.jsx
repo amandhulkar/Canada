@@ -17,9 +17,9 @@ const ALL_LINKS = [
 ];
 
 const isPlanExpired = (user) => {
-  if (!user?.planEndsAt) return false;
+  if (!user?.planEndsAt) return !["Plus", "Pro", "Business"].includes(user?.plan);
   const endDate = new Date(user.planEndsAt);
-  return !Number.isNaN(endDate.getTime()) && endDate.getTime() < Date.now();
+  return Number.isNaN(endDate.getTime()) || endDate.getTime() < Date.now();
 };
 
 const getPreferences = () => {
@@ -31,11 +31,9 @@ const getPreferences = () => {
 };
 
 const isPlanAllowed = (user, link) => {
-  if (user?.role === "admin") return true;
-
   const plan = isPlanExpired(user) ? null : user?.plan;
   if (!plan) {
-    return ["/dashboard", "/dashboard/projects", "/dashboard/settings", "/dashboard/support"].includes(link.to);
+    return link.to === "/dashboard" || link.to === "/dashboard/settings";
   }
 
   if (plan === "Plus") {
