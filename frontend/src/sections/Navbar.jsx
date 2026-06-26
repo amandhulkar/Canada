@@ -11,7 +11,7 @@ import { FiMenu, FiX, FiLayout } from "react-icons/fi";
 const navLinks = [
   { label: "Features", href: "/#features" },
   { label: "Pricing", href: "/#pricing" },
-  // { label: "Help Center", href: "/help-center" },
+  { label: "Help Center", href: "/help-center" },
 ];
 
 const templates = [

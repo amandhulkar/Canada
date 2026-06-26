@@ -1,209 +1,278 @@
-import { useState } from "react";
-// import Navbar from "../sections/Navbar";
+import { useMemo, useState } from "react";
+import { FiChevronDown, FiMail, FiPhone, FiSearch } from "react-icons/fi";
+import Container from "../components/Container";
 import Footer from "../sections/Footer";
+import { contactDetails, pricingPlans } from "../assets/siteData";
 
 const categories = [
-  { icon: "🚀", label: "Getting started", desc: "Set up your account, domain, and first project", count: 42, bg: "#eeedfe", color: "#5346d4" },
-  { icon: "💳", label: "Billing & plans", desc: "Manage subscriptions, invoices, and upgrades", count: 28, bg: "#e1f5ee", color: "#0f6e56" },
-  { icon: "🌐", label: "Domains & SSL", desc: "Connect custom domains and fix SSL issues", count: 35, bg: "#faece7", color: "#993c1d" },
-  { icon: "🔌", label: "Integrations", desc: "Connect Stripe, Zapier, and third-party tools", count: 51, bg: "#e6f1fb", color: "#185fa5" },
-  { icon: "🎨", label: "Templates & design", desc: "Customize layouts, fonts, and branding", count: 67, bg: "#faeeda", color: "#854f0b" },
-  { icon: "🔒", label: "Account & security", desc: "Password, two-factor auth, and team access", count: 39, bg: "#fbeaf0", color: "#993556" },
+  {
+    label: "Templates",
+    description: "Browse templates, preview them, and use a template for a project.",
+  },
+  {
+    label: "Dashboard",
+    description: "Manage projects, services, settings, roles, invoices, teams, and clients based on your plan.",
+  },
+  {
+    label: "Plans & access",
+    description: "Understand Plus, Pro, and Business access before choosing a plan.",
+  },
+  {
+    label: "Support",
+    description: "How to reach 17219296 Canada Inc. for help.",
+  },
 ];
 
 const articles = [
-  { title: "How to connect a custom domain", badge: "popular" },
-  { title: "Cancelling or pausing your plan", badge: "popular" },
-  { title: "Connecting Stripe payments", badge: "new" },
-  { title: "Fixing SSL certificate errors", badge: "popular" },
-  { title: "Inviting team members to your workspace", badge: "new" },
-];
-
-const popularTags = ["Custom domain", "Cancel plan", "Connect Stripe", "SSL error"];
-
-const stats = [
-  { value: "0+", label: "Help Articles" },
-  { value: "0%", label: "Issues Resolved" },
-  { value: "0 min", label: "Avg. Response Time" },
-  { value: "24/7", label: "Live Chat Support" },
+  {
+    title: "What is FindTemplates?",
+    category: "Templates",
+    answer:
+      "FindTemplates helps agencies, freelancers, and growing businesses launch professional websites from ready templates and manage client work from one dashboard.",
+  },
+  {
+    title: "How do I browse templates?",
+    category: "Templates",
+    answer:
+      "Open the Templates page from the navigation or footer. You can filter templates by category and preview a template before using it.",
+  },
+  {
+    title: "How do I use a template?",
+    category: "Templates",
+    answer:
+      "Open a template preview and click Use This Template. If sign-in is required, sign in first, then the project opens in the dashboard so you can customize it.",
+  },
+  {
+    title: "What can I manage in the dashboard?",
+    category: "Dashboard",
+    answer:
+      "Depending on your access, the dashboard includes pages such as Projects, Settings, Support Info, Access/Role, Services, Invoices, Team, Clients, and Reports.",
+  },
+  {
+    title: "How do team members get access?",
+    category: "Dashboard",
+    answer:
+      "An admin can add team members from the Team page, set their role, and share their sign-in email and password.",
+  },
+  {
+    title: "Which plans are available?",
+    category: "Plans & access",
+    answer: `FindTemplates currently shows ${pricingPlans.map((plan) => `${plan.name} (${plan.price}${plan.cadence})`).join(", ")}. Each plan gives different dashboard and template access.`,
+  },
+  {
+    title: "What is included in the Plus plan?",
+    category: "Plans & access",
+    answer:
+      "Plus includes access to Projects, Settings, Support Info, Access/Role, and Services pages.",
+  },
+  {
+    title: "What is included in the Pro plan?",
+    category: "Plans & access",
+    answer:
+      "Pro includes Projects, Settings, Support Info, Access/Role, Services, Invoices, Team page access, and access to any 4 templates.",
+  },
+  {
+    title: "What is included in the Business plan?",
+    category: "Plans & access",
+    answer:
+      "Business includes complete dashboard access, Projects, Settings, Support Info, Access/Role, Services, Invoices, Team, Clients, Reports, all templates, and priority support.",
+  },
+  {
+    title: "How can I contact support?",
+    category: "Support",
+    answer:
+      "You can contact 17219296 Canada Inc. by phone at (519) 535-1270 or by using the contact details listed on this page.",
+  },
 ];
 
 export default function HelpCenter() {
   const [query, setQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("All");
+  const [openArticle, setOpenArticle] = useState(articles[0].title);
 
-  const handleSearch = () => {
-    if (query.trim()) alert(`Searching: ${query}`);
+  const filteredArticles = useMemo(() => {
+    const search = query.trim().toLowerCase();
+
+    return articles.filter((article) => {
+      const matchesCategory = selectedCategory === "All" || article.category === selectedCategory;
+      const matchesSearch =
+        !search ||
+        article.title.toLowerCase().includes(search) ||
+        article.category.toLowerCase().includes(search) ||
+        article.answer.toLowerCase().includes(search);
+
+      return matchesCategory && matchesSearch;
+    });
+  }, [query, selectedCategory]);
+
+  const scrollToArticles = () => {
+    document.getElementById("help-articles")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
+  const selectCategory = (category) => {
+    setSelectedCategory(category);
+    setQuery("");
+    setOpenArticle("");
+    setTimeout(scrollToArticles, 0);
   };
 
   return (
-    <div style={{ fontFamily: "system-ui, sans-serif", background: "#f5f5f7", minHeight: "100vh" }}>
-      {/* <Navbar /> */}
+    <div className="min-h-screen bg-[#f6f7fb] text-[#14132a]">
+      <section className="border-b border-[#e7e8f0] bg-white py-16 sm:py-20">
+        <Container>
+          <div className="mx-auto max-w-3xl text-center">
+            <p className="text-xs font-bold uppercase tracking-[0.25em] text-[#6c5ce7]">FindTemplates Help Center</p>
+            <h1 className="mt-4 text-4xl font-bold tracking-[-0.04em] text-[#14132a] sm:text-5xl">
+              Get help with templates, dashboard access, and support.
+            </h1>
+            <p className="mt-5 text-base leading-7 text-[#6f7280]">
+              Real help articles based on the current FindTemplates website and dashboard features.
+            </p>
 
-      {/* Hero */}
-      <div style={{
-        background: "linear-gradient(135deg, #2a1d6e 0%, #4f3bbf 50%, #6a52d4 100%)",
-        padding: "3.5rem 2rem 3rem",
-        textAlign: "center",
-      }}>
-        <p style={{ fontSize: 12, letterSpacing: "0.12em", color: "rgba(255,255,255,0.6)", textTransform: "uppercase", marginBottom: "1rem" }}>
-          Help Center
-        </p>
-        <h1 style={{ fontSize: 40, fontWeight: 500, color: "#fff", marginBottom: "0.75rem", lineHeight: 1.2 }}>
-          How can we help you?
-        </h1>
-        <p style={{ fontSize: 15, color: "rgba(255,255,255,0.7)", marginBottom: "1.75rem" }}>
-          Search 500+ articles, guides, and tutorials to find your answer.
-        </p>
-
-        {/* Search bar */}
-        <div style={{
-          display: "flex", alignItems: "center", background: "#fff",
-          borderRadius: 999, maxWidth: 520, margin: "0 auto 1rem",
-          padding: "6px 6px 6px 18px", gap: 10,
-        }}>
-          <span style={{ color: "#5346d4", fontSize: 18, flexShrink: 0 }}>🔍</span>
-          <input
-            type="text"
-            placeholder="Search for answers..."
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-            style={{ flex: 1, border: "none", outline: "none", fontSize: 14, color: "#444", background: "transparent" }}
-          />
-          <button
-            onClick={handleSearch}
-            style={{
-              background: "#5346d4", color: "#fff", border: "none",
-              borderRadius: 999, padding: "8px 22px", fontSize: 14, cursor: "pointer",
-            }}
-          >
-            Search
-          </button>
-        </div>
-
-        {/* Popular tags */}
-        <div style={{ fontSize: 13, color: "rgba(255,255,255,0.65)" }}>
-          Popular:
-          {popularTags.map((tag) => (
-            <span
-              key={tag}
-              onClick={() => setQuery(tag)}
-              style={{ color: "rgba(255,255,255,0.9)", fontWeight: 500, cursor: "pointer", marginLeft: 8 }}
-            >
-              {tag}
-            </span>
-          ))}
-        </div>
-      </div>
-
-      {/* Stats */}
-      <div style={{
-        display: "grid", gridTemplateColumns: "repeat(4, 1fr)",
-        padding: "2rem", gap: "1rem",
-        borderBottom: "0.5px solid #e0e0e0", background: "#fff",
-      }}>
-        {stats.map((s) => (
-          <div key={s.label} style={{ textAlign: "center" }}>
-            <div style={{ fontSize: 22, fontWeight: 500, color: "#5346d4" }}>{s.value}</div>
-            <div style={{ fontSize: 12, color: "#888", marginTop: 2 }}>{s.label}</div>
+            <div className="mt-8 flex items-center gap-3 rounded-2xl border border-[#e3e4ee] bg-[#f8f8fc] p-2 shadow-sm">
+              <FiSearch className="ml-3 shrink-0 text-[#6c5ce7]" />
+              <input
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+                onKeyDown={(event) => event.key === "Enter" && scrollToArticles()}
+                placeholder="Search templates, plans, dashboard..."
+                className="min-w-0 flex-1 bg-transparent text-sm text-[#14132a] outline-none placeholder:text-[#9ca0af]"
+              />
+              <button
+                onClick={scrollToArticles}
+                className="rounded-xl bg-[#6c5ce7] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#5b4bd6]"
+              >
+                Search
+              </button>
+            </div>
           </div>
-        ))}
-      </div>
+        </Container>
+      </section>
 
-      {/* Categories */}
-      <div style={{ padding: "2.5rem 2rem", background: "#f5f5f7" }}>
-        <p style={{ fontSize: 18, fontWeight: 500, color: "#111", marginBottom: "0.25rem" }}>Browse by category</p>
-        <p style={{ fontSize: 14, color: "#888", marginBottom: "1.5rem" }}>Find articles organized by topic</p>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12 }}>
-          {categories.map((cat) => (
-            <div
-              key={cat.label}
-              style={{
-                background: "#fff", border: "0.5px solid #e0e0e0",
-                borderRadius: 12, padding: "1.25rem", cursor: "pointer",
-              }}
-              onMouseEnter={(e) => (e.currentTarget.style.borderColor = "#bbb")}
-              onMouseLeave={(e) => (e.currentTarget.style.borderColor = "#e0e0e0")}
-            >
-              <div style={{
-                width: 36, height: 36, borderRadius: 8,
-                background: cat.bg, display: "flex", alignItems: "center",
-                justifyContent: "center", fontSize: 18, marginBottom: 10,
-              }}>
-                {cat.icon}
+      <section className="py-12">
+        <Container>
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            {categories.map((category) => {
+              const active = selectedCategory === category.label;
+
+              return (
+                <button
+                  key={category.label}
+                  onClick={() => selectCategory(category.label)}
+                  className={`rounded-2xl border bg-white p-5 text-left transition hover:-translate-y-1 hover:shadow-lg ${
+                    active ? "border-[#6c5ce7] shadow-lg" : "border-[#e5e6ef]"
+                  }`}
+                >
+                  <div className="text-sm font-bold text-[#14132a]">{category.label}</div>
+                  <p className="mt-2 text-sm leading-6 text-[#737684]">{category.description}</p>
+                </button>
+              );
+            })}
+          </div>
+        </Container>
+      </section>
+
+      <section id="help-articles" className="pb-14 scroll-mt-28">
+        <Container>
+          <div className="grid gap-8 lg:grid-cols-[1fr_360px]">
+            <div>
+              <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <p className="text-sm font-semibold text-[#6c5ce7]">Articles</p>
+                  <h2 className="text-2xl font-bold tracking-[-0.03em] text-[#14132a]">
+                    {selectedCategory === "All" ? "Common questions" : selectedCategory}
+                  </h2>
+                </div>
+                {(selectedCategory !== "All" || query) && (
+                  <button
+                    onClick={() => {
+                      setSelectedCategory("All");
+                      setQuery("");
+                      setOpenArticle(articles[0].title);
+                    }}
+                    className="rounded-full border border-[#dedfed] bg-white px-4 py-2 text-sm font-semibold text-[#6c5ce7] transition hover:border-[#6c5ce7]"
+                  >
+                    Clear filters
+                  </button>
+                )}
               </div>
-              <h3 style={{ fontSize: 14, fontWeight: 500, color: "#111", marginBottom: 4 }}>{cat.label}</h3>
-              <p style={{ fontSize: 12, color: "#888", lineHeight: 1.5 }}>{cat.desc}</p>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 10 }}>
-                <span style={{ fontSize: 11, color: "#aaa" }}>{cat.count} articles</span>
-                <span style={{ fontSize: 14, color: "#aaa" }}>→</span>
+
+              <div className="overflow-hidden rounded-2xl border border-[#e5e6ef] bg-white shadow-sm">
+                {filteredArticles.length === 0 ? (
+                  <div className="p-6 text-sm text-[#737684]">No matching help article found.</div>
+                ) : (
+                  filteredArticles.map((article, index) => {
+                    const isOpen = openArticle === article.title;
+
+                    return (
+                      <div key={article.title} className={index < filteredArticles.length - 1 ? "border-b border-[#ececf4]" : ""}>
+                        <button
+                          onClick={() => setOpenArticle(isOpen ? "" : article.title)}
+                          className="flex w-full items-center justify-between gap-4 p-5 text-left transition hover:bg-[#fafaff]"
+                        >
+                          <div>
+                            <span className="text-xs font-bold uppercase tracking-[0.16em] text-[#6c5ce7]">{article.category}</span>
+                            <p className="mt-1 font-semibold text-[#14132a]">{article.title}</p>
+                          </div>
+                          <FiChevronDown className={`shrink-0 text-[#6c5ce7] transition ${isOpen ? "rotate-180" : ""}`} />
+                        </button>
+                        {isOpen && <p className="px-5 pb-5 text-sm leading-7 text-[#686b78]">{article.answer}</p>}
+                      </div>
+                    );
+                  })
+                )}
               </div>
             </div>
-          ))}
-        </div>
-      </div>
 
-      {/* Popular articles */}
-      <div style={{ padding: "0 2rem 2.5rem", background: "#f5f5f7" }}>
-        <p style={{ fontSize: 18, fontWeight: 500, color: "#111", marginBottom: "1rem" }}>Popular articles</p>
-        <div style={{
-          display: "flex", flexDirection: "column",
-          background: "#fff", border: "0.5px solid #e0e0e0",
-          borderRadius: 12, overflow: "hidden",
-        }}>
-          {articles.map((art, i) => (
-            <div
-              key={art.title}
-              style={{
-                display: "flex", alignItems: "center", justifyContent: "space-between",
-                padding: "0.9rem 1.25rem",
-                borderBottom: i < articles.length - 1 ? "0.5px solid #e0e0e0" : "none",
-                cursor: "pointer",
-              }}
-              onMouseEnter={(e) => (e.currentTarget.style.background = "#f9f9f9")}
-              onMouseLeave={(e) => (e.currentTarget.style.background = "#fff")}
-            >
-              <span style={{ fontSize: 14, color: "#111" }}>{art.title}</span>
-              <span style={{
-                fontSize: 11, padding: "2px 8px", borderRadius: 999,
-                background: art.badge === "new" ? "#eeedfe" : "#e1f5ee",
-                color: art.badge === "new" ? "#5346d4" : "#0f6e56",
-              }}>
-                {art.badge === "popular" ? "🔥 Popular" : "New"}
-              </span>
-            </div>
-          ))}
-        </div>
-      </div>
+            <aside className="space-y-4">
+              <div className="rounded-2xl border border-[#e5e6ef] bg-white p-6 shadow-sm">
+                <h3 className="text-lg font-bold text-[#14132a]">Current plans</h3>
+                <div className="mt-4 space-y-3">
+                  {pricingPlans.map((plan) => (
+                    <div key={plan.name} className="rounded-xl bg-[#f8f8fc] p-4">
+                      <div className="flex items-center justify-between gap-3">
+                        <p className="font-semibold text-[#14132a]">{plan.name}</p>
+                        <p className="font-bold text-[#6c5ce7]">{plan.price}</p>
+                      </div>
+                      <p className="mt-2 text-xs leading-5 text-[#737684]">{plan.summary}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
 
-      {/* Contact bar */}
-      <div style={{
-        display: "flex", alignItems: "center", justifyContent: "space-between",
-        padding: "1.25rem 2rem",
-        borderTop: "0.5px solid #e0e0e0", background: "#fff",
-      }}>
-        <div style={{ fontSize: 14, color: "#888" }}>
-          <strong style={{ color: "#111", display: "block", fontWeight: 500, marginBottom: 2 }}>Still need help?</strong>
-          Our support team is available 24/7
-        </div>
-        <div style={{ display: "flex", gap: 8 }}>
-          {["💬 Live chat", "✉️ Email support"].map((btn) => (
-            <button
-              key={btn}
-              style={{
-                display: "flex", alignItems: "center", gap: 6,
-                border: "0.5px solid #ccc", borderRadius: 8,
-                padding: "7px 14px", fontSize: 13, color: "#111",
-                cursor: "pointer", background: "none",
-              }}
-              onMouseEnter={(e) => (e.currentTarget.style.background = "#f5f5f5")}
-              onMouseLeave={(e) => (e.currentTarget.style.background = "none")}
-            >
-              {btn}
-            </button>
-          ))}
-        </div>
-      </div>
+              <div className="rounded-2xl border border-[#e5e6ef] bg-white p-6 shadow-sm">
+                <h3 className="text-lg font-bold text-[#14132a]">Contact support</h3>
+                <p className="mt-2 text-sm leading-6 text-[#737684]">
+                  Use the real company details listed on FindTemplates.
+                </p>
+                <div className="mt-4 space-y-3 text-sm text-[#555967]">
+                  {contactDetails.map((detail) => (
+                    <div key={detail.title}>
+                      <p className="font-semibold text-[#14132a]">{detail.title}</p>
+                      <p className="mt-1 leading-6">{detail.value}</p>
+                    </div>
+                  ))}
+                </div>
+                <div className="mt-5 flex flex-col gap-2">
+                  <a
+                    href="tel:+15195351270"
+                    className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#6c5ce7] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#5b4bd6]"
+                  >
+                    <FiPhone /> Call support
+                  </a>
+                  <a
+                    href="/#contact"
+                    className="inline-flex items-center justify-center gap-2 rounded-xl border border-[#dedfed] bg-white px-4 py-3 text-sm font-semibold text-[#6c5ce7] transition hover:border-[#6c5ce7]"
+                  >
+                    <FiMail /> Contact page
+                  </a>
+                </div>
+              </div>
+            </aside>
+          </div>
+        </Container>
+      </section>
+
       <Footer />
     </div>
   );

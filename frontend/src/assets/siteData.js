@@ -273,13 +273,13 @@ export const pricingPlans = [
     cadenceAnnual: '/year',
     featured: true,
     summary:
-      'Complete dashboard access including Projects, Settings, Support Info, Access/Role, Services, Invoices, Team, Clients, and Reports, plus all 8 templates, billed every 30 days.',
+      'Complete dashboard access including Projects, Settings, Support Info, Access/Role, Services, Invoices, Team, Clients, and Reports, plus all templates, billed every 30 days.',
     features: [
       'Complete dashboard access',
       'Projects, Settings, and Support Info',
       'Access/Role, Services, and Invoices',
       'Team, Clients, and Reports access',
-      'Access to all 8 templates',
+      'Access to all templates',
       'Priority support',
     ],
   },

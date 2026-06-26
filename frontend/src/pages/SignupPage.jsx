@@ -884,7 +884,7 @@ function SignupPage() {
                     }}
                   >
                     You can access the complete dashboard, including Clients and
-                    Reports, plus all 8 templates.
+                    Reports, plus all templates.
                   </p>
                 </div>
                 <span

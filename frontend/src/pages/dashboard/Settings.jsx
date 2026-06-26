@@ -104,13 +104,13 @@ const PLAN_DETAILS = {
     cadence: "/month",
     annualCadence: "/year",
     summary:
-      "Complete dashboard access including Projects, Settings, Support Info, Access/Role, Services, Invoices, Team, Clients, and Reports, plus all 8 templates.",
+      "Complete dashboard access including Projects, Settings, Support Info, Access/Role, Services, Invoices, Team, Clients, and Reports, plus all templates.",
     features: [
       "Complete dashboard access",
       "Projects, Settings, and Support Info",
       "Access/Role, Services, and Invoices",
       "Team, Clients, and Reports access",
-      "Access to all 8 templates",
+      "Access to all templates",
       "Priority support",
     ],
   },

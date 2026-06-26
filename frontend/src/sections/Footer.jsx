@@ -11,7 +11,7 @@ function Footer() {
       style={{ background: "#0f1c2e" }}
     >
       <Container className="space-y-10">
-       <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-[1.25fr_0.85fr_1fr] lg:items-start">
+       <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-[1.25fr_0.85fr_0.85fr_1fr] lg:items-start">
   <div className="max-w-sm">
     <div className="flex items-center gap-2.5">
       <div
@@ -32,7 +32,7 @@ function Footer() {
               better pages, campaigns, and customer journeys.
             </p>
             <div
-              className="mt-5 space-y-1 text-sm"
+              className="mt-5 space-y-1 text-sm"          
               style={{ color: "#8aa0b8" }}
             >
               <p>© 2025 17219296 Canada Inc. All rights reserved.</p>
@@ -93,6 +93,24 @@ function Footer() {
             </div>
           </div>
 
+
+          <div>
+            <div className="text-sm font-semibold uppercase tracking-[0.2em] text-white">
+              Support
+            </div>
+            <div
+              className="mt-4 flex flex-col gap-3 text-sm"
+              style={{ color: "#8aa0b8" }}
+            >
+              <Link
+                to="/help-center"
+                onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+                className="transition hover:text-white"
+              >
+                Help Center
+              </Link>
+            </div>
+          </div>
 
           <div>
             <div className="text-sm font-semibold uppercase tracking-[0.2em] text-white">
