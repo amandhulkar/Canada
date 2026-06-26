@@ -132,18 +132,18 @@ function ProfileSection({ user }) {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 flex items-center justify-between">
-        <div className="flex items-center gap-4">
+      <div className="bg-white dark:bg-slate-800 rounded-2xl p-4 sm:p-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex min-w-0 items-center gap-3 sm:gap-4">
           <div className="w-16 h-16 rounded-2xl bg-indigo-500 flex items-center justify-center text-white text-xl font-bold">
             {user.initials}
           </div>
-          <div>
+          <div className="min-w-0">
             <p className="text-sm text-slate-400 dark:text-slate-500 mb-0.5">Signed in as</p>
-            <p className="text-2xl font-bold text-slate-800 dark:text-slate-100">{user.name}</p>
-            <p className="text-sm text-slate-400 dark:text-slate-500 mt-0.5">{user.email}</p>
+            <p className="truncate text-xl font-bold text-slate-800 dark:text-slate-100 sm:text-2xl">{user.name}</p>
+            <p className="truncate text-sm text-slate-400 dark:text-slate-500 mt-0.5">{user.email}</p>
           </div>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
           <span className="bg-emerald-50 dark:bg-emerald-900/30 border border-emerald-200 dark:border-emerald-700 text-emerald-700 dark:text-emerald-300 text-sm font-semibold px-4 py-1.5 rounded-full">
             {user.displayRole}
           </span>
@@ -154,12 +154,12 @@ function ProfileSection({ user }) {
         </div>
       </div>
 
-      <div className="bg-white dark:bg-slate-800 rounded-2xl p-6">
+      <div className="bg-white dark:bg-slate-800 rounded-2xl p-4 sm:p-6">
         <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100 mb-1">Account overview</h2>
         <p className="text-sm text-slate-400 dark:text-slate-500 mb-5">
           Your profile details are synced here and reflected across dashboard pages.
         </p>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {[
             { label: "Full name", value: user.name },
             { label: "Email", value: user.email },
@@ -252,7 +252,7 @@ function ThemeSection() {
   };
 
   return (
-    <div className="bg-white dark:bg-slate-800 rounded-2xl p-6">
+    <div className="bg-white dark:bg-slate-800 rounded-2xl p-4 sm:p-6">
       <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100 mb-1">Theme</h2>
       <p className="text-sm text-slate-400 dark:text-slate-500 mb-5">Choose your dashboard appearance.</p>
       <div className="grid grid-cols-2 gap-3">
@@ -303,7 +303,7 @@ function PreferencesSection() {
     });
   };
   return (
-    <div className="bg-white dark:bg-slate-800 rounded-2xl p-6">
+    <div className="bg-white dark:bg-slate-800 rounded-2xl p-4 sm:p-6">
       <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100 mb-1">Preferences</h2>
       <p className="text-sm text-slate-400 dark:text-slate-500 mb-5">Workspace behavior and shortcuts.</p>
       <div className="flex flex-col gap-4">
@@ -312,7 +312,7 @@ function PreferencesSection() {
           { key: "autoSave", label: "Auto-save", desc: "Automatically save changes as you work" },
           { key: "sidebarCollapsed", label: "Collapsed sidebar by default", desc: "Start with the sidebar minimized" },
         ].map((p) => (
-          <div key={p.key} className="flex items-center justify-between py-3 border-b border-slate-50 dark:border-slate-700 last:border-0">
+          <div key={p.key} className="flex flex-col gap-3 py-3 border-b border-slate-50 dark:border-slate-700 last:border-0 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">{p.label}</p>
               <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">{p.desc}</p>
@@ -334,7 +334,7 @@ function PreferencesSection() {
 function NotificationsSection() {
   const [notifs, setNotifs] = useState({ email: true, push: false, reminders: true, updates: true });
   return (
-    <div className="bg-white dark:bg-slate-800 rounded-2xl p-6">
+    <div className="bg-white dark:bg-slate-800 rounded-2xl p-4 sm:p-6">
       <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100 mb-1">Notifications</h2>
       <p className="text-sm text-slate-400 dark:text-slate-500 mb-5">Manage alerts, updates, and reminders.</p>
       <div className="flex flex-col gap-4">
@@ -344,7 +344,7 @@ function NotificationsSection() {
           { key: "reminders", label: "Reminders", desc: "Due date and task reminders" },
           { key: "updates", label: "Product updates", desc: "New features and announcements" },
         ].map((n) => (
-          <div key={n.key} className="flex items-center justify-between py-3 border-b border-slate-50 dark:border-slate-700 last:border-0">
+          <div key={n.key} className="flex flex-col gap-3 py-3 border-b border-slate-50 dark:border-slate-700 last:border-0 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">{n.label}</p>
               <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">{n.desc}</p>
@@ -378,13 +378,13 @@ function PrivacySection() {
   ];
 
   return (
-    <div className="bg-white dark:bg-slate-800 rounded-2xl p-6">
+    <div className="bg-white dark:bg-slate-800 rounded-2xl p-4 sm:p-6">
       <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100 mb-1">Privacy settings</h2>
       <p className="text-sm text-slate-400 dark:text-slate-500 mb-5">Control account visibility and local dashboard behavior.</p>
       <div className="flex flex-col gap-3">
         {items.map((item) => (
-          <div key={item.key} className="flex items-center justify-between bg-slate-50 dark:bg-slate-700 rounded-xl px-5 py-4">
-            <div>
+          <div key={item.key} className="flex flex-col gap-3 bg-slate-50 dark:bg-slate-700 rounded-xl px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-5">
+            <div className="min-w-0">
               <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">{item.label}</p>
               <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">{item.desc}</p>
             </div>
@@ -488,17 +488,17 @@ function SecuritySection() {
   ];
 
   return (
-    <div className="bg-white dark:bg-slate-800 rounded-2xl p-6">
+    <div className="bg-white dark:bg-slate-800 rounded-2xl p-4 sm:p-6">
       <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100 mb-1">Security</h2>
       <p className="text-sm text-slate-400 dark:text-slate-500 mb-5">Access, sessions, and password tools.</p>
       <div className="flex flex-col gap-3">
         {items.map((item) => (
-          <div key={item.label} className="flex items-center justify-between bg-slate-50 dark:bg-slate-700 rounded-xl px-5 py-4">
-            <div>
+          <div key={item.label} className="flex flex-col gap-3 bg-slate-50 dark:bg-slate-700 rounded-xl px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-5">
+            <div className="min-w-0">
               <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">{item.label}</p>
               <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">{item.desc}</p>
             </div>
-            <button onClick={item.action} className="text-sm text-indigo-600 dark:text-indigo-400 font-medium border border-indigo-200 dark:border-indigo-700 px-4 py-1.5 rounded-lg hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition-colors">
+            <button onClick={item.action} className="w-full text-sm text-indigo-600 dark:text-indigo-400 font-medium border border-indigo-200 dark:border-indigo-700 px-4 py-2 rounded-lg hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition-colors sm:w-auto sm:py-1.5">
               {item.btn}
             </button>
           </div>
@@ -532,25 +532,25 @@ function SecuritySection() {
 
 function AccountSection({ onLogout, onDelete }) {
   return (
-    <div className="bg-white dark:bg-slate-800 rounded-2xl p-6">
+    <div className="bg-white dark:bg-slate-800 rounded-2xl p-4 sm:p-6">
       <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100 mb-1">Account</h2>
       <p className="text-sm text-slate-400 dark:text-slate-500 mb-5">Manage your account actions.</p>
       <div className="flex flex-col gap-3">
-        <div className="flex items-center justify-between bg-slate-50 dark:bg-slate-700 rounded-xl px-5 py-4">
+        <div className="flex flex-col gap-3 bg-slate-50 dark:bg-slate-700 rounded-xl px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-5">
           <div>
             <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">Log out</p>
             <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">Sign out of your current session</p>
           </div>
-          <button onClick={onLogout} className="text-sm text-slate-600 dark:text-slate-300 font-medium border border-slate-200 dark:border-slate-600 px-4 py-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-600 transition-colors">
+          <button onClick={onLogout} className="w-full text-sm text-slate-600 dark:text-slate-300 font-medium border border-slate-200 dark:border-slate-600 px-4 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-600 transition-colors sm:w-auto sm:py-1.5">
             Log out
           </button>
         </div>
-        <div className="flex items-center justify-between bg-red-50 dark:bg-red-900/20 rounded-xl px-5 py-4">
+        <div className="flex flex-col gap-3 bg-red-50 dark:bg-red-900/20 rounded-xl px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-5">
           <div>
             <p className="text-sm font-semibold text-red-600 dark:text-red-400">Delete account</p>
             <p className="text-xs text-red-400 dark:text-red-500 mt-0.5">Permanently remove your account and all data</p>
           </div>
-          <button onClick={onDelete} className="text-sm text-red-600 dark:text-red-400 font-medium border border-red-200 dark:border-red-800 px-4 py-1.5 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors">
+          <button onClick={onDelete} className="w-full text-sm text-red-600 dark:text-red-400 font-medium border border-red-200 dark:border-red-800 px-4 py-2 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors sm:w-auto sm:py-1.5">
             Delete
           </button>
         </div>
@@ -617,7 +617,7 @@ export default function Settings() {
       <Sidebar />
 
       <main className="min-w-0 flex-1 p-4 sm:p-6 lg:p-8">
-        <div className="flex items-start justify-between mb-6">
+        <div className="flex flex-col gap-4 mb-6 lg:flex-row lg:items-start lg:justify-between">
           <div>
             <h1 className="text-3xl font-bold text-indigo-900 dark:text-indigo-400">Settings</h1>
             <p className="text-sm text-slate-400 dark:text-slate-500 mt-1">
@@ -629,17 +629,17 @@ export default function Settings() {
             placeholder="Search profile, privacy, theme, logout..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-72 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-indigo-400 placeholder:text-slate-400 dark:placeholder:text-slate-500"
+            className="w-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-indigo-400 placeholder:text-slate-400 dark:placeholder:text-slate-500 lg:w-72"
           />
         </div>
 
-        <div className="flex gap-5 items-start">
-          <div className="w-64 bg-white dark:bg-slate-800 rounded-2xl p-3 flex flex-col gap-1 flex-shrink-0">
+        <div className="flex flex-col gap-5 items-stretch xl:flex-row xl:items-start">
+          <div className="w-full bg-white dark:bg-slate-800 rounded-2xl p-3 flex gap-2 overflow-x-auto xl:w-64 xl:flex-col xl:gap-1 xl:flex-shrink-0 xl:overflow-visible">
             {filteredNav.map((item) => (
               <button
                 key={item.key}
                 onClick={() => { setActive(item.key); setSearch(""); }}
-                className={`w-full text-left px-4 py-3 rounded-xl transition-colors ${
+                className={`min-w-44 flex-1 text-left px-4 py-3 rounded-xl transition-colors xl:w-full xl:min-w-0 ${
                   active === item.key ? "bg-slate-100 dark:bg-slate-700" : "hover:bg-slate-50 dark:hover:bg-slate-700/50"
                 }`}
               >

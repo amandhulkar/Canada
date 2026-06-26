@@ -938,7 +938,7 @@ function UserDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-100 dark:bg-slate-900 flex">
+    <div className="flex min-h-screen flex-col bg-slate-100 dark:bg-slate-900 md:flex-row">
       <Sidebar />
 
       <main className="min-w-0 flex-1 p-4 sm:p-6 lg:p-8">
