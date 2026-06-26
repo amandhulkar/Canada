@@ -122,9 +122,7 @@ function TemplatePreviewPage() {
       });
       if (!res.ok) {
         if (res.status === 401 || res.status === 403) {
-          localStorage.removeItem("token");
-          localStorage.removeItem("currentUser");
-          navigate("/signup?tab=signin");
+          navigate("/dashboard");
           return;
         }
         throw new Error(await res.text() || `Status ${res.status}`);

@@ -59,7 +59,13 @@ router.post("/", protect, requirePermission(PERMISSIONS.MANAGE_PROJECTS), async 
       team: { $exists: true, $ne: "" },
     });
 
-    if (alreadyAssigned && alreadyAssigned.team !== safeBody.team) {
+    if (alreadyAssigned) {
+      if (alreadyAssigned.team === safeBody.team) {
+        return res.status(409).json({
+          message: "This project is already saved for this team member.",
+        });
+      }
+
       return res.status(409).json({
         message: `This project is already assigned to ${alreadyAssigned.team}. Delete or reassign that project before assigning it to another developer.`,
       });

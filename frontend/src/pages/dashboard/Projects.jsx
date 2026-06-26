@@ -146,6 +146,19 @@ function Projects() {
       return;
     }
 
+    if (loading) return;
+
+    const existingProject = projects.find((project) => (
+      project.name === form.name &&
+      project.client === form.client &&
+      project.team === form.team
+    ));
+
+    if (existingProject) {
+      alert("This project is already saved for this team member.");
+      return;
+    }
+
     const alreadyAssigned = projects.find((project) => (
       project.name === form.name &&
       project.client === form.client &&

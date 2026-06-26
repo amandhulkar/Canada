@@ -108,10 +108,10 @@ export const services = [
 //   { label: 'Cross-functional specialists', value: '24' },
 // ]
 export const aboutStats = [
-  { label: '', value: '' },
-  { label: '', value: '' },
-  // { label: '', value: '' },
-  // { label: '', value: '' },
+  { label: 'Ready website templates', value: '8+' },
+  { label: 'Dashboard modules', value: '9' },
+  { label: 'Client workflow', value: 'All-in-one' },
+  { label: 'Support focus', value: 'Fast' },
 ]
 
 

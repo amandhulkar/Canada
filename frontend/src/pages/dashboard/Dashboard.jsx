@@ -404,6 +404,11 @@ function AdminDashboard({ user }) {
     return name.split(" ").map((w) => w[0]).join("").toUpperCase().slice(0, 2);
   };
 
+  const getDisplayRole = (account) => {
+    if (account?.role === "admin") return "admin";
+    return account?.accessRole || account?.role || "client";
+  };
+
   const getStatusBadge = (status) => {
     const s = status ? status.toLowerCase() : "";
     let colors = "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300";
@@ -536,11 +541,13 @@ function AdminDashboard({ user }) {
                     <td className="py-4 text-slate-500 dark:text-slate-400">{u.email}</td>
                     <td className="py-4">
                       <span className={`px-2.5 py-1 rounded-lg text-xs font-bold tracking-wide uppercase ${
-                        u.role === "admin"
+                        getDisplayRole(u) === "admin"
                           ? "bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 border border-purple-100 dark:border-purple-900/30"
-                          : "bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300"
+                          : getDisplayRole(u) === "developer"
+                            ? "bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-900/30"
+                            : "bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300"
                       }`}>
-                        {u.role}
+                        {getDisplayRole(u)}
                       </span>
                     </td>
                     <td className="py-4">
@@ -1041,14 +1048,14 @@ function UserDashboard() {
 
         {/* Quick links */}
         <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-4 gap-4 mb-8">
-          {hasAccess("clients") && <QuickLink to="/dashboard/clients" title="Clients" sub="Clients" />}
-          {hasAccess("projects") && <QuickLink to="/dashboard/projects" title="Projects" sub="Projects" />}
-          {hasAccess("invoices") && <QuickLink to="/dashboard/invoices" title="Invoices" sub="Invoices" />}
-          {hasAccess("teams") && <QuickLink to="/dashboard/teams" title="Team" sub="Team" />}
-          {hasAccess("services") && <QuickLink to="/dashboard/services" title="Services" sub="Services" />}
-          {hasAccess("roles") && <QuickLink to="/dashboard/access-roles" title="Roles" sub="Access" />}
-          {hasAccess("settings") && <QuickLink to="/dashboard/settings" title="Settings" sub="Manage Account" />}
-          {hasAccess("invoices") && <QuickLink to="/dashboard/invoices?modal=open" title="New" sub="New Invoice" highlight />}
+          {/* {hasAccess("clients") && <QuickLink to="/dashboard/clients" title="Clients" sub="Clients" />} */}
+          {/* {hasAccess("projects") && <QuickLink to="/dashboard/projects" title="Projects" sub="Projects" />} */}
+          {/* {hasAccess("invoices") && <QuickLink to="/dashboard/invoices" title="Invoices" sub="Invoices" />} */}
+          {/* {hasAccess("teams") && <QuickLink to="/dashboard/teams" title="Team" sub="Team" />} */}
+          {/* {hasAccess("services") && <QuickLink to="/dashboard/services" title="Services" sub="Services" />} */}
+          {/* {hasAccess("roles") && <QuickLink to="/dashboard/access-roles" title="Roles" sub="Access" />} */}
+          {/* {hasAccess("settings") && <QuickLink to="/dashboard/settings" title="Settings" sub="Manage Account" />} */}
+          {/* {hasAccess("invoices") && <QuickLink to="/dashboard/invoices?modal=open" title="New" sub="New Invoice" highlight />} */}
         </div>
 
 

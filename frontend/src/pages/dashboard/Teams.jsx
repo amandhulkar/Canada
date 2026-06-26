@@ -371,6 +371,24 @@ function Team() {
     }
   };
 
+  const handleDeleteProject = async (id) => {
+    if (!confirm("Delete this project?")) return;
+    try {
+      const res = await fetch(`${API}/api/projects/${id}`, {
+        method: "DELETE",
+        headers: { Authorization: token },
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        alert(data.message || "Failed to delete project");
+        return;
+      }
+      setProjects((prev) => prev.filter((project) => project._id !== id));
+    } catch (error) {
+      alert("Network error: " + error.message);
+    }
+  };
+
   const getMemberRole = (member) => member.role === "admin" ? "admin" : member.accessRole || "client";
   const getAssignedProjects = (member) => projects.filter((project) => project.team === member.fullName);
 
@@ -497,18 +515,25 @@ function Team() {
                   {assignedProjects.length === 0 ? (
                     <p className="text-xs text-slate-400 dark:text-slate-500">No assigned projects yet</p>
                   ) : (
-                    <div className="space-y-2">
-                      {assignedProjects.slice(0, 3).map((project) => (
-                        <div key={project._id} className="rounded-lg bg-slate-50 dark:bg-slate-900 px-3 py-2">
-                          <p className="text-xs font-semibold text-slate-700 dark:text-slate-200 truncate">{project.name}</p>
-                          <p className="text-[11px] text-slate-400 dark:text-slate-500 truncate">
-                            {project.client || "No client"} • {project.status || "Planning"}
-                          </p>
+                    <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
+                      {assignedProjects.map((project) => (
+                        <div key={project._id} className="flex items-start justify-between gap-2 rounded-lg bg-slate-50 dark:bg-slate-900 px-3 py-2">
+                          <div className="min-w-0 flex-1">
+                            <p className="text-xs font-semibold text-slate-700 dark:text-slate-200 truncate">{project.name}</p>
+                            <p className="text-[11px] text-slate-400 dark:text-slate-500 truncate">
+                              {project.client || "No client"} • {project.status || "Planning"}
+                            </p>
+                          </div>
+                          <button
+                            onClick={() => handleDeleteProject(project._id)}
+                            className="shrink-0 text-xs text-slate-400 hover:text-red-500 dark:text-slate-600 dark:hover:text-red-400 transition"
+                            aria-label="Delete project"
+                            title="Delete project"
+                          >
+                            🗑️
+                          </button>
                         </div>
                       ))}
-                      {assignedProjects.length > 3 && (
-                        <p className="text-[11px] font-semibold text-indigo-500">+{assignedProjects.length - 3} more projects</p>
-                      )}
                     </div>
                   )}
                 </div>
