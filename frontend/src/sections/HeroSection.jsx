@@ -4,7 +4,6 @@ import { FiPlay, FiX, FiTrendingUp, FiShoppingCart, FiGrid, FiUsers, FiFileText,
 import Container from "../components/Container";
 import PrimaryButton from "../components/PrimaryButton";
 import Reveal from "../components/Reveal";
-import { Link } from "react-router-dom";
 
 function HeroSection() {
   const [isDemoOpen, setIsDemoOpen] = useState(false);
@@ -81,9 +80,7 @@ function HeroSection() {
             </p>
 
             <div className="flex flex-wrap items-center gap-4">
-              <Link to="/signup">
-                <PrimaryButton>Start Free Trial</PrimaryButton>
-              </Link>
+              <PrimaryButton href="/signup">Start Free Trial</PrimaryButton>
               <button type="button" onClick={() => setIsDemoOpen(true)} className="inline-flex items-center gap-2.5 text-sm font-semibold transition" style={{ color: "#14132a" }}>
                 <span className="inline-flex h-10 w-10 items-center justify-center rounded-full border" style={{ background: "#fff", borderColor: "#ddd" }}>
                   <FiPlay size={14} style={{ marginLeft: 2 }} />

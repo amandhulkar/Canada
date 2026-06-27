@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import Sidebar from "../../components/Sidebar";
 import templates from "../../data/templates";
+import { getMergedTemplates } from "../../utils/templatesApi";
 
 const API = import.meta.env.VITE_API_URL || "http://127.0.0.1:5000";
 
@@ -121,6 +122,7 @@ function EditClientModal({ open, onClose, client, onSave }) {
 }
 
 function AddProjectModal({ open, onClose, clientName, teamMembers, onSave, error }) {
+  const [projectOptions, setProjectOptions] = useState(templates);
   const [form, setForm] = useState({
     name: TEMPLATE_OPTIONS[0] || "",
     startDate: "",
@@ -134,19 +136,42 @@ function AddProjectModal({ open, onClose, clientName, teamMembers, onSave, error
   });
 
   useEffect(() => {
-    if (open) {
-      setForm({
-        name: TEMPLATE_OPTIONS[0] || "",
-        startDate: "",
-        deadline: "",
-        status: STATUSES[0],
-        team: "",
-        assignedTo: "",
-        progress: "0",
-        scopeOfWork: "",
-        deliverables: "",
+    if (!open) return;
+
+    getMergedTemplates()
+      .then((mergedTemplates) => {
+        const nextOptions = Array.isArray(mergedTemplates) && mergedTemplates.length ? mergedTemplates : templates;
+        setProjectOptions(nextOptions);
+        setForm({
+          name: nextOptions[0]?.name || "",
+          templateId: nextOptions[0] ? String(nextOptions[0].id || nextOptions[0]._id || "") : "",
+          templateData: nextOptions[0]?.defaultData || {},
+          startDate: "",
+          deadline: "",
+          status: STATUSES[0],
+          team: "",
+          assignedTo: "",
+          progress: "0",
+          scopeOfWork: "",
+          deliverables: "",
+        });
+      })
+      .catch(() => {
+        setProjectOptions(templates);
+        setForm({
+          name: templates[0]?.name || "",
+          templateId: templates[0] ? String(templates[0].id || templates[0]._id || "") : "",
+          templateData: templates[0]?.defaultData || {},
+          startDate: "",
+          deadline: "",
+          status: STATUSES[0],
+          team: "",
+          assignedTo: "",
+          progress: "0",
+          scopeOfWork: "",
+          deliverables: "",
+        });
       });
-    }
   }, [open]);
 
   if (!open) return null;
@@ -159,6 +184,17 @@ function AddProjectModal({ open, onClose, clientName, teamMembers, onSave, error
         ...form,
         assignedTo: selectedMember?._id || "",
         team: selectedMember?.fullName || "",
+      });
+      return;
+    }
+
+    if (e.target.name === "name") {
+      const selectedTemplate = projectOptions.find((template) => template.name === e.target.value);
+      setForm({
+        ...form,
+        name: e.target.value,
+        templateId: selectedTemplate ? String(selectedTemplate.id || selectedTemplate._id || "") : "",
+        templateData: selectedTemplate?.defaultData || {},
       });
       return;
     }
@@ -186,7 +222,7 @@ function AddProjectModal({ open, onClose, clientName, teamMembers, onSave, error
           <div>
             <label className="block text-sm font-medium text-gray-600 dark:text-slate-300 mb-1">Project / Template</label>
             <select name="name" value={form.name} onChange={handleChange} required className={inputClass}>
-              {TEMPLATE_OPTIONS.map((templateName) => <option key={templateName} value={templateName}>{templateName}</option>)}
+              {projectOptions.map((template) => <option key={template.id || template._id || template.name} value={template.name}>{template.name}</option>)}
             </select>
           </div>
 
@@ -345,8 +381,6 @@ function ClientDetail() {
 
     const token = localStorage.getItem("token");
     const progress = Math.min(100, Math.max(0, Number(projectData.progress) || 0));
-    const selectedTemplate = templates.find((template) => template.name === projectData.name);
-
     try {
       setProjectError("");
       const res = await fetch(`${API}/api/projects`, {
@@ -361,8 +395,8 @@ function ClientDetail() {
           client: client.clientName,
           clientId: client._id,
           progress,
-          templateId: selectedTemplate ? String(selectedTemplate.id) : "",
-          templateData: selectedTemplate?.defaultData || {},
+          templateId: projectData.templateId || "",
+          templateData: projectData.templateData || {},
         }),
       });
 
