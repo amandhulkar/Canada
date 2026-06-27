@@ -63,11 +63,25 @@ const templates = [
 
 function Navbar() {
   const [open, setOpen] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
   const navigate = useNavigate();
 
+  const closeMobileMenu = () => setMobileOpen(false);
+
   return (
-    <header className="sticky top-0 z-50 border-b border-line/80 bg-white/90 backdrop-blur-xl">
+    <>
+      <header className="sticky top-0 z-50 border-b border-line/80 bg-white/90 backdrop-blur-xl">
       <Container className="flex h-20 items-center justify-between gap-6">
+        {/* Mobile menu */}
+        <button
+          type="button"
+          onClick={() => setMobileOpen(true)}
+          className="flex h-10 w-10 items-center justify-center rounded-lg border border-line bg-white text-2xl leading-none text-ink shadow-soft lg:hidden"
+          aria-label="Open menu"
+        >
+          ☰
+        </button>
+
         {/* Logo */}
         <a href="/" className="flex items-center gap-2.5 text-ink">
           <motion.div
@@ -206,15 +220,78 @@ function Navbar() {
           </PrimaryButton>
         </div>
 
-        {/* Mobile */}
-        <button
-          onClick={() => navigate("/signup")}
-          className="inline-flex rounded-full border border-line bg-white px-4 py-2 text-sm font-medium text-ink shadow-soft lg:hidden"
-        >
-          Start
-        </button>
       </Container>
     </header>
+
+      {mobileOpen && (
+        <button
+          type="button"
+          className="fixed inset-0 z-[90] bg-slate-900/50 lg:hidden"
+          onClick={closeMobileMenu}
+          aria-label="Close menu"
+        />
+      )}
+
+      <div className={`fixed left-0 top-0 z-[100] flex h-screen w-72 max-w-[85vw] flex-col border-r border-line bg-white p-6 shadow-2xl transition-transform duration-300 lg:hidden ${mobileOpen ? "translate-x-0" : "-translate-x-full"}`}>
+        <div className="mb-6 flex items-center justify-between">
+          <div className="flex items-center gap-2.5 text-ink">
+            <div className="flex h-[34px] w-[34px] items-center justify-center rounded-lg bg-[#7c6dfa]">
+              <span style={{ fontSize: 15, fontWeight: 800 }}>
+                <span style={{ color: "#fff" }}>F</span>
+                <span style={{ color: "#a99eff" }}>T</span>
+              </span>
+            </div>
+            <div className="text-lg font-extrabold tracking-[-0.03em] text-ink">
+              FindTemplates
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={closeMobileMenu}
+            className="rounded-lg px-3 py-1 text-2xl text-muted"
+            aria-label="Close menu"
+          >
+            ×
+          </button>
+        </div>
+
+        <nav className="flex flex-col gap-2 text-sm font-semibold text-ink">
+          <Link to="/templates" onClick={closeMobileMenu} className="rounded-xl p-3 transition hover:bg-accent-soft hover:text-[#5b4bf5]">
+            Templates
+          </Link>
+          {navLinks.map((link) => (
+            <a
+              key={link.label}
+              href={link.href}
+              onClick={closeMobileMenu}
+              className="rounded-xl p-3 transition hover:bg-accent-soft hover:text-[#5b4bf5]"
+            >
+              {link.label}
+            </a>
+          ))}
+        </nav>
+
+        <div className="mt-auto flex flex-col gap-3 pt-6">
+          <button
+            onClick={() => {
+              closeMobileMenu();
+              navigate("/signup?tab=signin");
+            }}
+            className="rounded-xl border border-line px-4 py-3 text-sm font-medium text-muted transition hover:text-ink"
+          >
+            Log In
+          </button>
+          <PrimaryButton
+            onClick={() => {
+              closeMobileMenu();
+              navigate("/signup");
+            }}
+          >
+            Get Started
+          </PrimaryButton>
+        </div>
+      </div>
+    </>
   );
 }
 
