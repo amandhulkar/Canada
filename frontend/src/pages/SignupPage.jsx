@@ -181,16 +181,16 @@ function SignupPage() {
     if (loading) return;
     setLoading(true);
 
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000);
+
     try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 20000);
       const res = await fetch(`${API}/api/auth/forgot-password`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: resetForm.email }),
         signal: controller.signal,
       });
-      clearTimeout(timeoutId);
       const data = await res.json();
       if (!res.ok) {
         alert(data.message || "Unable to send OTP");
@@ -201,8 +201,9 @@ function SignupPage() {
       setResetStep("otp");
     } catch (error) {
       console.log(error);
-      alert(error?.name === "AbortError" ? "Email service is taking too long. Please check SMTP settings and try again." : "Server Error");
+      alert(error?.name === "AbortError" ? "Sending the OTP is taking longer than expected. Please try again in a moment." : "Server Error");
     } finally {
+      clearTimeout(timeoutId);
       setLoading(false);
     }
   };

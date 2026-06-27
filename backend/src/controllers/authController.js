@@ -184,7 +184,14 @@ const requestPasswordReset = async (req, res) => {
     user.resetPasswordOtpExpires = new Date(Date.now() + 10 * 60 * 1000);
     await user.save();
 
-    await sendPasswordResetOtp({ to: user.email, otp });
+    try {
+      await sendPasswordResetOtp({ to: user.email, otp });
+    } catch (error) {
+      user.resetPasswordOtp = undefined;
+      user.resetPasswordOtpExpires = undefined;
+      await user.save();
+      throw error;
+    }
 
     res.json({ success: true, message: "OTP sent to your email" });
   } catch (error) {
