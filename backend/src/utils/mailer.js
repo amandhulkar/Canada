@@ -20,6 +20,7 @@ const createTransporter = () => {
     port,
     secure: port === 465,
     requireTLS: port === 587,
+    family: 4,
     auth: { user, pass },
     tls: {
       servername: host,
