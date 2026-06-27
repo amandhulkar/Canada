@@ -163,9 +163,9 @@ function TemplatesAdmin() {
             <h1 className="text-3xl font-bold text-indigo-900 dark:text-indigo-400">Template Management</h1>
             <p className="text-sm text-slate-400 dark:text-slate-500 mt-1">Add, edit, and remove admin-created templates.</p>
           </div>
-          <button onClick={resetForm} className="bg-indigo-600 text-white px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-indigo-700 transition">
+          {/* <button onClick={resetForm} className="bg-indigo-600 text-white px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-indigo-700 transition">
             + New Template
-          </button>
+          </button> */}
         </div>
 
         <div className="grid grid-cols-1 xl:grid-cols-[420px_1fr] gap-6 items-start">
