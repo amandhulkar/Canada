@@ -817,7 +817,6 @@ function PricingModal({ open, onClose, onChoosePlan }) {
 
 function UserDashboard() {
   const user = JSON.parse(localStorage.getItem("currentUser"));
-  const timeLeft = useCountdown();
   const [pricingOpen, setPricingOpen] = useState(false);
   const navigate = useNavigate();
 
@@ -831,6 +830,7 @@ function UserDashboard() {
 
   const userName = user?.fullName || user?.name || "";
   const accountRole = user?.role === "admin" ? "Admin" : user?.accessRole === "developer" ? "Developer" : "Client";
+  const canSelfPurchasePlan = user?.role === "admin";
 
   useEffect(() => {
     if (selectedPlanForCheckout && !cardName) {
@@ -921,7 +921,8 @@ function UserDashboard() {
     const endDate = new Date(user.planEndsAt);
     return !Number.isNaN(endDate.getTime()) && endDate.getTime() < Date.now();
   })();
-  const plan = planExpired ? null : user?.plan;
+  const activePaidPlan = ["Plus", "Pro", "Business"].includes(user?.plan) && !planExpired;
+  const plan = activePaidPlan ? user?.plan : null;
   const hasAccess = (item) => {
     if (!plan) {
       // New user with no plan — basic pages only
@@ -976,7 +977,7 @@ function UserDashboard() {
           </div>
         </div>
 
-        {/* Plan / Trial Banner */}
+        {/* Plan / Access Banner */}
         {plan ? (
           <div className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-3xl p-6 mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
@@ -1001,38 +1002,68 @@ function UserDashboard() {
                   {user?.planEndsAt ? new Date(user.planEndsAt).toLocaleDateString() : "—"}
                 </p>
               </div>
-              <button
-                onClick={() => setPricingOpen(true)}
-                className="bg-white text-indigo-600 font-bold px-5 py-2 rounded-xl hover:bg-indigo-50 transition"
-              >
-                Change Plan
-              </button>
+              {canSelfPurchasePlan ? (
+                <button
+                  onClick={() => setPricingOpen(true)}
+                  className="bg-white text-indigo-600 font-bold px-5 py-2 rounded-xl hover:bg-indigo-50 transition"
+                >
+                  Change / Upgrade Plan
+                </button>
+              ) : (
+                <span className="bg-white/20 border border-white/30 text-white font-bold px-5 py-2 rounded-xl">
+                  Admin manages plan
+                </span>
+              )}
             </div>
           </div>
-        ) : (
+        ) : canSelfPurchasePlan ? (
           <div className="bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-3xl p-6 mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
               <h2 className="text-2xl font-bold">
-                {TRIAL_DAYS}-day dashboard trial is active
+                Choose a plan to activate admin access
               </h2>
               <p className="text-emerald-50 mt-1">
-                Choose a plan to unlock access based on your subscription.
+                Select a plan to unlock and manage the full admin dashboard.
               </p>
             </div>
 
             <div className="flex items-center gap-4">
               <div className="bg-white/15 rounded-2xl px-6 py-3 text-center">
-                <p className="text-sm text-emerald-50">Trial ends in</p>
-                <p className="text-2xl font-bold tabular-nums">{timeLeft}</p>
+                <p className="text-sm text-emerald-50">Admin account</p>
+                <p className="text-2xl font-bold tabular-nums">Plan needed</p>
               </div>
               <div className="text-center">
-                <p className="text-sm text-emerald-50 mb-2">Select a plan for your account</p>
+                <p className="text-sm text-emerald-50 mb-2">Purchase a plan for your admin account</p>
                 <button
                   onClick={() => setPricingOpen(true)}
                   className="bg-white text-emerald-600 font-bold px-5 py-2 rounded-xl hover:bg-emerald-50 transition"
                 >
                   Upgrade Plan
                 </button>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-3xl p-6 mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+              <h2 className="text-2xl font-bold">
+                Admin managed access is active
+              </h2>
+              <p className="text-emerald-50 mt-1">
+                Your dashboard access and projects are managed by the admin.
+              </p>
+            </div>
+
+            <div className="flex items-center gap-4">
+              <div className="bg-white/15 rounded-2xl px-6 py-3 text-center">
+                <p className="text-sm text-emerald-50">Account access</p>
+                <p className="text-2xl font-bold tabular-nums">Active</p>
+              </div>
+              <div className="text-center">
+                <p className="text-sm text-emerald-50 mb-2">Plan changes are handled by admin</p>
+                <span className="bg-white/20 border border-white/30 text-white font-bold px-5 py-2 rounded-xl">
+                  Admin managed
+                </span>
               </div>
             </div>
           </div>
@@ -1045,19 +1076,6 @@ function UserDashboard() {
           <StatCard label="Complete project" value="0" sub="Need attention" />
           <StatCard label="Pending Payments" value="$0" sub="Outstanding balance" />
         </div>
-
-        {/* Quick links */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-4 gap-4 mb-8">
-          {/* {hasAccess("clients") && <QuickLink to="/dashboard/clients" title="Clients" sub="Clients" />} */}
-          {/* {hasAccess("projects") && <QuickLink to="/dashboard/projects" title="Projects" sub="Projects" />} */}
-          {/* {hasAccess("invoices") && <QuickLink to="/dashboard/invoices" title="Invoices" sub="Invoices" />} */}
-          {/* {hasAccess("teams") && <QuickLink to="/dashboard/teams" title="Team" sub="Team" />} */}
-          {/* {hasAccess("services") && <QuickLink to="/dashboard/services" title="Services" sub="Services" />} */}
-          {/* {hasAccess("roles") && <QuickLink to="/dashboard/access-roles" title="Roles" sub="Access" />} */}
-          {/* {hasAccess("settings") && <QuickLink to="/dashboard/settings" title="Settings" sub="Manage Account" />} */}
-          {/* {hasAccess("invoices") && <QuickLink to="/dashboard/invoices?modal=open" title="New" sub="New Invoice" highlight />} */}
-        </div>
-
 
         {/* Recent Activity */}
         <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm p-6 mb-6">
@@ -1078,14 +1096,16 @@ function UserDashboard() {
         </div>
       </main>
 
-      <PricingModal
-        open={pricingOpen}
-        onClose={() => setPricingOpen(false)}
-        onChoosePlan={handleChoosePlan}
-      />
+      {canSelfPurchasePlan && (
+        <PricingModal
+          open={pricingOpen}
+          onClose={() => setPricingOpen(false)}
+          onChoosePlan={handleChoosePlan}
+        />
+      )}
 
       {/* Checkout Modal */}
-      {selectedPlanForCheckout && (
+      {canSelfPurchasePlan && selectedPlanForCheckout && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[60] flex items-center justify-center p-4">
           <div className="bg-white dark:bg-slate-900 rounded-[2rem] border border-slate-100 dark:border-slate-800 p-8 max-w-md w-full shadow-2xl relative overflow-hidden transition-all duration-300 transform scale-100 animate-in fade-in zoom-in-95">
             {isSuccess ? (

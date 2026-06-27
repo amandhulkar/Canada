@@ -1,5 +1,7 @@
 const mongoose = require("mongoose");
 
+mongoose.set("bufferCommands", false);
+
 const backfillCompanyIds = async () => {
   const User = require("../models/User");
   const Client = require("../models/Client");
@@ -72,7 +74,13 @@ const backfillCompanyIds = async () => {
 
 const connectDB = async () => {
   try {
-    const conn = await mongoose.connect(process.env.MONGO_URI);
+    if (!process.env.MONGO_URI) {
+      throw new Error("MONGO_URI is missing in backend/.env");
+    }
+
+    const conn = await mongoose.connect(process.env.MONGO_URI, {
+      serverSelectionTimeoutMS: 10000,
+    });
 
     try {
       await conn.connection.collection("users").dropIndex("role_1");
@@ -91,6 +99,7 @@ const connectDB = async () => {
     }
 
     console.log(`MongoDB Connected: ${conn.connection.host}`);
+    return conn;
   } catch (error) {
     console.error("Database Connection Error:", error.message);
     console.error("Start MongoDB or update MONGO_URI in backend/.env, then save a file to let nodemon reconnect.");

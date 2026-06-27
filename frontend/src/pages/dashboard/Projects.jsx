@@ -116,6 +116,8 @@ function Projects() {
       .then((data) => setProjects(Array.isArray(data) ? data : []))
       .catch((err) => console.log(err));
 
+    if (!canManageProjects) return;
+
     fetch(`${API}/api/admin/users?t=${Date.now()}`, { headers, cache: "no-store" })
       .then((res) => res.ok ? res.json() : { users: [] })
       .then((data) => {
@@ -134,7 +136,7 @@ function Projects() {
     getMergedTemplates()
       .then((templates) => setProjectOptions(Array.isArray(templates) ? templates : []))
       .catch((err) => console.log(err));
-  }, []);
+  }, [canManageProjects]);
 
   useEffect(() => {
     if (!location.state?.openAddProject) return;
@@ -293,7 +295,9 @@ function Projects() {
                     <td colSpan={7} className="py-20 text-center">
                       <div className="text-5xl mb-4">📁</div>
                       <p className="text-lg font-bold text-gray-700 dark:text-slate-200">No projects found</p>
-                      <p className="mt-1 text-gray-400 dark:text-slate-500">Create your first project to get started</p>
+                      <p className="mt-1 text-gray-400 dark:text-slate-500">
+                        {canManageProjects ? "Create your first project to get started" : "No projects assigned yet"}
+                      </p>
                     </td>
                   </tr>
                 ) : (

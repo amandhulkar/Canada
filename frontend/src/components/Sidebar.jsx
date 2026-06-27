@@ -33,7 +33,7 @@ const getPreferences = () => {
 const isPlanAllowed = (user, link) => {
   const plan = isPlanExpired(user) ? null : user?.plan;
   if (!plan) {
-    return link.to === "/dashboard" || link.to === "/dashboard/settings";
+    return ["/dashboard", "/dashboard/projects", "/dashboard/settings"].includes(link.to);
   }
 
   if (plan === "Plus") {
@@ -58,6 +58,10 @@ const isPlanAllowed = (user, link) => {
       "/dashboard/invoices",
       "/dashboard/teams",
     ].includes(link.to);
+  }
+
+  if (plan === "Business") {
+    return link.to !== "/dashboard/templates" || user?.role === "admin";
   }
 
   return link.to !== "/dashboard/templates";

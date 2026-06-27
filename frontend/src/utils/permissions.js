@@ -104,7 +104,15 @@ export const hasPlanPermission = (user, permission) => {
 
 export const hasFeatureAccess = (user, permission) => {
   if (!permission) return true;
-  if (permission === PERMISSIONS.VIEW_DASHBOARD || permission === PERMISSIONS.SYSTEM_SETTINGS) return true;
+  if (
+    permission === PERMISSIONS.VIEW_DASHBOARD ||
+    permission === PERMISSIONS.VIEW_PROJECTS ||
+    permission === PERMISSIONS.SYSTEM_SETTINGS
+  ) return true;
+
+  if (permission === PERMISSIONS.MANAGE_TEMPLATES) {
+    return user?.role === "admin" && user?.plan === "Business" && !isPlanExpired(user);
+  }
 
   const isInvitedUser = user?.companyId && user?._id && String(user.companyId) !== String(user._id);
   if (isInvitedUser) return hasPermission(user, permission);

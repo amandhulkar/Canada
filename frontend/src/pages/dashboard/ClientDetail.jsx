@@ -136,7 +136,7 @@ function AddProjectModal({ open, onClose, clientName, teamMembers, onSave, error
   useEffect(() => {
     if (open) {
       setForm({
-        name: "",
+        name: TEMPLATE_OPTIONS[0] || "",
         startDate: "",
         deadline: "",
         status: STATUSES[0],
@@ -293,7 +293,7 @@ function ClientDetail() {
         const allProjects = Array.isArray(data) ? data : [];
         setProjects(allProjects.filter((p) => (
           String(p.clientId || "") === String(client._id) ||
-          (!p.clientId && normalizeName(p.client) === normalizeName(client.clientName))
+          normalizeName(p.client) === normalizeName(client.clientName)
         )));
       })
       .catch((err) => console.log(err))

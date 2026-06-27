@@ -3,6 +3,7 @@ import { useLocation, useParams, useNavigate } from "react-router-dom";
 import Sidebar from "../../components/Sidebar";
 import BusinessTemplate from "../../templates/BusinessTemplate";
 import { findTemplateById, getMergedTemplates } from "../../utils/templatesApi";
+import { getCurrentUser, getEffectiveAccessRole } from "../../utils/permissions";
 
 const API = import.meta.env.VITE_API_URL || "http://127.0.0.1:5000";
 
@@ -37,6 +38,18 @@ function ProjectDetail() {
   const [templateLoading, setTemplateLoading] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [editForm, setEditForm] = useState({});
+  const [downloading, setDownloading] = useState(false);
+  const [downloadStep, setDownloadStep] = useState(0);
+  const [completeSuccess, setCompleteSuccess] = useState(false);
+
+  const currentUser = getCurrentUser();
+  const currentRole = getEffectiveAccessRole(currentUser);
+  const isAdmin = currentRole === "admin";
+  const isDeveloper = currentRole === "developer";
+  const isClient = currentRole === "client";
+  const canEditWorkspace = isAdmin || isDeveloper;
+  const canCompleteProject = isAdmin || isDeveloper;
+  const canDownloadProject = Boolean(project?.completed) && (isAdmin || isClient);
 
   const COLUMNS = ["To Do", "Design", "Development", "Testing", "Client Review"];
 
@@ -115,6 +128,10 @@ function ProjectDetail() {
   };
 
   useEffect(() => {
+    if (!canEditWorkspace) setEditMode(false);
+  }, [canEditWorkspace]);
+
+  useEffect(() => {
     if (!project) return;
 
     let isMounted = true;
@@ -168,6 +185,11 @@ function ProjectDetail() {
   };
 
   const handleSaveTemplate = async () => {
+    if (!canEditWorkspace) {
+      alert("You don't have permission to edit this project.");
+      return;
+    }
+
     try {
       await saveProjectUpdates({ templateData });
       alert("✅ Changes saved!");
@@ -177,6 +199,11 @@ function ProjectDetail() {
   };
 
   const handleComplete = async () => {
+    if (!canCompleteProject) {
+      alert("You don't have permission to complete this project.");
+      return;
+    }
+
     try {
       await saveProjectUpdates({
         status: "Live",
@@ -185,12 +212,22 @@ function ProjectDetail() {
         templateData,
         tasks,
       });
+      setCompleteSuccess(true);
+      setTimeout(() => setCompleteSuccess(false), 3000);
     } catch (error) {
       alert(error.message);
     }
   };
 
   const handleDownload = async () => {
+    if (!canDownloadProject) {
+      alert("Download is available only after completion for admin or client.");
+      return;
+    }
+
+    setDownloading(true);
+    setDownloadStep(12);
+
     const getAssetFileName = (url, fallback = "hero-image") => {
       try {
         const pathname = new URL(url).pathname;
@@ -384,10 +421,12 @@ function ProjectDetail() {
 </html>`;
 
     const folderName = (project.name || "website").replace(/\s+/g, "_");
+    setDownloadStep(28);
 
     if (window.showDirectoryPicker) {
       try {
         const rootHandle = await window.showDirectoryPicker({ mode: "readwrite" });
+        setDownloadStep(45);
         const projectHandle = await rootHandle.getDirectoryHandle(folderName, { create: true });
         const assetsHandle = await projectHandle.getDirectoryHandle("assets", { create: true });
         const publicHandle = await projectHandle.getDirectoryHandle("public", { create: true });
@@ -400,6 +439,7 @@ function ProjectDetail() {
         };
 
         await writeFile(projectHandle, "index.html", html, "text/html");
+        setDownloadStep(65);
 
         if (heroImage && heroImageFileName) {
           try {
@@ -417,12 +457,20 @@ function ProjectDetail() {
           }
         }
 
+        setDownloadStep(82);
         await writeFile(assetsHandle, "README.txt", "Website images, CSS, and JavaScript files belong in this assets folder.");
         await writeFile(publicHandle, "README.txt", "Add public/static files in this public folder.");
+        setDownloadStep(100);
         alert(`✅ Website folder saved: ${folderName}`);
+        setDownloading(false);
+        setDownloadStep(0);
         return;
       } catch (error) {
-        if (error?.name === "AbortError") return;
+        if (error?.name === "AbortError") {
+          setDownloading(false);
+          setDownloadStep(0);
+          return;
+        }
         console.error("Folder download failed:", error);
         alert("Folder save failed. Downloading HTML file instead.");
       }
@@ -430,13 +478,17 @@ function ProjectDetail() {
       alert("Your browser does not support folder save picker. Downloading HTML file instead.");
     }
 
+    setDownloadStep(78);
     const blob = new Blob([html], { type: "text/html" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
     a.download = `${folderName}.html`;
     a.click();
+    setDownloadStep(100);
     URL.revokeObjectURL(url);
+    setDownloading(false);
+    setDownloadStep(0);
   };
 
   const updateField = (key, val) => setTemplateData((prev) => ({ ...prev, [key]: val }));
@@ -468,11 +520,25 @@ function ProjectDetail() {
             <p className="text-gray-400 mt-1">{project.client}</p>
           </div>
           <div className="flex items-center gap-3">
-            <span className="text-sm text-gray-500 bg-white px-3 py-1 rounded-full border">{project.status}</span>
+            <span className="text-sm text-gray-500 bg-white px-3 py-1 rounded-full border">{project.completed ? "Completed" : project.status}</span>
             <button onClick={() => navigate("/dashboard/projects")} className="text-sm text-gray-500 hover:text-indigo-600">← Back</button>
-            <button onClick={() => setShowEditModal(true)} className="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-indigo-700 transition">✏️ Edit Project</button>
+            {canEditWorkspace && (
+              <button onClick={() => setShowEditModal(true)} className="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-indigo-700 transition">✏️ Edit Project</button>
+            )}
           </div>
         </div>
+
+        {(completeSuccess || project.completed) && (
+          <div className="mb-6 rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-emerald-700 shadow-sm dark:border-emerald-800 dark:bg-emerald-950/30 dark:text-emerald-300">
+            <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className="text-sm font-bold">✅ Project completed successfully</p>
+                <p className="text-xs text-emerald-600 dark:text-emerald-400">Client can now see Completed status and download the project output.</p>
+              </div>
+              <span className="rounded-full bg-emerald-600 px-3 py-1 text-xs font-bold text-white">Completed</span>
+            </div>
+          </div>
+        )}
 
         {/* Tabs */}
         <div className="flex gap-6 border-b border-gray-200 mb-6">
@@ -515,20 +581,6 @@ function ProjectDetail() {
                     <div key={label}>
                       <p className="text-gray-400 uppercase text-xs font-semibold">{label}</p>
                       <p className="font-semibold">{val}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-              <div className="bg-white rounded-xl p-6 shadow-sm">
-                <h2 className="text-lg font-bold mb-4">🏁 Milestones</h2>
-                <div className="space-y-3">
-                  {[["Project Kickoff","Project initiated"],["Design Phase","Wireframes & UI"],["Development","Build & code"],["Testing","QA & client review"],["Go Live","Launch to production"]].map(([m, sub]) => (
-                    <div key={m} className="flex items-start gap-3">
-                      <div className="w-4 h-4 rounded-full border-2 border-indigo-400 bg-white mt-0.5 flex-shrink-0" />
-                      <div>
-                        <p className="text-sm font-semibold text-gray-700">{m}</p>
-                        <p className="text-xs text-gray-400">{sub}</p>
-                      </div>
                     </div>
                   ))}
                 </div>
@@ -795,19 +847,27 @@ function ProjectDetail() {
               <div>
                 <h2 className="text-base font-bold text-gray-800">🖥 Template Workspace</h2>
                 <p className="text-xs text-gray-400 mt-0.5">
-                  {templateLoading ? "Loading template..." : template ? `Editing "${template.name}"` : "No template linked"}
+                  {templateLoading ? "Loading template..." : template ? `${editMode && canEditWorkspace ? "Editing" : "Previewing"} "${template.name}"` : "No template linked"}
                 </p>
               </div>
               <div className="flex items-center gap-2">
-                <button onClick={() => setEditMode(!editMode)}
-                  className="text-xs font-semibold px-3 py-2 rounded-lg border transition"
-                  style={{ borderColor: "#6366f1", color: editMode ? "#fff" : "#6366f1", background: editMode ? "#6366f1" : "transparent" }}>
-                  {editMode ? "👁 Preview Mode" : "✏️ Edit Mode"}
-                </button>
-                <button onClick={handleSaveTemplate} className="bg-indigo-100 text-indigo-700 px-3 py-2 rounded-lg text-xs font-semibold hover:bg-indigo-200 transition">💾 Save</button>
-                <button onClick={handleComplete} className="bg-emerald-500 text-white px-3 py-2 rounded-lg text-xs font-semibold hover:bg-emerald-600 transition">✅ Complete</button>
-                {project.completed && (
-                  <button onClick={handleDownload} className="bg-gray-800 text-white px-3 py-2 rounded-lg text-xs font-semibold hover:bg-black transition">⬇ Download Folder</button>
+                {canEditWorkspace && (
+                  <button onClick={() => setEditMode(!editMode)}
+                    className="text-xs font-semibold px-3 py-2 rounded-lg border transition"
+                    style={{ borderColor: "#6366f1", color: editMode ? "#fff" : "#6366f1", background: editMode ? "#6366f1" : "transparent" }}>
+                    {editMode ? "👁 Preview Mode" : "✏️ Edit Mode"}
+                  </button>
+                )}
+                {canEditWorkspace && (
+                  <button onClick={handleSaveTemplate} className="bg-indigo-100 text-indigo-700 px-3 py-2 rounded-lg text-xs font-semibold hover:bg-indigo-200 transition">💾 Save</button>
+                )}
+                {canCompleteProject && (
+                  <button onClick={handleComplete} className="bg-emerald-500 text-white px-3 py-2 rounded-lg text-xs font-semibold hover:bg-emerald-600 transition">✅ Complete</button>
+                )}
+                {canDownloadProject && (
+                  <button onClick={handleDownload} disabled={downloading} className="bg-gray-800 text-white px-3 py-2 rounded-lg text-xs font-semibold hover:bg-black transition disabled:opacity-60 disabled:cursor-not-allowed">
+                    {downloading ? "⏳ Downloading..." : "⬇ Download Folder"}
+                  </button>
                 )}
               </div>
             </div>
@@ -820,7 +880,7 @@ function ProjectDetail() {
               <div className={`flex ${editMode ? "flex-col lg:flex-row" : "flex-col"}`}>
 
                 {/* Edit Panel */}
-                {editMode && (
+                {editMode && canEditWorkspace && (
                   <div className="w-full lg:w-80 flex-shrink-0 border-r border-gray-100 bg-gray-50 p-5 space-y-4 overflow-y-auto" style={{ maxHeight: "85vh" }}>
                     <h3 className="text-sm font-bold text-gray-700 border-b pb-2">✏️ Edit Content</h3>
 
@@ -944,8 +1004,30 @@ function ProjectDetail() {
           </div>
         )}
 
+        {downloading && (
+          <div className="fixed inset-0 z-[70] flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm">
+            <div className="w-full max-w-sm rounded-3xl border border-white/20 bg-white p-7 text-center shadow-2xl dark:bg-slate-900">
+              <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-indigo-50 dark:bg-indigo-950/40">
+                <div className="relative h-12 w-12">
+                  <div className="absolute inset-0 rounded-full border-4 border-indigo-100 dark:border-indigo-900" />
+                  <div className="absolute inset-0 animate-spin rounded-full border-4 border-transparent border-t-indigo-600 border-r-indigo-600" />
+                  <div className="absolute inset-3 flex items-center justify-center rounded-full bg-indigo-600 text-white shadow-lg animate-bounce">
+                    ↓
+                  </div>
+                </div>
+              </div>
+              <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100">Preparing download folder</h3>
+              <p className="mt-1 text-sm text-slate-400 dark:text-slate-500">Website files are being saved to your selected folder.</p>
+              <div className="mt-5 h-2 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
+                <div className="h-full rounded-full bg-gradient-to-r from-indigo-500 to-emerald-500 transition-all duration-500" style={{ width: `${downloadStep}%` }} />
+              </div>
+              <p className="mt-2 text-xs font-semibold text-indigo-600 dark:text-indigo-400">{downloadStep}% complete</p>
+            </div>
+          </div>
+        )}
+
         {/* Edit Project Modal */}
-        {showEditModal && (
+        {showEditModal && canEditWorkspace && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
             <div className="bg-white rounded-2xl p-8 w-full max-w-lg max-h-[90vh] overflow-y-auto">
               <div className="flex items-center justify-between mb-6">

@@ -15,6 +15,10 @@ const getUser = () => {
   const email = user.email || "";
   const accountType = user.accountType || "Personal account";
   const initials = name.split(" ").map((w) => w[0]).join("").toUpperCase().slice(0, 2);
+  const isAdmin = user.role === "admin";
+  const rawPlan = user.plan || "Individual - trial";
+  const displayPlan = !isAdmin && rawPlan === "Individual - trial" ? "Admin managed" : rawPlan;
+
   return {
     name,
     email,
@@ -23,7 +27,7 @@ const getUser = () => {
     role: user.role || "user",
     accessRole: user.accessRole || "client",
     displayRole: roleLabel(user),
-    plan: user.plan || "Individual - trial",
+    plan: displayPlan,
     billingCycle: user.billingCycle || "trial",
     planPrice: user.planPrice || "Free",
     planCadence: user.planCadence || "",
@@ -119,6 +123,7 @@ const PLAN_DETAILS = {
 function ProfileSection({ user }) {
   const activePlan = PLAN_DETAILS[user.plan];
   const isAnnual = user.billingCycle === "annual";
+  const canViewSubscription = user.role === "admin";
   const displayPrice = user.planPrice || (activePlan ? (isAnnual ? activePlan.annualPrice : activePlan.price) : "Free");
   const displayCadence = user.planCadence || (activePlan ? (isAnnual ? activePlan.annualCadence : activePlan.cadence) : "");
   const planTimeline = [
@@ -175,30 +180,32 @@ function ProfileSection({ user }) {
         </div>
       </div>
 
-      <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 border border-indigo-100 dark:border-indigo-900/40 shadow-sm">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-5">
-            <div>
-              <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100">Subscription details</h2>
-              <p className="text-sm text-slate-400 dark:text-slate-500 mt-1">
-                Your plan purchase date, billing cycle, and expiry are shown here.
-              </p>
-            </div>
-            <span className="bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 text-sm font-semibold px-4 py-2 rounded-full capitalize">
-              {user.billingCycle === "trial" ? "Trial" : `${user.billingCycle} billing`}
-            </span>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            {planTimeline.map((item) => (
-              <div key={item.label} className="bg-slate-50 dark:bg-slate-700 rounded-xl px-5 py-4">
-                <p className="text-sm text-slate-400 dark:text-slate-400 mb-1">{item.label}</p>
-                <p className="text-base font-semibold text-slate-800 dark:text-slate-100">{item.value}</p>
+      {canViewSubscription && (
+        <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 border border-indigo-100 dark:border-indigo-900/40 shadow-sm">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-5">
+              <div>
+                <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100">Subscription details</h2>
+                <p className="text-sm text-slate-400 dark:text-slate-500 mt-1">
+                  Your plan purchase date, billing cycle, and expiry are shown here.
+                </p>
               </div>
-            ))}
-          </div>
-        </div>
+              <span className="bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 text-sm font-semibold px-4 py-2 rounded-full capitalize">
+                {user.billingCycle === "trial" ? "Trial" : `${user.billingCycle} billing`}
+              </span>
+            </div>
 
-      {activePlan && (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              {planTimeline.map((item) => (
+                <div key={item.label} className="bg-slate-50 dark:bg-slate-700 rounded-xl px-5 py-4">
+                  <p className="text-sm text-slate-400 dark:text-slate-400 mb-1">{item.label}</p>
+                  <p className="text-base font-semibold text-slate-800 dark:text-slate-100">{item.value}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+      )}
+
+      {canViewSubscription && activePlan && (
         <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 border-2 border-emerald-400 dark:border-emerald-600 shadow-sm">
           <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-5">
             <div>
