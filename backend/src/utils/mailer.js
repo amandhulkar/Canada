@@ -1,6 +1,10 @@
+const dns = require("dns");
 const nodemailer = require("nodemailer");
 
-const createTransporter = () => {
+const dnsPromises = dns.promises;
+dns.setDefaultResultOrder("ipv4first");
+
+const createTransporter = async () => {
   const host = process.env.SMTP_HOST;
   const port = Number(process.env.SMTP_PORT || 587);
   const user = process.env.SMTP_USER;
@@ -10,19 +14,26 @@ const createTransporter = () => {
     throw new Error("SMTP email settings are missing. Set SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, and MAIL_FROM.");
   }
 
+  const [ipv4Host] = await dnsPromises.resolve4(host);
+
   return nodemailer.createTransport({
-    host,
+    host: ipv4Host || host,
     port,
     secure: port === 465,
+    requireTLS: port === 587,
     auth: { user, pass },
-    connectionTimeout: 15000,
-    greetingTimeout: 15000,
-    socketTimeout: 15000,
+    tls: {
+      servername: host,
+      minVersion: "TLSv1.2",
+    },
+    connectionTimeout: 30000,
+    greetingTimeout: 30000,
+    socketTimeout: 30000,
   });
 };
 
 const sendPasswordResetOtp = async ({ to, otp }) => {
-  const transporter = createTransporter();
+  const transporter = await createTransporter();
   const from = process.env.MAIL_FROM || process.env.SMTP_USER;
 
   await transporter.sendMail({
