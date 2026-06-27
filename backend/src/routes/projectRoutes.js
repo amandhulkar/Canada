@@ -8,6 +8,7 @@ const requirePermission = require("../middleware/permissionMiddleware");
 const { PERMISSIONS } = require("../permissions");
 
 const getCompanyId = (req) => req.user.companyId || req.user.userId;
+const normalizeName = (value = "") => value.trim().toLowerCase();
 
 const projectScope = (req, extra = {}) => {
   const base = { companyId: getCompanyId(req), ...extra };
@@ -82,8 +83,57 @@ const normalizeProjectBody = async (req, safeBody) => {
 // GET all projects — each company sees only its own
 router.get("/", protect, requirePermission(PERMISSIONS.VIEW_PROJECTS), async (req, res) => {
   try {
+    if (req.user.accessRole === "client") {
+      const linkedClients = await Client.find({
+        companyId: getCompanyId(req),
+        $or: [
+          { user: req.user.userId },
+          { email: req.user.email },
+          { clientName: req.user.fullName || "" },
+        ],
+      }).select("_id clientName");
+
+      const clientIds = linkedClients.map((client) => client._id);
+      const clientNames = [...new Set([req.user.fullName || "", ...linkedClients.map((client) => client.clientName)].filter(Boolean))];
+
+      const projects = await Project.find({
+        companyId: getCompanyId(req),
+        $or: [
+          { user: req.user.userId },
+          { clientId: { $in: clientIds } },
+          { client: { $in: clientNames } },
+        ],
+      }).populate("user");
+      return res.json(projects);
+    }
+
     const projects = await Project.find(projectScope(req)).populate("user");
     res.json(projects);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// GET projects for a specific client — used by admin client detail
+router.get("/client/:clientId", protect, requirePermission(PERMISSIONS.VIEW_PROJECTS), async (req, res) => {
+  try {
+    const companyId = getCompanyId(req);
+    const client = await Client.findOne({ _id: req.params.clientId, companyId });
+    if (!client) return res.status(404).json({ message: "Client not found" });
+
+    const projects = await Project.find({
+      companyId,
+      $or: [
+        { clientId: client._id },
+        { client: client.clientName },
+        { client: { $regex: `^${client.clientName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, $options: "i" } },
+      ],
+    }).populate("user");
+
+    res.json(projects.filter((project) => (
+      String(project.clientId || "") === String(client._id) ||
+      normalizeName(project.client) === normalizeName(client.clientName)
+    )));
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -178,6 +228,34 @@ router.delete("/:id", protect, requirePermission(PERMISSIONS.MANAGE_PROJECTS), a
 // GET by ID — each company can view only its own
 router.get("/:id", protect, requirePermission(PERMISSIONS.VIEW_PROJECTS), async (req, res) => {
   try {
+    if (req.user.accessRole === "client") {
+      const linkedClients = await Client.find({
+        companyId: getCompanyId(req),
+        $or: [
+          { user: req.user.userId },
+          { email: req.user.email },
+          { clientName: req.user.fullName || "" },
+        ],
+      }).select("_id clientName");
+
+      const clientIds = linkedClients.map((client) => client._id);
+      const clientNames = [...new Set([req.user.fullName || "", ...linkedClients.map((client) => client.clientName)].filter(Boolean))];
+
+      const project = await Project.findOne({
+        _id: req.params.id,
+        companyId: getCompanyId(req),
+        $or: [
+          { user: req.user.userId },
+          { clientId: { $in: clientIds } },
+          { client: { $in: clientNames } },
+        ],
+      });
+      if (!project) {
+        return res.status(404).json({ message: "Project not found or unauthorized" });
+      }
+      return res.json(project);
+    }
+
     const query = projectScope(req, { _id: req.params.id });
     const project = await Project.findOne(query);
     if (!project) {

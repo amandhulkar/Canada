@@ -285,13 +285,13 @@ function ClientDetail() {
 
     const token = localStorage.getItem("token");
     setProjectsLoading(true);
-    fetch(`${API}/api/projects`, {
+    fetch(`${API}/api/projects/client/${client._id}`, {
       headers: { Authorization: token },
     })
       .then((res) => res.json())
       .then((data) => {
-        const allProjects = Array.isArray(data) ? data : [];
-        setProjects(allProjects.filter((p) => (
+        const clientProjects = Array.isArray(data) ? data : [];
+        setProjects(clientProjects.filter((p) => (
           String(p.clientId || "") === String(client._id) ||
           normalizeName(p.client) === normalizeName(client.clientName)
         )));
