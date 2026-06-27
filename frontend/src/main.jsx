@@ -5,9 +5,7 @@ import App from './App.jsx'
 import { ToastProvider } from './components/ToastProvider.jsx'
 
 const savedTheme = localStorage.getItem("theme");
-if (savedTheme === "dark") {
-  document.documentElement.classList.add("dark");
-}
+document.documentElement.classList.toggle("dark", savedTheme === "dark");
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>

@@ -239,39 +239,63 @@ function ProfileSection({ user }) {
 }
 
 function ThemeSection() {
-  const [theme, setTheme] = useState(() => localStorage.getItem("theme") || "light");
+  const [theme, setTheme] = useState(() => localStorage.getItem("theme") === "dark" ? "dark" : "light");
 
   const applyTheme = (t) => {
     setTheme(t);
     localStorage.setItem("theme", t);
-    if (t === "dark") {
-      document.documentElement.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-    }
+    document.documentElement.classList.toggle("dark", t === "dark");
   };
 
+  const themeOptions = [
+    {
+      key: "light",
+      label: "Light mode",
+      desc: "Clean bright dashboard",
+      preview: "bg-gradient-to-br from-white to-slate-100 border-slate-200",
+      dot: "bg-indigo-500",
+    },
+    {
+      key: "dark",
+      label: "Dark mode",
+      desc: "New smooth dark dashboard",
+      preview: "bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800 border-slate-700",
+      dot: "bg-sky-400",
+    },
+  ];
+
   return (
-    <div className="bg-white dark:bg-slate-800 rounded-2xl p-4 sm:p-6">
-      <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100 mb-1">Theme</h2>
-      <p className="text-sm text-slate-400 dark:text-slate-500 mb-5">Choose your dashboard appearance.</p>
-      <div className="grid grid-cols-2 gap-3">
-        {["light", "dark"].map((t) => (
-          <button
-            key={t}
-            onClick={() => applyTheme(t)}
-            className={`rounded-xl border-2 p-4 text-left transition-all ${
-              theme === t
-                ? "border-indigo-500 bg-indigo-50 dark:bg-indigo-900/30"
-                : "border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-700 hover:border-slate-200 dark:hover:border-slate-600"
-            }`}
-          >
-            <div className={`w-full h-16 rounded-lg mb-3 ${t === "light" ? "bg-white border border-slate-200" : "bg-slate-800 border border-slate-600"}`} />
-            <p className={`text-sm font-semibold capitalize ${theme === t ? "text-indigo-600 dark:text-indigo-400" : "text-slate-600 dark:text-slate-300"}`}>
-              {t} mode
-            </p>
-          </button>
-        ))}
+    <div className="rounded-2xl border border-slate-100 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-6">
+      <h2 className="mb-1 text-lg font-bold text-slate-800 dark:text-slate-100">Theme</h2>
+      <p className="mb-5 text-sm text-slate-400 dark:text-slate-400">Choose your dashboard appearance.</p>
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        {themeOptions.map((option) => {
+          const active = theme === option.key;
+          return (
+            <button
+              key={option.key}
+              type="button"
+              onClick={() => applyTheme(option.key)}
+              className={`rounded-xl border-2 p-4 text-left transition-all ${
+                active
+                  ? "border-indigo-500 bg-indigo-50 shadow-sm dark:border-sky-400 dark:bg-slate-800"
+                  : "border-slate-100 bg-slate-50 hover:border-slate-200 dark:border-slate-800 dark:bg-slate-950 dark:hover:border-slate-700"
+              }`}
+            >
+              <div className={`mb-3 h-16 w-full rounded-lg border ${option.preview}`}>
+                <div className="flex h-full items-end gap-1.5 p-3">
+                  <span className={`h-3 w-3 rounded-full ${option.dot}`} />
+                  <span className="h-2 w-12 rounded-full bg-current opacity-20" />
+                  <span className="h-2 w-8 rounded-full bg-current opacity-10" />
+                </div>
+              </div>
+              <p className={`text-sm font-semibold ${active ? "text-indigo-600 dark:text-sky-300" : "text-slate-600 dark:text-slate-300"}`}>
+                {option.label}
+              </p>
+              <p className="mt-1 text-xs text-slate-400 dark:text-slate-500">{option.desc}</p>
+            </button>
+          );
+        })}
       </div>
     </div>
   );
@@ -613,7 +637,7 @@ export default function Settings() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col md:flex-row bg-slate-100 dark:bg-slate-900">
+    <div className="flex min-h-screen flex-col bg-slate-100 text-slate-900 dark:bg-slate-950 dark:text-slate-100 md:flex-row">
       <Sidebar />
 
       <main className="min-w-0 flex-1 p-4 sm:p-6 lg:p-8">

@@ -95,7 +95,7 @@ function Sidebar() {
 
   return (
     <>
-      <div className="sticky top-0 z-40 flex items-center justify-between bg-white px-4 py-3 shadow-md dark:bg-slate-800 md:hidden">
+      <div className="sticky top-0 z-40 flex items-center justify-between border-b border-slate-100 bg-white px-4 py-3 shadow-md dark:border-slate-800 dark:bg-slate-950 md:hidden">
         <button
           type="button"
           onClick={() => setMobileOpen(true)}
@@ -116,7 +116,7 @@ function Sidebar() {
         />
       )}
 
-      <aside className={`fixed inset-y-0 left-0 z-50 w-72 -translate-x-full bg-white shadow-2xl transition-transform duration-300 dark:bg-slate-800 dark:shadow-slate-900 md:sticky md:top-0 md:z-auto md:min-h-screen md:translate-x-0 ${mobileOpen ? "translate-x-0" : ""} ${collapsed ? "md:w-20" : "md:w-64"} ${compact ? "p-3" : "p-4 md:p-6"} flex flex-col`}>
+      <aside className={`fixed inset-y-0 left-0 z-50 w-72 -translate-x-full border-r border-slate-100 bg-white shadow-2xl transition-transform duration-300 dark:border-slate-800 dark:bg-slate-950 dark:shadow-slate-950 md:sticky md:top-0 md:z-auto md:min-h-screen md:translate-x-0 ${mobileOpen ? "translate-x-0" : ""} ${collapsed ? "md:w-20" : "md:w-64"} ${compact ? "p-3" : "p-4 md:p-6"} flex flex-col`}>
         <div className="mb-4 flex items-center justify-between md:mb-6">
           <h1 className={`${collapsed ? "text-xl md:text-center" : "text-2xl md:text-3xl"} font-bold text-indigo-600 dark:text-indigo-400`}>
             {collapsed ? "FT" : "FindTemplates"}
