@@ -127,13 +127,11 @@ function AddMemberModal({ open, onClose, onSave, loading }) {
             </label>
             <select
               name="role"
-              value={form.role}
-              onChange={handleChange}
-              className="w-full rounded-lg border border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-900 text-gray-800 dark:text-slate-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+              value="developer"
+              disabled
+              className="w-full rounded-lg border border-gray-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 text-gray-800 dark:text-slate-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 disabled:cursor-not-allowed disabled:opacity-80"
             >
-              <option value="client">Client</option>
               <option value="developer">Developer</option>
-              <option value="admin">Admin</option>
             </select>
           </div>
 
@@ -219,11 +217,10 @@ function EditMemberModal({ member, onClose, onSave, loading }) {
           <div>
             <label className="block text-sm font-medium text-gray-600 dark:text-slate-300 mb-1">Role</label>
             <select
-              value={form.accessRole}
-              onChange={(e) => setForm({ ...form, accessRole: e.target.value })}
-              className="w-full rounded-lg border border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-900 text-gray-800 dark:text-slate-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+              value="developer"
+              disabled
+              className="w-full rounded-lg border border-gray-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 text-gray-800 dark:text-slate-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 disabled:cursor-not-allowed disabled:opacity-80"
             >
-              <option value="client">Client</option>
               <option value="developer">Developer</option>
             </select>
           </div>
