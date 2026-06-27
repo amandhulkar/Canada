@@ -16,20 +16,42 @@ const createTransporter = async () => {
 
   const [ipv4Host] = await dnsPromises.resolve4(host);
 
-  return nodemailer.createTransport({
-    host: ipv4Host || host,
-    port,
-    secure: port === 465,
-    requireTLS: port === 587,
-    auth: { user, pass },
-    tls: {
-      servername: host,
-      minVersion: "TLSv1.2",
-    },
-    connectionTimeout: 30000,
-    greetingTimeout: 30000,
-    socketTimeout: 30000,
-  });
+//   return nodemailer.createTransport({
+//     host: ipv4Host || host,
+//     port,
+//     secure: port === 465,
+//     requireTLS: port === 587,
+//     auth: { user, pass },
+//     tls: {
+//       servername: host,
+//       minVersion: "TLSv1.2",
+//     },
+//     connectionTimeout: 30000,
+//     greetingTimeout: 30000,
+//     socketTimeout: 30000,
+//   });
+// };
+
+const transporter = nodemailer.createTransport({
+  host: ipv4Host || host,
+  port,
+  secure: port === 465,
+  requireTLS: port === 587,
+  auth: { user, pass },
+  tls: {
+    servername: host,
+    minVersion: "TLSv1.2",
+  },
+  connectionTimeout: 30000,
+  greetingTimeout: 30000,
+  socketTimeout: 30000,
+});
+
+await transporter.verify();
+console.log("SMTP connected successfully");
+
+return transporter;
+
 };
 
 const sendPasswordResetOtp = async ({ to, otp }) => {
