@@ -354,7 +354,6 @@ function SignupPage() {
               <input
                 name="email"
                 type="email"
-                pattern="^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$"
                 autoComplete="email"
                 placeholder="you@company.com"
                 value={form.email}
@@ -561,7 +560,6 @@ function SignupPage() {
               <input
                 name="email"
                 type="email"
-                pattern="^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$"
                 autoComplete="email"
                 placeholder="you@company.com"
                 value={form.email}
