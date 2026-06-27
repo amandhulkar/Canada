@@ -3,6 +3,9 @@ const jwt = require("jsonwebtoken");
 const { getEffectiveAccessRole } = require("../permissions");
 const { sendPasswordResetOtp } = require("../utils/mailer");
 
+const isValidEmail = (email = "") => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
+const normalizeEmail = (email = "") => email.toLowerCase().trim();
+
 const buildSafeUser = (user, companyId = user.companyId || user._id) => ({
   _id: user._id,
   fullName: user.fullName,
@@ -23,6 +26,10 @@ const buildSafeUser = (user, companyId = user.companyId || user._id) => ({
 const signup = async (req, res) => {
   try {
     const { fullName, email, password, role } = req.body;
+    if (!isValidEmail(email)) {
+      return res.status(400).json({ message: "Please enter a valid email address." });
+    }
+    const cleanEmail = normalizeEmail(email);
 
     console.log("REQUEST BODY:", req.body);
     console.log("ROLE RECEIVED:", role);
@@ -36,7 +43,7 @@ const signup = async (req, res) => {
 
     const user = await User.create({
       fullName,
-      email,
+      email: cleanEmail,
       password,
       role: "admin",
       accessRole: "admin"
@@ -72,8 +79,11 @@ const signup = async (req, res) => {
 const signin = async (req, res) => {
   try {
     const { email, password } = req.body;
+    if (!isValidEmail(email)) {
+      return res.status(400).json({ message: "Please enter a valid email address." });
+    }
 
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email: normalizeEmail(email) });
 
     if (!user) {
       return res.status(404).json({
@@ -162,8 +172,11 @@ const requestPasswordReset = async (req, res) => {
   try {
     const { email } = req.body;
     if (!email) return res.status(400).json({ message: "Email is required" });
+    if (!isValidEmail(email)) {
+      return res.status(400).json({ message: "Please enter a valid email address." });
+    }
 
-    const user = await User.findOne({ email: email.toLowerCase().trim() });
+    const user = await User.findOne({ email: normalizeEmail(email) });
     if (!user) return res.status(404).json({ message: "User not found" });
 
     const otp = String(Math.floor(100000 + Math.random() * 900000));
@@ -185,11 +198,14 @@ const resetPasswordWithOtp = async (req, res) => {
     if (!email || !otp || !newPassword) {
       return res.status(400).json({ message: "Email, OTP, and new password are required" });
     }
+    if (!isValidEmail(email)) {
+      return res.status(400).json({ message: "Please enter a valid email address." });
+    }
     if (newPassword.length < 8) {
       return res.status(400).json({ message: "New password must be at least 8 characters" });
     }
 
-    const user = await User.findOne({ email: email.toLowerCase().trim() });
+    const user = await User.findOne({ email: normalizeEmail(email) });
     if (!user) return res.status(404).json({ message: "User not found" });
     if (!user.resetPasswordOtp || user.resetPasswordOtp !== otp) {
       return res.status(400).json({ message: "Invalid OTP" });

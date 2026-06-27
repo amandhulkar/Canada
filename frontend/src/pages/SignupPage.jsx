@@ -354,6 +354,7 @@ function SignupPage() {
               <input
                 name="email"
                 type="email"
+                pattern="^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$"
                 autoComplete="email"
                 placeholder="you@company.com"
                 value={form.email}
@@ -487,6 +488,7 @@ function SignupPage() {
                   <label style={labelStyle}>Email</label>
                   <input
                     type="email"
+                    pattern="^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$"
                     placeholder="you@company.com"
                     value={resetForm.email}
                     onChange={(e) => setResetForm({ ...resetForm, email: e.target.value })}
@@ -559,6 +561,7 @@ function SignupPage() {
               <input
                 name="email"
                 type="email"
+                pattern="^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$"
                 autoComplete="email"
                 placeholder="you@company.com"
                 value={form.email}

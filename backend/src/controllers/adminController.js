@@ -3,6 +3,9 @@ const User = require("../models/User");
 const Project = require("../models/Project");
 const { ACCESS_ROLES, getEffectiveAccessRole } = require("../permissions");
 
+const isValidEmail = (email = "") => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
+const normalizeEmail = (email = "") => email.toLowerCase().trim();
+
 const getCompanyId = (req) => req.user.companyId || req.user.userId;
 
 const getAllUsers = async (req, res) => {
@@ -29,13 +32,16 @@ const createUser = async (req, res) => {
     if (!userName || !email) {
       return res.status(400).json({ message: "Name and email are required" });
     }
+    if (!isValidEmail(email)) {
+      return res.status(400).json({ message: "Please enter a valid email address." });
+    }
     if (!ACCESS_ROLES.includes(nextAccessRole)) {
       return res.status(400).json({ message: "Invalid access role" });
     }
 
     const user = await User.create({
       fullName: userName,
-      email,
+      email: normalizeEmail(email),
       password: password || crypto.randomBytes(9).toString("base64"),
       role: nextRole,
       accessRole: nextAccessRole,
@@ -122,6 +128,9 @@ const updateUser = async (req, res) => {
     if (!fullName?.trim() || !email?.trim()) {
       return res.status(400).json({ message: "Name and email are required" });
     }
+    if (!isValidEmail(email)) {
+      return res.status(400).json({ message: "Please enter a valid email address." });
+    }
     if (accessRole && !ACCESS_ROLES.includes(accessRole)) {
       return res.status(400).json({ message: "Invalid access role" });
     }
@@ -134,7 +143,7 @@ const updateUser = async (req, res) => {
     if (!user) return res.status(404).json({ message: "User not found" });
 
     user.fullName = fullName.trim();
-    user.email = email.trim().toLowerCase();
+    user.email = normalizeEmail(email);
     user.accessRole = user.role === "admin" ? "admin" : accessRole || user.accessRole;
     await user.save();
 

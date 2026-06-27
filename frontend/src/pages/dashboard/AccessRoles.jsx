@@ -52,7 +52,11 @@ function InviteModal({ open, onClose, onInvite }) {
 
   const handleSubmit = () => {
     if (!form.name || !form.email || !form.password) return;
-    onInvite(form);
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) {
+      alert("Please enter a valid email address.");
+      return;
+    }
+    onInvite({ ...form, email: form.email.trim().toLowerCase() });
     setForm({ name: "", email: "", password: "", role: "developer" });
   };
 
@@ -73,7 +77,7 @@ function InviteModal({ open, onClose, onInvite }) {
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-600 dark:text-slate-300 mb-1">Email</label>
-            <input placeholder="Email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} className={inputClass} />
+            <input type="email" placeholder="Email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} className={inputClass} />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-600 dark:text-slate-300 mb-1">Password</label>
@@ -120,10 +124,28 @@ export default function AccessRoles() {
     try {
       setError("");
       setLoading(true);
-      const res = await fetch(`${API}/api/admin/users?t=${Date.now()}`, { headers: authHeaders, cache: "no-store" });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.message || "Unable to load team members");
-      setMembers(data.users || []);
+      const [usersRes, clientsRes] = await Promise.all([
+        fetch(`${API}/api/admin/users?t=${Date.now()}`, { headers: authHeaders, cache: "no-store" }),
+        fetch(`${API}/api/clients?t=${Date.now()}`, { headers: authHeaders, cache: "no-store" }),
+      ]);
+      const usersData = await usersRes.json().catch(() => ({}));
+      const clientsData = await clientsRes.json().catch(() => []);
+      if (!usersRes.ok) throw new Error(usersData.message || "Unable to load team members");
+
+      const users = usersData.users || [];
+      const userEmails = new Set(users.map((user) => user.email?.toLowerCase()).filter(Boolean));
+      const clientMembers = (Array.isArray(clientsData) ? clientsData : [])
+        .filter((client) => client.email && !userEmails.has(client.email.toLowerCase()))
+        .map((client) => ({
+          _id: `client-${client._id}`,
+          fullName: client.clientName,
+          email: client.email,
+          role: "user",
+          accessRole: "client",
+          source: "client",
+        }));
+
+      setMembers([...users, ...clientMembers]);
     } catch (err) {
       setError(err.message);
     } finally {

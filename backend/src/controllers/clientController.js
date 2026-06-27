@@ -2,6 +2,9 @@ const Client = require("../models/Client");
 const User = require("../models/User");
 const Project = require("../models/Project");
 
+const isValidEmail = (email = "") => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
+const normalizeEmail = (email = "") => email.toLowerCase().trim();
+
 const getCompanyId = (req) => req.user.companyId || req.user.userId;
 
 const cleanClientBody = (body) => {
@@ -12,7 +15,11 @@ const cleanClientBody = (body) => {
 const createClient = async (req, res) => {
   try {
     const companyId = getCompanyId(req);
-    const email = req.body.email?.toLowerCase().trim();
+    const email = req.body.email ? normalizeEmail(req.body.email) : "";
+
+    if (email && !isValidEmail(email)) {
+      return res.status(400).json({ message: "Please enter a valid email address." });
+    }
 
     if (email) {
       const existingClient = await Client.findOne({ email, companyId });
@@ -132,9 +139,17 @@ const getClientById = async (req, res) => {
 
 const updateClient = async (req, res) => {
   try {
+    const safeBody = cleanClientBody(req.body);
+    if (safeBody.email) {
+      safeBody.email = normalizeEmail(safeBody.email);
+      if (!isValidEmail(safeBody.email)) {
+        return res.status(400).json({ message: "Please enter a valid email address." });
+      }
+    }
+
     const client = await Client.findOneAndUpdate(
       { _id: req.params.id, companyId: getCompanyId(req) },
-      cleanClientBody(req.body),
+      safeBody,
       { new: true }
     );
     if (!client) return res.status(404).json({ message: "Client not found" });
