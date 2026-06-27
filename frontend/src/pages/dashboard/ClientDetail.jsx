@@ -319,6 +319,24 @@ function ClientDetail() {
     }
   };
 
+  const handleDeleteProject = async (projectId) => {
+    if (!confirm("Delete this project?")) return;
+
+    const token = localStorage.getItem("token");
+    const res = await fetch(`${API}/api/projects/${projectId}`, {
+      method: "DELETE",
+      headers: { Authorization: token },
+    });
+
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      alert(data.message || "Project could not be deleted.");
+      return;
+    }
+
+    setProjects((prev) => prev.filter((project) => project._id !== projectId));
+  };
+
   const handleAddProject = async (projectData) => {
     if (!projectData.name.trim()) {
       setProjectError("Please enter a project name.");
@@ -606,6 +624,12 @@ function ClientDetail() {
                         <div className="w-full bg-gray-100 dark:bg-slate-700 rounded-full h-2 overflow-hidden">
                           <div className="bg-indigo-500 h-2 rounded-full" style={{ width: `${Math.min(100, Math.max(0, Number(project.progress) || 0))}%` }} />
                         </div>
+                        <button
+                          onClick={() => handleDeleteProject(project._id)}
+                          className="mt-4 w-full rounded-lg bg-red-50 px-3 py-2 text-xs font-semibold text-red-500 transition hover:bg-red-100 dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/40"
+                        >
+                          🗑️ Delete Project
+                        </button>
                       </div>
                     </div>
                   </div>

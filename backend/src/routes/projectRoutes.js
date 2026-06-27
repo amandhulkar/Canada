@@ -119,8 +119,6 @@ router.get("/", protect, requirePermission(PERMISSIONS.VIEW_PROJECTS), async (re
         ],
       }).select("_id clientName workspace websiteType user");
 
-      await Promise.all(linkedClients.map((client) => ensureProjectForClient(client, getCompanyId(req), req.user.userId)));
-
       const clientIds = linkedClients.map((client) => client._id);
       const clientNames = [...new Set([req.user.fullName || "", ...linkedClients.map((client) => client.clientName)].filter(Boolean))];
 
@@ -148,8 +146,6 @@ router.get("/client/:clientId", protect, requirePermission(PERMISSIONS.VIEW_PROJ
     const companyId = getCompanyId(req);
     const client = await Client.findOne({ _id: req.params.clientId, companyId });
     if (!client) return res.status(404).json({ message: "Client not found" });
-
-    await ensureProjectForClient(client, companyId, req.user.userId);
 
     const projects = await Project.find({
       companyId,
