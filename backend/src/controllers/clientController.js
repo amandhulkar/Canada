@@ -1,5 +1,6 @@
 const Client = require("../models/Client");
 const User = require("../models/User");
+const Project = require("../models/Project");
 
 const getCompanyId = (req) => req.user.companyId || req.user.userId;
 
@@ -44,6 +45,29 @@ const createClient = async (req, res) => {
 
       client.user = user._id;
       await client.save();
+    }
+
+    const projectName = client.workspace || `${client.clientName} Website`;
+    const existingProject = await Project.findOne({
+      companyId,
+      clientId: client._id,
+      name: projectName,
+    });
+
+    if (!existingProject) {
+      await Project.create({
+        name: projectName,
+        projectType: client.websiteType || "Business",
+        client: client.clientName,
+        clientId: client._id,
+        user: client.user || req.user.userId,
+        companyId,
+        startDate: new Date().toISOString().split("T")[0],
+        status: "Planning",
+        progress: 0,
+        scopeOfWork: client.workspace ? `Customize the ${client.workspace} template for ${client.clientName}.` : "Build and deliver the client website.",
+        deliverables: "Final editable website, source files, and live deployment",
+      });
     }
 
     res.status(201).json(client);

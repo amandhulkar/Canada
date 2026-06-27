@@ -39,6 +39,32 @@ const cleanProjectBody = (body) => {
   return safeBody;
 };
 
+const ensureProjectForClient = async (client, companyId, fallbackUserId) => {
+  const existingProject = await Project.findOne({
+    companyId,
+    $or: [
+      { clientId: client._id },
+      { client: client.clientName },
+    ],
+  });
+
+  if (existingProject || !client.workspace) return existingProject;
+
+  return Project.create({
+    name: client.workspace,
+    projectType: client.websiteType || "Business",
+    client: client.clientName,
+    clientId: client._id,
+    user: client.user || fallbackUserId,
+    companyId,
+    startDate: new Date().toISOString().split("T")[0],
+    status: "Planning",
+    progress: 0,
+    scopeOfWork: `Customize the ${client.workspace} template for ${client.clientName}.`,
+    deliverables: "Final editable website, source files, and live deployment",
+  });
+};
+
 const normalizeProjectBody = async (req, safeBody) => {
   const companyId = getCompanyId(req);
   const normalized = { ...safeBody };
@@ -91,7 +117,9 @@ router.get("/", protect, requirePermission(PERMISSIONS.VIEW_PROJECTS), async (re
           { email: req.user.email },
           { clientName: req.user.fullName || "" },
         ],
-      }).select("_id clientName");
+      }).select("_id clientName workspace websiteType user");
+
+      await Promise.all(linkedClients.map((client) => ensureProjectForClient(client, getCompanyId(req), req.user.userId)));
 
       const clientIds = linkedClients.map((client) => client._id);
       const clientNames = [...new Set([req.user.fullName || "", ...linkedClients.map((client) => client.clientName)].filter(Boolean))];
@@ -120,6 +148,8 @@ router.get("/client/:clientId", protect, requirePermission(PERMISSIONS.VIEW_PROJ
     const companyId = getCompanyId(req);
     const client = await Client.findOne({ _id: req.params.clientId, companyId });
     if (!client) return res.status(404).json({ message: "Client not found" });
+
+    await ensureProjectForClient(client, companyId, req.user.userId);
 
     const projects = await Project.find({
       companyId,
@@ -236,7 +266,7 @@ router.get("/:id", protect, requirePermission(PERMISSIONS.VIEW_PROJECTS), async 
           { email: req.user.email },
           { clientName: req.user.fullName || "" },
         ],
-      }).select("_id clientName");
+      }).select("_id clientName workspace websiteType user");
 
       const clientIds = linkedClients.map((client) => client._id);
       const clientNames = [...new Set([req.user.fullName || "", ...linkedClients.map((client) => client.clientName)].filter(Boolean))];

@@ -91,7 +91,11 @@ const hasPlanPermission = (user, permission) => {
 };
 
 const hasFeatureAccess = (user, permission) => {
-  if (permission === PERMISSIONS.VIEW_DASHBOARD) return true;
+  if (
+    permission === PERMISSIONS.VIEW_DASHBOARD ||
+    permission === PERMISSIONS.VIEW_PROJECTS ||
+    permission === PERMISSIONS.SYSTEM_SETTINGS
+  ) return true;
 
   const isInvitedUser = user?.companyId && user?.userId && String(user.companyId) !== String(user.userId);
   if (isInvitedUser) return hasPermission(user, permission);
