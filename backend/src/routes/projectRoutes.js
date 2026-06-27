@@ -187,29 +187,40 @@ router.post("/", protect, requirePermission(PERMISSIONS.MANAGE_PROJECTS), async 
     const clientMatch = safeBody.clientId
       ? { clientId: safeBody.clientId }
       : { client: safeBody.client };
-    const alreadyAssigned = await Project.findOne({
+    const existingProject = await Project.findOne({
       companyId,
       name: safeBody.name,
       ...clientMatch,
-      $or: [
-        { assignedTo: { $exists: true, $ne: null } },
-        { team: { $exists: true, $ne: "" } },
-      ],
     });
 
-    if (alreadyAssigned) {
-      if (
-        (safeBody.assignedTo && String(alreadyAssigned.assignedTo || "") === String(safeBody.assignedTo)) ||
-        (!safeBody.assignedTo && alreadyAssigned.team === safeBody.team)
-      ) {
+    if (existingProject) {
+      const hasAssignedDeveloper = Boolean(existingProject.assignedTo || existingProject.team);
+
+      if (hasAssignedDeveloper) {
+        if (
+          (safeBody.assignedTo && String(existingProject.assignedTo || "") === String(safeBody.assignedTo)) ||
+          (!safeBody.assignedTo && existingProject.team === safeBody.team)
+        ) {
+          return res.status(409).json({
+            message: "This project is already saved for this team member.",
+          });
+        }
+
         return res.status(409).json({
-          message: "This project is already saved for this team member.",
+          message: `This project is already assigned to ${existingProject.team}. Delete or reassign that project before assigning it to another developer.`,
         });
       }
 
-      return res.status(409).json({
-        message: `This project is already assigned to ${alreadyAssigned.team}. Delete or reassign that project before assigning it to another developer.`,
-      });
+      const updatedProject = await Project.findByIdAndUpdate(
+        existingProject._id,
+        {
+          ...safeBody,
+          user: existingProject.user || safeBody.user || req.user.userId,
+          companyId,
+        },
+        { new: true }
+      );
+      return res.json(updatedProject);
     }
 
     const project = await Project.create({

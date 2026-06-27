@@ -196,7 +196,12 @@ function Projects() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Failed to create project");
       const newProj = data;
-      setProjects((prev) => [newProj, ...prev]);
+      setProjects((prev) => {
+        const exists = prev.some((project) => project._id === newProj._id);
+        return exists
+          ? prev.map((project) => project._id === newProj._id ? newProj : project)
+          : [newProj, ...prev];
+      });
       setForm(EMPTY_FORM);
       setShowAddModal(false);
     } catch (err) {
